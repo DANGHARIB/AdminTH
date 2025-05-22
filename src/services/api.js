@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configuration de l'URL de base de l'API
-const baseURL = import.meta.env.VITE_API_URL || 'https://api.votredomaine.com/api';
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 console.log('API URL configurée:', baseURL);
 
 // Préfixe pour le stockage local
@@ -46,15 +46,27 @@ api.interceptors.response.use(
   error => {
     console.error('Erreur API:', error.message);
     
+    // Afficher plus de détails sur l'erreur pour le débogage
+    if (error.response) {
+      console.error('Détails de la réponse d\'erreur:', {
+        status: error.response.status,
+        statusText: error.response.statusText,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    }
+    
     // Gérer les erreurs 401 (non authentifié)
     if (error.response && error.response.status === 401) {
-      console.warn('Erreur 401: Non autorisé');
-      // Déconnecter l'utilisateur
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(`${STORAGE_PREFIX}user`);
+      console.warn('Erreur 401: Non autorisé - Vérifiez que le format des données d\'authentification est correct');
       
-      // Rediriger vers la page de connexion si ce n'est pas déjà le cas
+      // Ne pas déconnecter l'utilisateur pendant la tentative de connexion
       if (!window.location.pathname.includes('/login')) {
+        // Déconnecter l'utilisateur
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(`${STORAGE_PREFIX}user`);
+        
+        // Rediriger vers la page de connexion
         console.log('Redirection vers la page de connexion');
         window.location.href = '/login';
       }

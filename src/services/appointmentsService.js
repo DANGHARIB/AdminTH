@@ -82,7 +82,9 @@ const appointmentsService = {
    */
   async getAppointmentNotes(appointmentId) {
     try {
-      const response = await api.get(`/appointment-notes/${appointmentId}`);
+      const response = await api.get(`/appointment-notes`, { 
+        params: { appointmentId } 
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Erreur lors de la récupération des notes du rendez-vous' };

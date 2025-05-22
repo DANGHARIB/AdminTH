@@ -1,5 +1,6 @@
 // Auth Pages
 export { default as Login } from './auth/Login';
+export { default as SignUp } from './auth/SignUp';
 
 // Dashboard
 export { default as Dashboard } from './dashboard/Dashboard';

@@ -10,11 +10,7 @@ import {
   Paper, 
   Alert,
   CircularProgress,
-  Link,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel
+  Link
 } from '@mui/material';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -23,16 +19,8 @@ const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [passwordOption, setPasswordOption] = useState('password');
-  
-  // Options de mot de passe prédéfinies pour faciliter les tests
-  const passwordOptions = {
-    'password': 'password',
-    'admin123': 'admin123',
-    'Admin123!': 'Admin123!',
-    '123456': '123456'
-  };
   
   // Destination après connexion réussie
   const from = location.state?.from?.pathname || '/dashboard';
@@ -41,19 +29,23 @@ const Login = () => {
   const { 
     register, 
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting } 
   } = useForm({
     defaultValues: {
-      email: 'admin@admin.com',
-      password: passwordOptions[passwordOption]
+      email: '',
+      password: ''
     }
   });
   
-  // Mettre à jour le mot de passe quand l'option change
+  // Vérifier s'il y a un message de succès dans l'état de navigation
   useEffect(() => {
-    setValue('password', passwordOptions[passwordOption]);
-  }, [passwordOption, setValue]);
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Effacer le message après 5 secondes
+      const timer = setTimeout(() => setSuccessMessage(''), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
   
   // Si déjà authentifié, rediriger
   useEffect(() => {
@@ -66,6 +58,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError('');
+      setSuccessMessage('');
       setLoading(true);
       console.log(`Tentative de connexion avec: ${data.email} / [mot de passe masqué]`);
       await login(data.email, data.password);
@@ -73,7 +66,8 @@ const Login = () => {
     } catch (error) {
       console.error('Erreur de connexion:', error);
       const errorMessage = error.message || (typeof error === 'object' && error.message) || 'Échec de la connexion';
-      setError(`${errorMessage}. Veuillez vérifier vos identifiants.`);
+      const errorDetails = error.details ? `\n${error.details}` : '';
+      setError(`${errorMessage}${errorDetails}`);
     } finally {
       setLoading(false);
     }
@@ -101,9 +95,11 @@ const Login = () => {
             Connexion Administrateur
           </Typography>
           
-          <Alert severity="info" sx={{ mb: 2 }}>
-            Utiliser admin@admin.com et testez différents mots de passe
-          </Alert>
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {successMessage}
+            </Alert>
+          )}
           
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -130,21 +126,6 @@ const Login = () => {
               error={!!errors.email}
               helperText={errors.email?.message}
             />
-            
-            <FormControl fullWidth sx={{ mt: 2, mb: 1 }}>
-              <InputLabel id="password-option-label">Option de mot de passe</InputLabel>
-              <Select
-                labelId="password-option-label"
-                value={passwordOption}
-                label="Option de mot de passe"
-                onChange={(e) => setPasswordOption(e.target.value)}
-              >
-                <MenuItem value="password">password (défaut)</MenuItem>
-                <MenuItem value="admin123">admin123</MenuItem>
-                <MenuItem value="Admin123!">Admin123!</MenuItem>
-                <MenuItem value="123456">123456</MenuItem>
-              </Select>
-            </FormControl>
             
             <TextField
               margin="normal"
@@ -179,6 +160,12 @@ const Login = () => {
                 </>
               ) : 'Se connecter'}
             </Button>
+            
+            <Box sx={{ textAlign: 'center', mt: 2 }}>
+              <Link href="/signup" variant="body2">
+                Pas encore de compte ? Créer un compte administrateur
+              </Link>
+            </Box>
           </Box>
         </Paper>
       </Box>

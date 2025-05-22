@@ -37,6 +37,24 @@ const authService = {
   },
 
   /**
+ * Tester la connectivité avec le backend
+ */
+async testConnection() {
+  try {
+    console.log('🔍 Test de connectivité backend...');
+    const response = await api.get('/health'); // ou tout endpoint de test
+    console.log('✅ Backend accessible:', response.status);
+    return true;
+  } catch (error) {
+    console.error('❌ Backend inaccessible:', error.message);
+    if (error.code === 'ERR_NETWORK') {
+      console.error('💡 Vérifiez que votre backend est démarré et accessible');
+    }
+    return false;
+  }
+},
+
+  /**
    * Connexion de l'administrateur
    * @param {string} email - Email de l'administrateur
    * @param {string} password - Mot de passe
@@ -45,10 +63,14 @@ const authService = {
   async login(email, password) {
     try {
       console.log(`Tentative de connexion avec ${email}`);
-      console.log(`Tentative de connexion avec ${password}`);
-      // Créer l'objet de données
-      const loginData = { email, password };
-      console.log('Données envoyées:', loginData);
+      // Ne jamais logger le mot de passe en clair pour des raisons de sécurité
+      // Créer l'objet de données avec la structure attendue par l'API
+      const loginData = { 
+        email, 
+        password,
+        role: 'Admin' // S'assurer que le rôle est explicitement spécifié
+      };
+      console.log('Données envoyées:', { ...loginData, password: '[PROTÉGÉ]' });
       
       // Envoyer la requête
       const response = await api.post('/auth/login', loginData);
@@ -86,7 +108,10 @@ const authService = {
         
         // Message d'erreur personnalisé en fonction du code de statut
         if (error.response.status === 401) {
-          throw { message: `Échec d'authentification: Email ou mot de passe incorrect. Vérifiez vos identifiants.` };
+          throw { 
+            message: `Échec d'authentification: Email ou mot de passe incorrect. Vérifiez vos identifiants.`,
+            details: `Assurez-vous que votre serveur backend attend bien le rôle 'Admin' avec une majuscule.`
+          };
         } else if (error.response.status === 500) {
           throw { message: `Erreur serveur: Veuillez contacter l'administrateur système.` };
         }

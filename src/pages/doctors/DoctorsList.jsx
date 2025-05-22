@@ -42,10 +42,12 @@ const DoctorsList = () => {
     const fetchDoctors = async () => {
       setLoading(true);
       try {
+        console.log('🔄 Chargement des médecins...');
         const doctorsData = await doctorsService.getAllDoctors();
+        console.log('✅ Médecins chargés:', doctorsData);
         setDoctors(doctorsData);
       } catch (err) {
-        console.error('Erreur lors de la récupération des médecins:', err);
+        console.error('❌ Erreur lors de la récupération des médecins:', err);
         setError(err.message || 'Une erreur s\'est produite lors du chargement des médecins');
       } finally {
         setLoading(false);
@@ -59,31 +61,25 @@ const DoctorsList = () => {
   const filteredDoctors = activeTab === 0 
     ? doctors 
     : activeTab === 1 
-      ? doctors.filter(d => d.status === 'verified')
-      : doctors.filter(d => d.status === 'pending');
+      ? doctors.filter(d => d.verified || d.status === 'verified')
+      : doctors.filter(d => !d.verified && d.status !== 'verified');
 
   // Stats calculées
   const stats = {
     total: doctors.length,
-    verified: doctors.filter(d => d.status === 'verified').length,
-    pending: doctors.filter(d => d.status === 'pending').length,
+    verified: doctors.filter(d => d.verified || d.status === 'verified').length,
+    pending: doctors.filter(d => !d.verified && d.status !== 'verified').length,
     totalPatients: doctors.reduce((sum, d) => sum + (d.patients || 0), 0)
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'verified': return 'success';
-      case 'pending': return 'warning';
-      default: return 'default';
-    }
+  const getStatusColor = (doctor) => {
+    const isVerified = doctor.verified || doctor.status === 'verified';
+    return isVerified ? 'success' : 'warning';
   };
 
-  const getStatusLabel = (status) => {
-    switch (status) {
-      case 'verified': return 'Vérifié';
-      case 'pending': return 'En attente';
-      default: return status;
-    }
+  const getStatusLabel = (doctor) => {
+    const isVerified = doctor.verified || doctor.status === 'verified';
+    return isVerified ? 'Vérifié' : 'En attente';
   };
 
   const columns = [
@@ -94,18 +90,15 @@ const DoctorsList = () => {
       renderCell: (value, row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Avatar sx={{ width: 40, height: 40, bgcolor: '#2563eb' }}>
-            {row.firstName && row.lastName 
-              ? `${row.firstName.charAt(0)}${row.lastName.charAt(0)}`
-              : value ? value.split(' ').map(n => n[0]).join('') : 'DR'}
+            {row.initials || 
+             (row.fullName ? row.fullName.split(' ').map(n => n[0]).join('').slice(0, 2) : 'DR')}
           </Avatar>
           <Box>
             <Typography variant="body2" fontWeight={600}>
-              {row.firstName && row.lastName 
-                ? `Dr. ${row.firstName} ${row.lastName}`
-                : value}
+              {row.displayName || `Dr. ${row.fullName || row.name || 'Nom non disponible'}`}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.specialty}
+              {row.specialty || row.specialization || 'Spécialité non définie'}
             </Typography>
           </Box>
         </Box>
@@ -114,23 +107,54 @@ const DoctorsList = () => {
     {
       field: 'email',
       headerName: 'Email',
-      width: 200
+      width: 200,
+      renderCell: (value, row) => (
+        <Typography variant="body2">
+          {row.email || 'Non disponible'}
+        </Typography>
+      )
     },
     {
       field: 'gender',
       headerName: 'Genre',
-      width: 100
+      width: 100,
+      renderCell: (value, row) => (
+        <Typography variant="body2">
+          {row.gender || 'Non spécifié'}
+        </Typography>
+      )
+    },
+    {
+      field: 'experience',
+      headerName: 'Expérience',
+      width: 120,
+      renderCell: (value, row) => (
+        <Typography variant="body2">
+          {row.experience ? `${row.experience} ans` : 'N/A'}
+        </Typography>
+      )
+    },
+    {
+      field: 'price',
+      headerName: 'Prix',
+      width: 100,
+      align: 'right',
+      renderCell: (value, row) => (
+        <Typography variant="body2" fontWeight={600} color="primary">
+          {row.price ? `${row.price}€` : 'N/A'}
+        </Typography>
+      )
     },
     {
       field: 'status',
       headerName: 'Statut',
       width: 120,
-      renderCell: (value) => (
+      renderCell: (value, row) => (
         <Chip 
-          label={getStatusLabel(value)} 
-          color={getStatusColor(value)}
+          label={getStatusLabel(row)} 
+          color={getStatusColor(row)}
           size="small"
-          icon={value === 'verified' ? <VerifiedIcon /> : <PendingIcon />}
+          icon={row.verified || row.status === 'verified' ? <VerifiedIcon /> : <PendingIcon />}
         />
       )
     },
@@ -139,9 +163,9 @@ const DoctorsList = () => {
       headerName: 'Patients',
       width: 100,
       align: 'center',
-      renderCell: (value) => (
+      renderCell: (value, row) => (
         <Typography variant="body2" fontWeight={500}>
-          {value || 0}
+          {row.patients || 0}
         </Typography>
       )
     },
@@ -150,10 +174,10 @@ const DoctorsList = () => {
       headerName: 'Note',
       width: 80,
       align: 'center',
-      renderCell: (value) => (
-        value ? (
+      renderCell: (value, row) => (
+        row.rating ? (
           <Typography variant="body2" fontWeight={500}>
-            ⭐ {value}
+            ⭐ {row.rating}
           </Typography>
         ) : (
           <Typography variant="body2" color="text.secondary">
@@ -169,14 +193,14 @@ const DoctorsList = () => {
       align: 'center',
       renderCell: (value, row) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          {row.status === 'pending' ? (
+          {!(row.verified || row.status === 'verified') ? (
             <Button
               size="small"
               variant="contained"
               color="warning"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/doctors/${row.id}/review`);
+                navigate(`/doctors/${row._id || row.id}/review`);
               }}
             >
               Réviser
@@ -187,7 +211,7 @@ const DoctorsList = () => {
               variant="outlined"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/doctors/${row.id}`);
+                navigate(`/doctors/${row._id || row.id}`);
               }}
             >
               Voir
@@ -213,10 +237,10 @@ const DoctorsList = () => {
   };
 
   const handleRowClick = (doctor) => {
-    if (doctor.status === 'pending') {
-      navigate(`/doctors/${doctor.id}/review`);
+    if (doctor.verified || doctor.status === 'verified') {
+      navigate(`/doctors/${doctor._id || doctor.id}`);
     } else {
-      navigate(`/doctors/${doctor.id}`);
+      navigate(`/doctors/${doctor._id || doctor.id}/review`);
     }
   };
 
@@ -232,12 +256,14 @@ const DoctorsList = () => {
     if (!selectedDoctor) return;
     
     try {
-      const updatedDoctor = { ...selectedDoctor, status: 'verified' };
-      await doctorsService.updateDoctor(selectedDoctor.id, updatedDoctor);
+      const updatedDoctor = { ...selectedDoctor, verified: true, status: 'verified' };
+      await doctorsService.updateDoctor(selectedDoctor._id || selectedDoctor.id, updatedDoctor);
       
       // Mettre à jour la liste locale
       setDoctors(doctors.map(doc => 
-        doc.id === selectedDoctor.id ? {...doc, status: 'verified'} : doc
+        (doc._id || doc.id) === (selectedDoctor._id || selectedDoctor.id) 
+          ? {...doc, verified: true, status: 'verified'} 
+          : doc
       ));
       
       handleMenuClose();
@@ -251,10 +277,10 @@ const DoctorsList = () => {
     if (!selectedDoctor) return;
     
     try {
-      await doctorsService.deleteDoctor(selectedDoctor.id);
+      await doctorsService.deleteDoctor(selectedDoctor._id || selectedDoctor.id);
       
       // Mettre à jour la liste en retirant le médecin supprimé
-      setDoctors(doctors.filter(doc => doc.id !== selectedDoctor.id));
+      setDoctors(doctors.filter(doc => (doc._id || doc.id) !== (selectedDoctor._id || selectedDoctor.id)));
       
       handleMenuClose();
     } catch (err) {
@@ -408,7 +434,8 @@ const DoctorsList = () => {
         columns={columns}
         searchable={true}
         onRowClick={handleRowClick}
-        loading={loading}
+        loading={false}
+        exportable={true}
       />
 
       {/* Actions Menu */}
@@ -420,20 +447,28 @@ const DoctorsList = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => { 
-          navigate(`/doctors/${selectedDoctor?.id}`);
+          navigate(`/doctors/${selectedDoctor?._id || selectedDoctor?.id}`);
           handleMenuClose(); 
         }}>
-          Voir le profil
+          Voir le profil complet
         </MenuItem>
         <MenuItem onClick={() => { 
           console.log('Edit doctor'); 
           handleMenuClose(); 
         }}>
-          Modifier
+          Modifier les informations
         </MenuItem>
-        {selectedDoctor?.status === 'pending' && (
+        {selectedDoctor && !(selectedDoctor.verified || selectedDoctor.status === 'verified') && (
           <MenuItem onClick={() => {
             handleVerifyDoctor();
+          }}>
+            Vérifier
+          </MenuItem>
+        )}
+        {selectedDoctor && !(selectedDoctor.verified || selectedDoctor.status === 'verified') && (
+          <MenuItem onClick={() => { 
+            navigate(`/doctors/${selectedDoctor._id || selectedDoctor.id}/review`);
+            handleMenuClose(); 
           }}>
             Réviser
           </MenuItem>

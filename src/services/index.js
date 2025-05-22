@@ -4,6 +4,7 @@ import doctorsService from './doctorsService';
 import patientsService from './patientsService';
 import appointmentsService from './appointmentsService';
 import paymentsService from './paymentsService';
+import usersService from './usersService';
 
 export {
   api,
@@ -11,5 +12,6 @@ export {
   doctorsService,
   patientsService,
   appointmentsService,
-  paymentsService
+  paymentsService,
+  usersService
 }; 
