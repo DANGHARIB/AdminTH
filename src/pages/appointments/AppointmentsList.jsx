@@ -93,47 +93,25 @@ const AppointmentsList = () => {
 
   const getTypeLabel = (type) => {
     switch (type) {
+      case 'consultation': return 'Consultation';
       case 'urgence': return 'Urgence';
       case 'controle': return 'Contrôle';
-      case 'consultation': return 'Consultation';
-      default: return type || 'Type inconnu';
+      default: return type || 'N/A';
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return 'Date invalide';
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Date invalide';
+    
     try {
-      const dateObj = new Date(date);
-      if (isNaN(dateObj.getTime())) return 'Date invalide';
-      return dateObj.toLocaleDateString('fr-FR', { 
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', { 
         day: '2-digit', 
         month: '2-digit',
-        year: 'numeric'
+        year: '2-digit'
       });
     } catch (error) {
-      console.error('Erreur formatage date:', error);
       return 'Date invalide';
-    }
-  };
-
-  const formatTime = (time) => {
-    if (!time) return 'Heure inconnue';
-    try {
-      // Si c'est déjà formaté (HH:MM)
-      if (typeof time === 'string' && time.includes(':')) {
-        return time;
-      }
-      // Si c'est un objet Date
-      if (time instanceof Date) {
-        return time.toLocaleTimeString('fr-FR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
-      }
-      return time.toString();
-    } catch (error) {
-      console.error('Erreur formatage heure:', error);
-      return 'Heure inconnue';
     }
   };
 
@@ -158,7 +136,7 @@ const AppointmentsList = () => {
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TimeIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-          <Typography variant="body2">{formatTime(value)}</Typography>
+          <Typography variant="body2">{value || 'Heure non définie'}</Typography>
         </Box>
       )
     },
@@ -168,11 +146,11 @@ const AppointmentsList = () => {
       width: 200,
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ width: 24, height: 24, fontSize: '12px', bgcolor: '#3b82f6' }}>
-            {value && value.name ? value.name.charAt(0) : 'P'}
+          <Avatar sx={{ width: 24, height: 24, fontSize: '12px' }}>
+            {value?.name ? value.name.charAt(0) : 'P'}
           </Avatar>
           <Typography variant="body2">
-            {value && value.name ? value.name : 'Patient inconnu'}
+            {value?.name || 'Patient inconnu'}
           </Typography>
         </Box>
       )
@@ -184,10 +162,10 @@ const AppointmentsList = () => {
       renderCell: (value) => (
         <Box>
           <Typography variant="body2" fontWeight={500}>
-            {value && value.name ? value.name : 'Médecin inconnu'}
+            {value?.name || 'Médecin inconnu'}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            {value && value.specialty ? value.specialty : ''}
+            {value?.specialty || ''}
           </Typography>
         </Box>
       )
@@ -221,7 +199,18 @@ const AppointmentsList = () => {
       field: 'duration',
       headerName: 'Durée',
       width: 80,
-      renderCell: (value) => `${value || 30}min`
+      renderCell: (value) => `${value || 0}min`
+    },
+    {
+      field: 'price',
+      headerName: 'Prix',
+      width: 80,
+      align: 'right',
+      renderCell: (value) => (
+        <Typography variant="body2" fontWeight={500}>
+          {value ? `${value}€` : 'Gratuit'}
+        </Typography>
+      )
     },
     {
       field: 'actions',
@@ -267,7 +256,7 @@ const AppointmentsList = () => {
       handleMenuClose();
     } catch (err) {
       console.error('Erreur lors de la suppression du rendez-vous:', err);
-      setError(err.message || 'Une erreur s\'est produite');
+      setError('Erreur lors de la suppression du rendez-vous');
     }
   };
 
@@ -275,20 +264,20 @@ const AppointmentsList = () => {
     if (!selectedAppointment) return;
     
     try {
-      const updatedAppointment = await appointmentsService.updateAppointment(
+      const updatedAppointment = await appointmentsService.changeAppointmentStatus(
         selectedAppointment.id, 
-        { status: newStatus }
+        newStatus
       );
       
       // Mettre à jour la liste locale
       setAppointments(appointments.map(appt => 
-        appt.id === selectedAppointment.id ? { ...appt, status: newStatus } : appt
+        appt.id === selectedAppointment.id ? updatedAppointment : appt
       ));
       
       handleMenuClose();
     } catch (err) {
-      console.error('Erreur lors de la mise à jour du statut:', err);
-      setError(err.message || 'Une erreur s\'est produite');
+      console.error('Erreur lors du changement de statut:', err);
+      setError('Erreur lors du changement de statut');
     }
   };
 
@@ -436,19 +425,43 @@ const AppointmentsList = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={handleMenuClose}>
+        <MenuItem onClick={() => {
+          console.log('Voir détails rendez-vous:', selectedAppointment?.id);
+          handleMenuClose();
+        }}>
           Voir les détails
         </MenuItem>
-        <MenuItem onClick={() => handleChangeStatus('confirmed')}>
-          Confirmer
+        
+        <MenuItem onClick={() => {
+          console.log('Modifier rendez-vous:', selectedAppointment?.id);
+          handleMenuClose();
+        }}>
+          Modifier
         </MenuItem>
-        <MenuItem onClick={() => handleChangeStatus('completed')}>
-          Marquer comme terminé
-        </MenuItem>
-        <MenuItem onClick={() => handleChangeStatus('cancelled')}>
-          Annuler
-        </MenuItem>
-        <MenuItem onClick={handleDeleteAppointment} sx={{ color: 'error.main' }}>
+        
+        {/* Sous-menu pour changer le statut */}
+        {selectedAppointment?.status === 'pending' && (
+          <MenuItem onClick={() => handleChangeStatus('confirmed')}>
+            Confirmer
+          </MenuItem>
+        )}
+        
+        {selectedAppointment?.status === 'confirmed' && (
+          <MenuItem onClick={() => handleChangeStatus('completed')}>
+            Marquer comme terminé
+          </MenuItem>
+        )}
+        
+        {(selectedAppointment?.status === 'pending' || selectedAppointment?.status === 'confirmed') && (
+          <MenuItem onClick={() => handleChangeStatus('cancelled')}>
+            Annuler
+          </MenuItem>
+        )}
+        
+        <MenuItem 
+          onClick={handleDeleteAppointment}
+          sx={{ color: 'error.main' }}
+        >
           Supprimer
         </MenuItem>
       </Menu>
