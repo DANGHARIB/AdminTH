@@ -1,17 +1,8 @@
-import { createContext, useState, useContext, useEffect } from 'react';
+import { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
 
 // Création du contexte
 const AuthContext = createContext(null);
-
-// Hook personnalisé pour utiliser le contexte
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth doit être utilisé à l\'intérieur d\'un AuthProvider');
-  }
-  return context;
-};
 
 // Provider du contexte
 export const AuthProvider = ({ children }) => {
@@ -21,10 +12,20 @@ export const AuthProvider = ({ children }) => {
 
   // Initialiser l'état d'authentification au chargement
   useEffect(() => {
-    const initAuth = () => {
+    const initAuth = async () => {
+      setLoading(true);
       try {
+        // Récupérer l'utilisateur depuis le stockage local
         const currentUser = authService.getCurrentUser();
-        setUser(currentUser);
+        
+        // Vérifier si l'utilisateur est un administrateur
+        if (currentUser && currentUser.role !== 'Admin') {
+          console.error('Utilisateur connecté n\'est pas un administrateur');
+          authService.logout(); // Déconnecter l'utilisateur non-Admin
+          setUser(null);
+        } else {
+          setUser(currentUser);
+        }
       } catch (err) {
         console.error('Erreur lors de l\'initialisation de l\'authentification:', err);
         setError(err);
@@ -43,9 +44,16 @@ export const AuthProvider = ({ children }) => {
     
     try {
       const userData = await authService.login(email, password);
+      
+      // Vérifier si l'utilisateur est un administrateur
+      if (userData.role !== 'Admin') {
+        throw new Error('Accès non autorisé. Seuls les administrateurs peuvent accéder à cette application.');
+      }
+      
       setUser(userData);
       return userData;
     } catch (err) {
+      console.error('Erreur de connexion dans AuthContext:', err);
       setError(err);
       throw err;
     } finally {

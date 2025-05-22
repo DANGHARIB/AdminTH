@@ -1,0 +1,414 @@
+/* PatientDetails.css */
+.patient-details-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .details-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .patient-name {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .patient-tabs {
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .patient-tabs .MuiTab-root {
+    text-transform: none;
+    font-weight: 500;
+    border-radius: 8px;
+    min-height: 48px;
+    transition: all 0.2s ease;
+  }
+  
+  .patient-tabs .MuiTab-root.Mui-selected {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  .patient-tabs .MuiTabs-indicator {
+    display: none;
+  }
+  
+  /* Info Cards */
+  .info-card,
+  .medical-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    height: fit-content;
+  }
+  
+  .info-card:hover,
+  .medical-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .info-card .MuiCardHeader-root,
+  .medical-card .MuiCardHeader-root {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .info-card .MuiCardHeader-title,
+  .medical-card .MuiCardHeader-title {
+    font-weight: 600;
+    color: #374151;
+    font-size: 16px;
+  }
+  
+  .info-card .MuiCardHeader-avatar .MuiSvgIcon-root,
+  .medical-card .MuiCardHeader-avatar .MuiSvgIcon-root {
+    color: #10b981;
+    font-size: 20px;
+  }
+  
+  /* Finance Cards */
+  .finance-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .finance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  
+  .finance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .finance-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .finance-number {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+  
+  .finance-icon {
+    font-size: 28px !important;
+    color: #64748b;
+    opacity: 0.6;
+  }
+  
+  /* Medical History Styling */
+  .medical-card .MuiListItem-root {
+    border-bottom: 1px solid #f3f4f6;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+  }
+  
+  .medical-card .MuiListItem-root:hover {
+    background-color: #f0fdf4;
+    transform: translateX(4px);
+  }
+  
+  .medical-card .MuiListItem-root:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  
+  /* List items with icons */
+  .patient-details-page .MuiListItem-root {
+    border-bottom: 1px solid #f3f4f6;
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .patient-details-page .MuiListItem-root:last-child {
+    border-bottom: none;
+  }
+  
+  .patient-details-page .MuiListItemText-primary {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+  
+  .patient-details-page .MuiListItemText-secondary {
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    margin-top: 4px !important;
+  }
+  
+  /* Progress bars */
+  .patient-details-page .MuiLinearProgress-root {
+    background-color: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .patient-details-page .MuiLinearProgress-bar {
+    background: linear-gradient(90deg, #10b981, #34d399);
+    border-radius: 3px;
+  }
+  
+  /* Buttons */
+  .patient-details-page .MuiButton-root {
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 500;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+  }
+  
+  .patient-details-page .MuiButton-contained {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
+  
+  .patient-details-page .MuiButton-contained:hover {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .patient-details-page .MuiButton-outlined {
+    border: 2px solid #e2e8f0;
+    color: #374151;
+  }
+  
+  .patient-details-page .MuiButton-outlined:hover {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+    color: #10b981;
+    transform: translateY(-1px);
+  }
+  
+  .patient-details-page .MuiButton-outlined[color="warning"] {
+    border-color: #f59e0b;
+    color: #f59e0b;
+  }
+  
+  .patient-details-page .MuiButton-outlined[color="warning"]:hover {
+    background-color: #fef3c7;
+    border-color: #d97706;
+    color: #d97706;
+  }
+  
+  .patient-details-page .MuiButton-outlined[color="error"] {
+    border-color: #ef4444;
+    color: #ef4444;
+  }
+  
+  .patient-details-page .MuiButton-outlined[color="error"]:hover {
+    background-color: #fee2e2;
+    border-color: #dc2626;
+    color: #dc2626;
+  }
+  
+  /* Chips - Allergies */
+  .patient-details-page .MuiChip-root {
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 11px;
+    margin: 2px;
+  }
+  
+  .patient-details-page .MuiChip-colorWarning {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  /* Avatar enhancements */
+  .patient-details-page .MuiAvatar-root {
+    font-weight: 600;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    font-size: 24px;
+  }
+  
+  /* Data table integration */
+  .patient-details-page .data-table-container {
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+  
+  .patient-details-page .data-table-header {
+    display: none;
+  }
+  
+  /* Special Medical History Styling */
+  .medical-card .MuiTypography-subtitle2 {
+    color: #059669;
+    font-weight: 600;
+  }
+  
+  .medical-card .MuiTypography-body2 {
+    line-height: 1.5;
+    margin-bottom: 4px;
+  }
+  
+  .medical-card .MuiTypography-body2 strong {
+    color: #374151;
+    font-weight: 600;
+  }
+  
+  /* Icons in lists */
+  .patient-details-page .MuiSvgIcon-root {
+    color: #10b981;
+    font-size: 20px;
+  }
+  
+  /* Tab panel animations */
+  .patient-details-page [role="tabpanel"] {
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .patient-details-page {
+      padding: 16px;
+    }
+    
+    .details-header {
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .details-header > div:first-child {
+      align-items: center;
+    }
+    
+    .patient-tabs .MuiTab-root {
+      min-width: auto;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    
+    .finance-number {
+      font-size: 1.25rem;
+    }
+    
+    .finance-icon {
+      font-size: 24px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .patient-name {
+      font-size: 1.5rem;
+      flex-direction: column;
+      gap: 8px;
+      text-align: center;
+    }
+    
+    .finance-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 8px;
+    }
+    
+    .finance-number {
+      font-size: 1.125rem;
+    }
+    
+    .finance-icon {
+      font-size: 20px !important;
+    }
+    
+    .patient-details-page .MuiAvatar-root {
+      width: 48px;
+      height: 48px;
+      font-size: 18px;
+    }
+  }
+  
+  /* Loading and transitions */
+  .patient-details-page * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Scrollbar styling */
+  .patient-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .patient-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .patient-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+  
+  .patient-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  
+  /* Currency formatting */
+  .patient-details-page [data-currency] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  
+  /* Special status colors for patient status */
+  .patient-details-page .MuiChip-colorSuccess {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .patient-details-page .MuiChip-colorError {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .patient-details-page .MuiChip-colorWarning {
+    background-color: #fef3c7;
+    color: #92400e;
+  }

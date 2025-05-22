@@ -1,8 +1,164 @@
+/* App.css - Styles globaux pour l'application admin */
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Styles pour les thèmes de couleur */
+:root {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+  --background-color: #f8fafc;
+  --card-bg: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+}
+
+/* Styles pour les animations */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Styles pour les pages principales */
+.page-wrapper {
+  padding: 24px;
+  width: 100%;
+}
+
+/* Styles spécifiques pour les cartes de stats */
+.stats-container {
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
+}
+
+/* Styles spécifiques pour les cartes d'information */
+.info-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  height: 100%;
+  margin-bottom: 24px;
+}
+
+/* Styles pour les boutons MUI */
+.MuiButton-contained {
+  text-transform: none !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiButton-contained:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12) !important;
+  transform: translateY(-1px);
+}
+
+/* Styles pour les tableaux */
+.MuiTableRow-root {
+  transition: background-color 0.2s ease;
+}
+
+.MuiTableRow-root:hover {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Styles pour les tabs */
+.MuiTab-root {
+  text-transform: none !important;
+  min-width: 120px !important;
+  font-weight: 500 !important;
+}
+
+/* Media queries pour les appareils mobiles */
+@media (max-width: 960px) {
+  .page-wrapper {
+    padding: 16px;
+  }
+  
+  .stats-container {
+    margin-bottom: 16px;
+  }
+}
+
+/* Styles pour les transitions */
+.transition-all {
+  transition: all 0.2s ease;
+}
+
+/* Styles pour les ombres */
+.shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Styles pour les conteneurs */
+.container {
+  width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Styles pour les espaces */
+.p-4 {
+  padding: 1rem;
+}
+
+.m-4 {
+  margin: 1rem;
+}
+
+/* Styles pour les cartes MUI */
+.MuiCard-root {
+  border-radius: 12px !important;
+  overflow: hidden;
 }
 
 .logo {

@@ -1,0 +1,366 @@
+/* PatientsList.css */
+.patients-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .page-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    letter-spacing: -0.025em;
+  }
+  
+  .add-button {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+  }
+  
+  .add-button:hover {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  /* Statistics Cards */
+  .stat-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+  }
+  
+  .stat-card.active::before {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  
+  .stat-card.consultations::before {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+  
+  .stat-card.revenue::before {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .stat-number {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-size: 2rem;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-icon {
+    font-size: 32px !important;
+    color: #64748b;
+    opacity: 0.6;
+  }
+  
+  /* Filter Tabs */
+  .filter-tabs {
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .filter-tabs .MuiTab-root {
+    text-transform: none;
+    font-weight: 500;
+    border-radius: 8px;
+    min-height: 48px;
+    transition: all 0.2s ease;
+  }
+  
+  .filter-tabs .MuiTab-root.Mui-selected {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  .filter-tabs .MuiTabs-indicator {
+    display: none;
+  }
+  
+  /* Patient Avatar Styling */
+  .patients-page .MuiAvatar-root {
+    font-weight: 600;
+    font-size: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+  
+  /* Status Chip Customization */
+  .patients-page .MuiChip-root {
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  
+  .patients-page .MuiChip-colorSuccess {
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+  
+  .patients-page .MuiChip-colorError {
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+  
+  .patients-page .MuiChip-colorWarning {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+  
+  /* Data Table Customization */
+  .patients-page .data-table-container {
+    margin-top: 0;
+  }
+  
+  .patients-page .table-row:hover {
+    background-color: #f8fafc;
+    cursor: pointer;
+  }
+  
+  .patients-page .table-row:hover .MuiAvatar-root {
+    transform: scale(1.05);
+  }
+  
+  /* Action buttons styling */
+  .patients-page .MuiButton-root {
+    border-radius: 6px;
+    text-transform: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .patients-page .MuiButton-outlined {
+    border: 1px solid #e2e8f0;
+    color: #374151;
+  }
+  
+  .patients-page .MuiButton-outlined:hover {
+    border-color: #10b981;
+    background-color: #ecfdf5;
+    color: #10b981;
+    transform: translateY(-1px);
+  }
+  
+  .patients-page .MuiIconButton-root {
+    transition: all 0.2s ease;
+  }
+  
+  .patients-page .MuiIconButton-root:hover {
+    background-color: #f1f5f9;
+    transform: scale(1.1);
+  }
+  
+  /* Gender icons styling */
+  .patients-page tbody tr td:first-child .MuiAvatar-root {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  
+  /* Contact information styling */
+  .patients-page .MuiTypography-caption {
+    display: block;
+    margin-top: 2px;
+    color: #6b7280;
+  }
+  
+  /* Currency formatting */
+  .patients-page [data-currency] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  
+  /* Growth indicators */
+  .patients-page .stat-content .MuiBox-root:last-child {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  
+  .patients-page .stat-content .MuiTypography-caption {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  /* Menu styling */
+  .patients-page .MuiMenu-paper {
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 200px;
+  }
+  
+  .patients-page .MuiMenuItem-root {
+    font-size: 14px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin: 2px 8px;
+    transition: all 0.15s ease;
+  }
+  
+  .patients-page .MuiMenuItem-root:hover {
+    background-color: #f0fdf4;
+    color: #15803d;
+  }
+  
+  /* Last consultation styling */
+  .patients-page .table-cell:nth-of-type(5) {
+    font-size: 13px;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .patients-page {
+      padding: 16px;
+    }
+    
+    .page-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+    
+    .add-button {
+      align-self: flex-start;
+    }
+    
+    .stat-number {
+      font-size: 1.5rem;
+    }
+    
+    .filter-tabs .MuiTab-root {
+      font-size: 12px;
+      min-width: auto;
+      padding: 8px 12px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stat-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 8px;
+    }
+    
+    .stat-icon {
+      font-size: 24px !important;
+    }
+    
+    .stat-number {
+      font-size: 1.25rem;
+    }
+    
+    .patients-page .MuiAvatar-root {
+      width: 32px;
+      height: 32px;
+      font-size: 14px;
+    }
+  }
+  
+  /* Loading states */
+  .patients-page .stat-card.loading {
+    position: relative;
+  }
+  
+  .patients-page .stat-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Hover animations */
+  .patients-page .stat-card:hover .stat-icon {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  
+  /* Special styling for pending patients */
+  .patients-page .table-row[data-status="pending"] {
+    background-color: #fefce8;
+    border-left: 3px solid #eab308;
+  }
+  
+  .patients-page .table-row[data-status="inactive"] {
+    background-color: #fef2f2;
+    border-left: 3px solid #ef4444;
+  }
+  
+  .patients-page .table-row[data-status="active"] {
+    background-color: #f0fdf4;
+    border-left: 3px solid #22c55e;
+  }
+  
+  /* Smooth transitions */
+  .patients-page * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Scrollbar styling */
+  .patients-page .data-table-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .patients-page .data-table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .patients-page .data-table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  .patients-page .data-table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }

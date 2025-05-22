@@ -1,27 +1,26 @@
-import axios from 'axios';
+import api from './api';
 
-// URL de base de l'API (à configurer dans .env)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// Préfixe pour le stockage local (à configurer dans .env)
+const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX || 'admin_app_';
 
-// Stockage du token dans le localStorage
-const TOKEN_KEY = 'admin_auth_token';
-const USER_KEY = 'admin_user';
+// Clés de stockage
+const TOKEN_KEY = `${STORAGE_PREFIX}token`;
+const USER_KEY = `${STORAGE_PREFIX}user`;
 
 /**
  * Service d'authentification pour l'application admin
  */
 const authService = {
   /**
-   * Connexion de l'administrateur
-   * @param {string} email - Email de l'administrateur
-   * @param {string} password - Mot de passe
+   * Création d'un compte administrateur
+   * @param {Object} userData - Données de l'utilisateur
    * @returns {Promise} - Promesse avec les données utilisateur
    */
-  async login(email, password) {
+  async register(userData) {
     try {
-      const response = await axios.post(`${API_URL}/auth/admin/login`, {
-        email,
-        password
+      const response = await api.post('/auth/register', {
+        ...userData,
+        role: "Admin" // Assure que le rôle est bien Admin avec majuscule
       });
       
       const { token, user } = response.data;
@@ -30,12 +29,74 @@ const authService = {
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       
-      // Configurer axios pour les futures requêtes
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
       return user;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur de connexion' };
+      console.error("Erreur d'inscription:", error);
+      throw error.response?.data || { message: 'Erreur lors de l\'inscription' };
+    }
+  },
+
+  /**
+   * Connexion de l'administrateur
+   * @param {string} email - Email de l'administrateur
+   * @param {string} password - Mot de passe
+   * @returns {Promise} - Promesse avec les données utilisateur
+   */
+  async login(email, password) {
+    try {
+      console.log(`Tentative de connexion avec ${email}`);
+      console.log(`Tentative de connexion avec ${password}`);
+      // Créer l'objet de données
+      const loginData = { email, password };
+      console.log('Données envoyées:', loginData);
+      
+      // Envoyer la requête
+      const response = await api.post('/auth/login', loginData);
+      
+      console.log('Réponse de connexion:', response.status, response.statusText);
+      console.log('Données de réponse:', response.data);
+      
+      // Extraire les données
+      const { token, ...userData } = response.data;
+      
+      // Pour la compatibilité avec différents formats de réponse API
+      const user = userData.user || userData;
+      
+      console.log('Utilisateur extrait:', user);
+      console.log('Rôle de l\'utilisateur:', user.role);
+      
+      // Vérifier si l'utilisateur est un administrateur
+      if (user.role && user.role !== 'Admin') {
+        console.warn(`Rôle non autorisé: ${user.role}`);
+        throw { message: 'Accès non autorisé. Seuls les administrateurs peuvent accéder à cette application.' };
+      }
+      
+      // Stocker le token et les infos utilisateur
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      
+      console.log('Authentification réussie');
+      return user;
+    } catch (error) {
+      console.error("Erreur de connexion:", error);
+      
+      // Afficher autant d'informations que possible pour le débogage
+      if (error.response) {
+        console.error("Détails de l'erreur:", error.response.status, error.response.data);
+        
+        // Message d'erreur personnalisé en fonction du code de statut
+        if (error.response.status === 401) {
+          throw { message: `Échec d'authentification: Email ou mot de passe incorrect. Vérifiez vos identifiants.` };
+        } else if (error.response.status === 500) {
+          throw { message: `Erreur serveur: Veuillez contacter l'administrateur système.` };
+        }
+      }
+      
+      // Message d'erreur général
+      throw { 
+        message: error.response?.data?.message || error.message || 'Erreur de connexion: Identifiants incorrects ou serveur indisponible',
+        details: error.toString()
+      };
     }
   },
   
@@ -45,7 +106,6 @@ const authService = {
   logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
-    delete axios.defaults.headers.common['Authorization'];
   },
   
   /**
@@ -80,17 +140,17 @@ const authService = {
   },
   
   /**
-   * Initialiser les en-têtes d'authentification
+   * Récupérer le profil de l'utilisateur connecté depuis l'API
+   * @returns {Promise} - Promesse avec les données du profil
    */
-  initAuthHeaders() {
-    const token = this.getToken();
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  async getProfile() {
+    try {
+      const response = await api.get('/auth/profile');
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Erreur lors de la récupération du profil' };
     }
   }
 };
-
-// Initialiser les en-têtes au chargement du service
-authService.initAuthHeaders();
 
 export default authService;

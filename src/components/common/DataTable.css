@@ -1,0 +1,211 @@
+/* DataTable.css */
+.data-table-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .data-table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: white;
+  }
+  
+  .table-title {
+    font-weight: 600;
+    color: #111827;
+    font-size: 18px;
+    letter-spacing: -0.025em;
+  }
+  
+  .table-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .search-field {
+    min-width: 280px;
+  }
+  
+  .search-field .MuiOutlinedInput-root {
+    border-radius: 8px;
+    font-size: 14px;
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .search-field .MuiOutlinedInput-root:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .search-field .MuiOutlinedInput-root.Mui-focused {
+    background-color: white;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+  
+  .action-button {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    color: #64748b;
+    transition: all 0.2s ease;
+  }
+  
+  .action-button:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #475569;
+  }
+  
+  .table-container {
+    background: white;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  
+  .table-head-cell {
+    background-color: #f8fafc !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    letter-spacing: 0.025em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 16px !important;
+    white-space: nowrap;
+  }
+  
+  .table-row {
+    transition: all 0.15s ease;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .table-row.clickable {
+    cursor: pointer;
+  }
+  
+  .table-row:hover {
+    background-color: #f8fafc;
+  }
+  
+  .table-row.Mui-selected {
+    background-color: #eff6ff;
+  }
+  
+  .table-row.Mui-selected:hover {
+    background-color: #dbeafe;
+  }
+  
+  .table-cell {
+    padding: 16px !important;
+    font-size: 14px !important;
+    color: #374151 !important;
+    border-bottom: 1px solid #f3f4f6 !important;
+  }
+  
+  .empty-row {
+    text-align: center;
+    padding: 48px 16px !important;
+  }
+  
+  .table-pagination {
+    border-top: 1px solid #e5e7eb;
+    background-color: #fafafa;
+  }
+  
+  .table-pagination .MuiTablePagination-toolbar {
+    padding: 12px 24px;
+  }
+  
+  .table-pagination .MuiTablePagination-selectLabel,
+  .table-pagination .MuiTablePagination-displayedRows {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .table-pagination .MuiTablePagination-select {
+    font-size: 14px;
+    color: #374151;
+  }
+  
+  .table-pagination .MuiTablePagination-actions {
+    margin-left: 20px;
+  }
+  
+  .table-pagination .MuiIconButton-root {
+    padding: 8px;
+    color: #6b7280;
+  }
+  
+  .table-pagination .MuiIconButton-root:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+  
+  .table-pagination .MuiIconButton-root.Mui-disabled {
+    color: #d1d5db;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .data-table-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+    
+    .table-actions {
+      justify-content: space-between;
+    }
+    
+    .search-field {
+      min-width: auto;
+      flex: 1;
+    }
+    
+    .table-cell,
+    .table-head-cell {
+      padding: 12px 8px !important;
+      font-size: 13px !important;
+    }
+    
+    .table-pagination .MuiTablePagination-toolbar {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 16px;
+    }
+  }
+  
+  /* Loading state */
+  .table-container.loading {
+    position: relative;
+    min-height: 200px;
+  }
+  
+  .table-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Smooth animations */
+  .table-row,
+  .action-button,
+  .search-field .MuiOutlinedInput-root {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }

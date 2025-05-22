@@ -1,0 +1,160 @@
+/* AppointmentsList.css */
+.appointments-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .page-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    letter-spacing: -0.025em;
+  }
+  
+  .add-button {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
+  }
+  
+  .add-button:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  /* Statistics Cards */
+  .stat-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+  }
+  
+  .stat-card.confirmed::before {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  
+  .stat-card.pending::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+  
+  .stat-card.completed::before {
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .stat-number {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-size: 2rem;
+  }
+  
+  .stat-icon {
+    font-size: 32px !important;
+    color: #64748b;
+    opacity: 0.6;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .appointments-page {
+      padding: 16px;
+    }
+    
+    .page-header {
+      flex-direction: column;
+      gap: 16px;
+      align-items: stretch;
+    }
+    
+    .add-button {
+      align-self: flex-start;
+    }
+    
+    .stat-number {
+      font-size: 1.5rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stat-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 8px;
+    }
+    
+    .stat-icon {
+      font-size: 24px !important;
+    }
+  }
+  
+  /* Custom table styling for appointments */
+  .appointments-page .data-table-container {
+    margin-top: 0;
+  }
+  
+  .appointments-page .table-row:hover {
+    background-color: #f8fafc;
+    cursor: pointer;
+  }
+  
+  /* Status chip customization */
+  .appointments-page .MuiChip-root {
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  
+  /* Avatar styling */
+  .appointments-page .MuiAvatar-root {
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+    font-weight: 600;
+  }
+  
+  /* Action button styling */
+  .appointments-page .MuiIconButton-root {
+    transition: all 0.2s ease;
+  }
+  
+  .appointments-page .MuiIconButton-root:hover {
+    background-color: #f1f5f9;
+    transform: scale(1.1);
+  }

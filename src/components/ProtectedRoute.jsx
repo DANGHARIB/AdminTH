@@ -1,25 +1,34 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
+import { CircularProgress, Box } from '@mui/material';
 
 /**
- * Composant qui protège les routes nécessitant une authentification
+ * Composant qui protège les routes nécessitant une authentification admin
  */
 const ProtectedRoute = () => {
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
   // Afficher un indicateur de chargement pendant la vérification
   if (loading) {
-    return <div>Chargement...</div>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
-  // Rediriger vers la page de connexion si non authentifié
+  // Rediriger vers la page de connexion si non authentifié ou non admin
   if (!isAuthenticated) {
-    // Sauvegarder l'URL actuelle pour rediriger après connexion
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Rendre les routes enfants si authentifié
+  // Vérifier le rôle Admin (double sécurité)
+  if (!user?.role || user.role !== 'Admin') {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Accès autorisé
   return <Outlet />;
 };
 

@@ -1,0 +1,256 @@
+/* DoctorReview.css */
+.doctor-review-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .review-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .doctor-name {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+  }
+  
+  .info-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    height: fit-content;
+  }
+  
+  .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .info-card .MuiCardHeader-root {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .info-card .MuiCardHeader-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #374151;
+  }
+  
+  .info-card .MuiCardHeader-avatar {
+    margin-right: 12px;
+  }
+  
+  .info-card .MuiCardHeader-avatar .MuiSvgIcon-root {
+    color: #2563eb;
+    font-size: 20px;
+  }
+  
+  .info-card .MuiCardContent-root {
+    padding: 24px;
+  }
+  
+  .action-buttons {
+    position: sticky;
+    bottom: 0;
+    background: white;
+    border-top: 1px solid #e2e8f0;
+    padding: 24px 32px;
+    margin: 32px -32px -32px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    border-radius: 0 0 16px 16px;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  }
+  
+  .approve-button {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transition: all 0.2s ease;
+    min-width: 180px;
+  }
+  
+  .approve-button:hover {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .reject-button {
+    background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-weight: 600;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    transition: all 0.2s ease;
+    min-width: 180px;
+  }
+  
+  .reject-button:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .action-buttons .MuiButton-outlined {
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 32px;
+    font-weight: 600;
+    text-transform: none;
+    color: #374151;
+    transition: all 0.2s ease;
+    min-width: 180px;
+  }
+  
+  .action-buttons .MuiButton-outlined:hover {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+    transform: translateY(-1px);
+  }
+  
+  /* Custom styling for chips */
+  .info-card .MuiChip-root {
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 11px;
+  }
+  
+  /* List items spacing */
+  .info-card .MuiListItem-root {
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .info-card .MuiListItem-root:last-child {
+    border-bottom: none;
+  }
+  
+  /* Typography enhancements */
+  .info-card .MuiListItemText-primary {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+  
+  .info-card .MuiListItemText-secondary {
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    margin-top: 2px !important;
+  }
+  
+  /* Dialog customization */
+  .MuiDialog-paper {
+    border-radius: 12px !important;
+  }
+  
+  .MuiDialogTitle-root {
+    font-weight: 600 !important;
+    color: #111827 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  
+  .MuiDialogActions-root {
+    padding: 16px 24px !important;
+    gap: 12px !important;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .doctor-review-page {
+      padding: 16px;
+    }
+    
+    .review-header {
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .review-header > div:first-child {
+      align-items: center;
+    }
+    
+    .action-buttons {
+      flex-direction: column;
+      padding: 16px;
+      margin: 24px -16px -16px;
+      gap: 12px;
+    }
+    
+    .action-buttons .MuiButton-root {
+      min-width: auto;
+      width: 100%;
+    }
+    
+    .info-card .MuiCardContent-root {
+      padding: 16px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .doctor-name {
+      font-size: 1.5rem;
+    }
+    
+    .info-card .MuiCardHeader-root {
+      padding: 12px 16px;
+    }
+    
+    .info-card .MuiCardHeader-title {
+      font-size: 14px;
+    }
+  }
+  
+  /* Loading and transitions */
+  .info-card,
+  .action-buttons .MuiButton-root {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Avatar enhancement */
+  .review-header .MuiAvatar-root {
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+  
+  /* Scrollbar for long content */
+  .info-card .MuiCardContent-root {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .info-card .MuiCardContent-root::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .info-card .MuiCardContent-root::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .info-card .MuiCardContent-root::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+  
+  .info-card .MuiCardContent-root::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }

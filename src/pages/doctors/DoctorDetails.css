@@ -1,0 +1,297 @@
+/* DoctorDetails.css */
+.doctor-details-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .details-header {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .doctor-name {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+  }
+  
+  .doctor-tabs {
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .doctor-tabs .MuiTab-root {
+    text-transform: none;
+    font-weight: 500;
+    border-radius: 8px;
+    min-height: 48px;
+    transition: all 0.2s ease;
+  }
+  
+  .doctor-tabs .MuiTab-root.Mui-selected {
+    background-color: #2563eb;
+    color: white;
+  }
+  
+  .doctor-tabs .MuiTabs-indicator {
+    display: none;
+  }
+  
+  /* Finance Cards */
+  .finance-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .finance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+  }
+  
+  .finance-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .finance-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .finance-number {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.2;
+  }
+  
+  .finance-icon {
+    font-size: 28px !important;
+    color: #64748b;
+    opacity: 0.6;
+  }
+  
+  /* Tab panels */
+  .doctor-details-page [role="tabpanel"] {
+    background: transparent;
+  }
+  
+  /* Paper styling */
+  .doctor-details-page .MuiPaper-root {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+  }
+  
+  .doctor-details-page .MuiPaper-root:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* List items */
+  .doctor-details-page .MuiListItem-root {
+    border-bottom: 1px solid #f3f4f6;
+  }
+  
+  .doctor-details-page .MuiListItem-root:last-child {
+    border-bottom: none;
+  }
+  
+  .doctor-details-page .MuiListItemText-primary {
+    font-weight: 600 !important;
+    color: #374151 !important;
+    font-size: 14px !important;
+  }
+  
+  .doctor-details-page .MuiListItemText-secondary {
+    font-size: 14px !important;
+    color: #6b7280 !important;
+    margin-top: 2px !important;
+  }
+  
+  /* Progress bars */
+  .doctor-details-page .MuiLinearProgress-root {
+    background-color: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  .doctor-details-page .MuiLinearProgress-bar {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 3px;
+  }
+  
+  /* Buttons */
+  .doctor-details-page .MuiButton-root {
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 500;
+    padding: 10px 20px;
+    transition: all 0.2s ease;
+  }
+  
+  .doctor-details-page .MuiButton-contained {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+  
+  .doctor-details-page .MuiButton-contained:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+  }
+  
+  .doctor-details-page .MuiButton-outlined {
+    border: 2px solid #e2e8f0;
+    color: #374151;
+  }
+  
+  .doctor-details-page .MuiButton-outlined:hover {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+    transform: translateY(-1px);
+  }
+  
+  /* Chips */
+  .doctor-details-page .MuiChip-root {
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  
+  /* Avatar enhancements */
+  .doctor-details-page .MuiAvatar-root {
+    font-weight: 600;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+  }
+  
+  /* Data table integration */
+  .doctor-details-page .data-table-container {
+    border-radius: 0;
+    box-shadow: none;
+    border: none;
+  }
+  
+  .doctor-details-page .data-table-header {
+    display: none;
+  }
+  
+  /* Typography enhancements */
+  .doctor-details-page h6 {
+    font-weight: 600;
+    color: #374151;
+    font-size: 16px;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .doctor-details-page {
+      padding: 16px;
+    }
+    
+    .details-header {
+      flex-direction: column;
+      gap: 24px;
+      padding: 24px;
+      text-align: center;
+    }
+    
+    .details-header > div:first-child {
+      align-items: center;
+    }
+    
+    .doctor-tabs .MuiTab-root {
+      min-width: auto;
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+    
+    .finance-number {
+      font-size: 1.25rem;
+    }
+    
+    .finance-icon {
+      font-size: 24px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .doctor-name {
+      font-size: 1.5rem;
+    }
+    
+    .finance-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 8px;
+    }
+    
+    .finance-number {
+      font-size: 1.125rem;
+    }
+    
+    .finance-icon {
+      font-size: 20px !important;
+    }
+  }
+  
+  /* Loading and transitions */
+  .doctor-details-page * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  
+  /* Tab panel animations */
+  .doctor-details-page [role="tabpanel"] {
+    animation: fadeInUp 0.3s ease-out;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Scrollbar styling */
+  .doctor-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .doctor-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .doctor-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+  
+  .doctor-details-page .MuiCard-root .MuiCardContent-root::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }

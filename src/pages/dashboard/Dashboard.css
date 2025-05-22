@@ -1,0 +1,355 @@
+/* Dashboard.css */
+.dashboard-page {
+    padding: 32px;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+  
+  .page-header {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  
+  .page-title {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    letter-spacing: -0.025em;
+  }
+  
+  /* Statistics Cards */
+  .stat-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6b7280, #9ca3af);
+    transition: height 0.3s ease;
+  }
+  
+  .stat-card.doctors::before {
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+  }
+  
+  .stat-card.patients::before {
+    background: linear-gradient(90deg, #10b981, #34d399);
+  }
+  
+  .stat-card.appointments::before {
+    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+  }
+  
+  .stat-card.revenue::before {
+    background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  }
+  
+  .stat-card:hover::before {
+    height: 6px;
+  }
+  
+  .stat-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+  
+  .stat-number {
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+    font-size: 2rem;
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  .stat-icon {
+    font-size: 36px !important;
+    color: #64748b;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+  }
+  
+  .stat-card:hover .stat-icon {
+    opacity: 0.8;
+    transform: scale(1.1);
+  }
+  
+  /* Info Cards */
+  .alerts-card,
+  .activity-card,
+  .performers-card {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+    height: fit-content;
+  }
+  
+  .alerts-card:hover,
+  .activity-card:hover,
+  .performers-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .alerts-card .MuiCardContent-root,
+  .activity-card .MuiCardContent-root,
+  .performers-card .MuiCardContent-root {
+    padding: 24px !important;
+  }
+  
+  .alerts-card h6,
+  .activity-card h6,
+  .performers-card h6 {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* List Items */
+  .dashboard-page .MuiListItem-root {
+    padding: 12px 0;
+    transition: all 0.15s ease;
+  }
+  
+  .dashboard-page .MuiListItem-root:hover {
+    background-color: #f8fafc;
+    border-radius: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .dashboard-page .MuiListItemText-primary {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #374151 !important;
+    line-height: 1.4 !important;
+  }
+  
+  .dashboard-page .MuiListItemText-secondary {
+    font-size: 12px !important;
+    color: #6b7280 !important;
+    margin-top: 4px !important;
+  }
+  
+  /* Avatars */
+  .dashboard-page .MuiAvatar-root {
+    font-weight: 600;
+    font-size: 12px;
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Chips */
+  .dashboard-page .MuiChip-root {
+    font-weight: 500;
+    border-radius: 6px;
+    font-size: 11px;
+    height: 24px;
+  }
+  
+  /* Buttons */
+  .dashboard-page .MuiButton-root {
+    border-radius: 8px;
+    text-transform: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .dashboard-page .MuiButton-outlined {
+    border: 2px solid #e2e8f0;
+    color: #374151;
+  }
+  
+  .dashboard-page .MuiButton-outlined:hover {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+    color: #2563eb;
+    transform: translateY(-1px);
+  }
+  
+  .dashboard-page .MuiButton-root[size="small"] {
+    font-size: 12px;
+    padding: 2px 8px;
+    color: #2563eb;
+    background: none;
+    border: none;
+    text-decoration: none;
+  }
+  
+  .dashboard-page .MuiButton-root[size="small"]:hover {
+    background-color: #eff6ff;
+    text-decoration: underline;
+  }
+  
+  /* Growth indicators */
+  .dashboard-page .stat-content .MuiBox-root:last-child {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 4px;
+  }
+  
+  .dashboard-page .stat-content .MuiTypography-caption {
+    font-weight: 600;
+    font-size: 12px;
+  }
+  
+  /* Top performers special styling */
+  .performers-card .MuiListItem-root {
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .performers-card .MuiListItem-root:hover {
+    background-color: #f1f5f9;
+    transform: translateX(4px);
+  }
+  
+  /* Alert colors */
+  .alerts-card .MuiAvatar-root {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .dashboard-page {
+      padding: 16px;
+    }
+    
+    .stat-number {
+      font-size: 1.5rem;
+    }
+    
+    .stat-icon {
+      font-size: 28px !important;
+    }
+    
+    .alerts-card .MuiCardContent-root,
+    .activity-card .MuiCardContent-root,
+    .performers-card .MuiCardContent-root {
+      padding: 16px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .stat-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 8px;
+    }
+    
+    .stat-icon {
+      font-size: 24px !important;
+    }
+    
+    .stat-number {
+      font-size: 1.25rem;
+    }
+    
+    .dashboard-page .MuiListItemText-primary {
+      font-size: 13px !important;
+    }
+    
+    .dashboard-page .MuiListItemText-secondary {
+      font-size: 11px !important;
+    }
+  }
+  
+  /* Loading states */
+  .stat-card.loading {
+    position: relative;
+  }
+  
+  .stat-card.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Hover animations */
+  .stat-card,
+  .alerts-card,
+  .activity-card,
+  .performers-card {
+    transform-origin: center bottom;
+  }
+  
+  /* Currency formatting */
+  .dashboard-page [data-currency] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  
+  /* Smooth scrolling for lists */
+  .dashboard-page .MuiList-root {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .dashboard-page .MuiList-root::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .dashboard-page .MuiList-root::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .dashboard-page .MuiList-root::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 2px;
+  }
+  
+  .dashboard-page .MuiList-root::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+  
+  /* Animation keyframes */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .dashboard-page > * {
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+  }
+  
+  .dashboard-page > *:nth-child(1) { animation-delay: 0.1s; }
+  .dashboard-page > *:nth-child(2) { animation-delay: 0.2s; }
+  .dashboard-page > *:nth-child(3) { animation-delay: 0.3s; }

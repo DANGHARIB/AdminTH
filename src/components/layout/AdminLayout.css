@@ -1,0 +1,126 @@
+/* AdminLayout.css */
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f8fafc;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .header {
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    width: 100%;
+    z-index: 1200;
+  }
+  
+  .toolbar {
+    padding: 0 24px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .header-title {
+    font-weight: 600;
+    font-size: 18px;
+    color: #111827;
+    letter-spacing: -0.025em;
+  }
+  
+  .profile-button {
+    transition: all 0.2s ease;
+  }
+  
+  .profile-button:hover {
+    transform: scale(1.05);
+  }
+  
+  .profile-menu .MuiMenuItem-root {
+    font-size: 14px;
+    padding: 12px 16px;
+    min-height: auto;
+    border-radius: 6px;
+    margin: 2px 8px;
+    transition: all 0.15s ease;
+  }
+  
+  .profile-menu .MuiMenuItem-root:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .sidebar-container {
+    width: 280px;
+    flex-shrink: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    z-index: 1100;
+  }
+  
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    position: relative;
+  }
+  
+  /* Ensure content within tabs and sections is properly spaced */
+  .page-header {
+    padding: 24px 32px 0;
+    margin-bottom: 24px;
+  }
+  
+  .page-container {
+    padding: 0 32px 32px;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 960px) {
+    .sidebar-container {
+      position: relative;
+      width: auto;
+    }
+    
+    .main-content {
+      padding-left: 0;
+      margin-left: 0 !important;
+    }
+    
+    .toolbar {
+      padding: 0 16px;
+    }
+
+    .page-header {
+      padding: 16px 24px 0;
+    }
+
+    .page-container {
+      padding: 0 24px 24px;
+    }
+  }
+  
+  /* Smooth transitions */
+  * {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+  
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }

@@ -1,0 +1,41 @@
+/* Breadcrumb.css */
+.breadcrumb-container {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+  }
+  
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+  }
+  
+  .breadcrumb-link {
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .breadcrumb-link:hover {
+    transform: translateY(-1px);
+  }
+  
+  .breadcrumb-current {
+    color: #111827 !important;
+    font-weight: 500 !important;
+  }
+  
+  .breadcrumb-home {
+    font-weight: 500;
+  }
+  
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .breadcrumb-container {
+      display: none;
+    }
+  }
+  
+  /* Separator styling */
+  .breadcrumb .MuiBreadcrumbs-separator {
+    margin: 0 8px;
+  }
