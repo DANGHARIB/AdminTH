@@ -1,13 +1,13 @@
 import api from './api';
 
 /**
- * Transforme les données de patient depuis l'API vers le format frontend
- * @param {Object} apiPatient - Données patient depuis l'API
- * @param {Object} userData - Données utilisateur associées (optionnel)
- * @returns {Object} Patient formaté pour le frontend
+ * Transform patient data from API to frontend format
+ * @param {Object} apiPatient - Patient data from API
+ * @param {Object} userData - Associated user data (optional)
+ * @returns {Object} Patient formatted for frontend
  */
 const transformPatientData = (apiPatient, userData = null) => {
-  // Calculer l'âge depuis la date de naissance
+  // Calculate age from birth date
   const calculateAge = (birthDate) => {
     if (!birthDate) return 0;
     const today = new Date();
@@ -22,12 +22,12 @@ const transformPatientData = (apiPatient, userData = null) => {
     return age;
   };
 
-  // Transformer le genre
+  // Transform gender
   const transformGender = (gender) => {
-    if (!gender) return 'Non spécifié';
-    return gender.toLowerCase() === 'male' ? 'Masculin' : 
-           gender.toLowerCase() === 'female' ? 'Féminin' : 
-           'Non spécifié';
+    if (!gender) return 'Not specified';
+    return gender.toLowerCase() === 'male' ? 'Male' : 
+           gender.toLowerCase() === 'female' ? 'Female' : 
+           'Not specified';
   };
 
   return {
@@ -36,34 +36,34 @@ const transformPatientData = (apiPatient, userData = null) => {
     lastName: apiPatient.last_name || '',
     name: `${apiPatient.first_name || ''} ${apiPatient.last_name || ''}`.trim(),
     age: calculateAge(apiPatient.date_of_birth),
-    birthdate: apiPatient.date_of_birth ? new Date(apiPatient.date_of_birth).toLocaleDateString('fr-FR') : null,
+    birthdate: apiPatient.date_of_birth ? new Date(apiPatient.date_of_birth).toLocaleDateString('en-US') : null,
     gender: transformGender(apiPatient.gender),
     
-    // Données utilisateur si disponibles
-    email: userData?.email || `${apiPatient.first_name?.toLowerCase() || 'patient'}.${apiPatient.last_name?.toLowerCase() || 'inconnu'}@example.com`,
-    phone: userData?.phone || 'Non renseigné',
-    address: userData?.address || 'Adresse non renseignée',
+    // User data if available
+    email: userData?.email || `${apiPatient.first_name?.toLowerCase() || 'patient'}.${apiPatient.last_name?.toLowerCase() || 'unknown'}@example.com`,
+    phone: userData?.phone || 'Not provided',
+    address: userData?.address || 'Address not provided',
     
-    // Statut basé sur has_taken_assessment et autres critères
+    // Status based on has_taken_assessment and other criteria
     status: apiPatient.has_taken_assessment ? 'active' : 'pending',
     
-    // Données médicales par défaut (à adapter selon votre modèle)
-    bloodType: 'Non renseigné',
+    // Default medical data (adapt according to your model)
+    bloodType: 'Not specified',
     assignedDoctor: null,
-    insurance: 'Non renseignée',
-    emergencyContact: 'Non renseigné',
+    insurance: 'Not specified',
+    emergencyContact: 'Not provided',
     
-    // Données calculées
+    // Calculated data
     joinDate: apiPatient.createdAt,
-    lastConsultation: null, // À calculer depuis les rendez-vous si disponible
-    consultationsCount: 0,  // À calculer depuis les rendez-vous
-    totalSpent: 0,          // À calculer depuis les paiements
+    lastConsultation: null, // To calculate from appointments if available
+    consultationsCount: 0,  // To calculate from appointments
+    totalSpent: 0,          // To calculate from payments
     
-    // Allergies et historique médical par défaut
+    // Default allergies and medical history
     allergies: [],
     medicalHistory: [],
     
-    // Finances par défaut
+    // Default finances
     finances: {
       totalSpent: 0,
       pendingPayments: 0,
@@ -71,87 +71,87 @@ const transformPatientData = (apiPatient, userData = null) => {
       averageConsultationCost: 0,
       consultationsCount: 0,
       totalRefunds: 0,
-      preferredPaymentMethod: 'Non spécifiée'
+      preferredPaymentMethod: 'Not specified'
     },
     
-    // Transactions vides par défaut
+    // Empty transactions by default
     transactions: [],
     monthlyStats: [],
     
-    // Données originales pour référence
+    // Original data for reference
     _originalData: apiPatient
   };
 };
 
 /**
- * Service pour la gestion des patients
+ * Service for patient management
  */
 const patientsService = {
   /**
-   * Récupérer la liste des patients
-   * @param {Object} params - Paramètres de filtre et pagination
-   * @returns {Promise} - Promesse avec la liste des patients transformés
+   * Get list of patients
+   * @param {Object} params - Filter and pagination parameters
+   * @returns {Promise} - Promise with transformed patients list
    */
   async getAllPatients(params = {}) {
     try {
       const response = await api.get('/patients', { params });
       
-      // Transformer chaque patient
+      // Transform each patient
       const transformedPatients = response.data.map(patient => transformPatientData(patient));
       
-      console.log('Patients transformés:', transformedPatients);
+      console.log('Transformed patients:', transformedPatients);
       return transformedPatients;
     } catch (error) {
-      console.error('Erreur service patients:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des patients' };
+      console.error('Patients service error:', error);
+      throw error.response?.data || { message: 'Error fetching patients' };
     }
   },
 
   /**
-   * Récupérer les détails d'un patient
-   * @param {string|number} id - ID du patient
-   * @returns {Promise} - Promesse avec les détails du patient transformés
+   * Get patient details
+   * @param {string|number} id - Patient ID
+   * @returns {Promise} - Promise with transformed patient details
    */
   async getPatientById(id) {
     try {
       const response = await api.get(`/patients/${id}`);
       
-      // Essayer de récupérer les données utilisateur associées
+      // Try to get associated user data
       let userData = null;
       if (response.data.user) {
         try {
           const userResponse = await api.get(`/users/${response.data.user}`);
           userData = userResponse.data;
         } catch (userError) {
-          console.warn('Impossible de récupérer les données utilisateur:', userError);
+          console.warn('Unable to fetch user data:', userError);
         }
       }
       
       const transformedPatient = transformPatientData(response.data, userData);
       
-      // Enrichir avec des données additionnelles si nécessaire
+      // Enrich with additional data if necessary
       await this.enrichPatientData(transformedPatient);
       
       return transformedPatient;
     } catch (error) {
-      console.error('Erreur récupération patient:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération du patient' };
+      console.error('Error fetching patient:', error);
+      throw error.response?.data || { message: 'Error fetching patient' };
     }
   },
 
   /**
-   * Enrichir les données d'un patient avec des informations additionnelles
-   * @param {Object} patient - Patient à enrichir
+   * Enrich patient data with additional information
+   * @param {Object} patient - Patient to enrich
    */
   async enrichPatientData(patient) {
     try {
-      // Récupérer les rendez-vous du patient pour calculer les statistiques
+      // Get patient appointments to calculate statistics
       const appointments = await this.getPatientAppointments(patient.id);
       patient.consultationsCount = appointments.length;
       patient.lastConsultation = appointments.length > 0 ? 
         appointments.sort((a, b) => new Date(b.date) - new Date(a.date))[0].date : null;
 
-      // Récupérer les paiements pour les finances
+      // Get payments for finances
       const payments = await this.getPatientPayments(patient.id);
       patient.totalSpent = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
       patient.finances.totalSpent = patient.totalSpent;
@@ -162,38 +162,38 @@ const patientsService = {
       }
 
     } catch (error) {
-      console.warn('Erreur lors de l\'enrichissement des données:', error);
-      // Continue même si l'enrichissement échoue
+      console.warn('Error enriching data:', error);
+      // Continue even if enrichment fails
     }
   },
 
   /**
-   * Récupérer les rendez-vous d'un patient
-   * @param {string} patientId - ID du patient
-   * @returns {Promise<Array>} Liste des rendez-vous
+   * Get patient appointments
+   * @param {string} patientId - Patient ID
+   * @returns {Promise<Array>} List of appointments
    */
   async getPatientAppointments(patientId) {
     try {
       const response = await api.get(`/appointments?patientId=${patientId}`);
       return response.data || [];
     } catch (error) {
-      console.warn('Erreur récupération rendez-vous patient:', error);
+      console.warn('Error fetching patient appointments:', error);
       return [];
     }
   },
 
   /**
-   * Récupérer les finances d'un patient
-   * @param {string|number} id - ID du patient
-   * @returns {Promise} - Promesse avec les données financières du patient
+   * Get patient finances
+   * @param {string|number} id - Patient ID
+   * @returns {Promise} - Promise with patient financial data
    */
   async getPatientFinances(id) {
     try {
       const response = await api.get(`/patients/${id}/finances`);
       return response.data;
     } catch (error) {
-      // Si l'endpoint n'existe pas, retourner des données par défaut
-      console.warn('Endpoint finances non disponible, utilisation des données par défaut');
+      // If endpoint doesn't exist, return default data
+      console.warn('Finances endpoint not available, using default data');
       return {
         totalSpent: 0,
         pendingPayments: 0,
@@ -201,16 +201,16 @@ const patientsService = {
         averageConsultationCost: 0,
         consultationsCount: 0,
         totalRefunds: 0,
-        preferredPaymentMethod: 'Non spécifiée'
+        preferredPaymentMethod: 'Not specified'
       };
     }
   },
 
   /**
-   * Récupérer les paiements d'un patient
-   * @param {string|number} patientId - ID du patient
-   * @param {Object} params - Paramètres de filtre (startDate, endDate, status)
-   * @returns {Promise} - Promesse avec les paiements du patient
+   * Get patient payments
+   * @param {string|number} patientId - Patient ID
+   * @param {Object} params - Filter parameters (startDate, endDate, status)
+   * @returns {Promise} - Promise with patient payments
    */
   async getPatientPayments(patientId, params = {}) {
     try {
@@ -219,25 +219,25 @@ const patientsService = {
       });
       return response.data || [];
     } catch (error) {
-      console.warn('Erreur récupération paiements:', error);
+      console.warn('Error fetching payments:', error);
       return [];
     }
   },
 
   /**
-   * Créer un nouveau patient
-   * @param {Object} patientData - Données du patient
-   * @returns {Promise} - Promesse avec les données du patient créé
+   * Create new patient
+   * @param {Object} patientData - Patient data
+   * @returns {Promise} - Promise with created patient data
    */
   async createPatient(patientData) {
     try {
-      // Transformer les données du frontend vers le format API
+      // Transform frontend data to API format
       const apiData = {
         first_name: patientData.firstName,
         last_name: patientData.lastName,
         date_of_birth: patientData.birthdate ? new Date(patientData.birthdate) : null,
-        gender: patientData.gender === 'Masculin' ? 'Male' : 
-                patientData.gender === 'Féminin' ? 'Female' : patientData.gender,
+        gender: patientData.gender === 'Male' ? 'Male' : 
+                patientData.gender === 'Female' ? 'Female' : patientData.gender,
         has_taken_assessment: false,
         savedDoctors: []
       };
@@ -245,45 +245,45 @@ const patientsService = {
       const response = await api.post('/patients', apiData);
       return transformPatientData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la création du patient' };
+      throw error.response?.data || { message: 'Error creating patient' };
     }
   },
 
   /**
-   * Mettre à jour un patient existant
-   * @param {string|number} id - ID du patient
-   * @param {Object} patientData - Données du patient à mettre à jour
-   * @returns {Promise} - Promesse avec les données du patient mis à jour
+   * Update existing patient
+   * @param {string|number} id - Patient ID
+   * @param {Object} patientData - Patient data to update
+   * @returns {Promise} - Promise with updated patient data
    */
   async updatePatient(id, patientData) {
     try {
-      // Transformer les données du frontend vers le format API
+      // Transform frontend data to API format
       const apiData = {
         first_name: patientData.firstName,
         last_name: patientData.lastName,
         date_of_birth: patientData.birthdate ? new Date(patientData.birthdate) : undefined,
-        gender: patientData.gender === 'Masculin' ? 'Male' : 
-                patientData.gender === 'Féminin' ? 'Female' : patientData.gender
+        gender: patientData.gender === 'Male' ? 'Male' : 
+                patientData.gender === 'Female' ? 'Female' : patientData.gender
       };
 
       const response = await api.put(`/patients/${id}`, apiData);
       return transformPatientData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la mise à jour du patient' };
+      throw error.response?.data || { message: 'Error updating patient' };
     }
   },
 
   /**
-   * Supprimer un patient
-   * @param {string|number} id - ID du patient
-   * @returns {Promise} - Promesse avec le résultat de la suppression
+   * Delete patient
+   * @param {string|number} id - Patient ID
+   * @returns {Promise} - Promise with deletion result
    */
   async deletePatient(id) {
     try {
       const response = await api.delete(`/patients/${id}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la suppression du patient' };
+      throw error.response?.data || { message: 'Error deleting patient' };
     }
   }
 };

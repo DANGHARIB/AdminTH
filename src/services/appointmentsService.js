@@ -1,14 +1,14 @@
 import api from './api';
 
 /**
- * Transforme les données de rendez-vous depuis l'API vers le format frontend
- * @param {Object} apiAppointment - Données rendez-vous depuis l'API
- * @param {Object} doctorData - Données médecin associées (optionnel)
- * @param {Object} patientData - Données patient associées (optionnel)
- * @returns {Object} Rendez-vous formaté pour le frontend
+ * Transform appointment data from API to frontend format
+ * @param {Object} apiAppointment - Appointment data from API
+ * @param {Object} doctorData - Associated doctor data (optional)
+ * @param {Object} patientData - Associated patient data (optional)
+ * @returns {Object} Appointment formatted for frontend
  */
 const transformAppointmentData = (apiAppointment, doctorData = null, patientData = null) => {
-  // Transformer le statut
+  // Transform status
   const transformStatus = (status) => {
     const statusMap = {
       'reschedule_requested': 'pending',
@@ -20,22 +20,22 @@ const transformAppointmentData = (apiAppointment, doctorData = null, patientData
     return statusMap[status] || status || 'pending';
   };
 
-  // Transformer le type basé sur les détails du cas ou autres informations
+  // Transform type based on case details or other information
   const getAppointmentType = (caseDetails, duration) => {
     if (!caseDetails) return 'consultation';
     
     const details = caseDetails.toLowerCase();
-    if (details.includes('urgent') || details.includes('emergency')) return 'urgence';
-    if (details.includes('controle') || details.includes('control') || details.includes('suivi')) return 'controle';
+    if (details.includes('urgent') || details.includes('emergency')) return 'emergency';
+    if (details.includes('controle') || details.includes('control') || details.includes('follow-up')) return 'checkup';
     return 'consultation';
   };
 
-  // Formater le nom du patient
+  // Format patient name
   const formatPatientName = (patient) => {
     if (!patient) return null;
     
     if (typeof patient === 'string') {
-      return { name: 'Patient inconnu', id: patient };
+      return { name: 'Unknown patient', id: patient };
     }
     
     if (patient.first_name || patient.last_name) {
@@ -47,15 +47,15 @@ const transformAppointmentData = (apiAppointment, doctorData = null, patientData
       };
     }
     
-    return { name: 'Patient inconnu', id: patient._id || patient.id };
+    return { name: 'Unknown patient', id: patient._id || patient.id };
   };
 
-  // Formater le nom du médecin
+  // Format doctor name
   const formatDoctorName = (doctor) => {
     if (!doctor) return null;
     
     if (typeof doctor === 'string') {
-      return { name: 'Médecin inconnu', id: doctor };
+      return { name: 'Unknown doctor', id: doctor };
     }
     
     if (doctor.first_name || doctor.last_name) {
@@ -64,72 +64,72 @@ const transformAppointmentData = (apiAppointment, doctorData = null, patientData
         name: `Dr. ${doctor.first_name || ''} ${doctor.last_name || ''}`.trim(),
         firstName: doctor.first_name,
         lastName: doctor.last_name,
-        specialty: doctor.specialty || 'Spécialité non renseignée'
+        specialty: doctor.specialty || 'Specialty not specified'
       };
     }
     
-    return { name: 'Médecin inconnu', id: doctor._id || doctor.id };
+    return { name: 'Unknown doctor', id: doctor._id || doctor.id };
   };
 
-  // Créer une date complète à partir des créneaux
+  // Create complete date from slots
   const createAppointmentDate = () => {
     if (apiAppointment.slotDate) {
       return apiAppointment.slotDate;
     }
-    // Si pas de date spécifique, utiliser createdAt comme fallback
+    // If no specific date, use createdAt as fallback
     return apiAppointment.createdAt || new Date().toISOString();
   };
 
   return {
     id: apiAppointment._id,
     date: createAppointmentDate(),
-    time: apiAppointment.slotStartTime || 'Heure non définie',
+    time: apiAppointment.slotStartTime || 'Time not set',
     endTime: apiAppointment.slotEndTime || null,
     duration: apiAppointment.duration || 30,
     
-    // Données patient et médecin
+    // Patient and doctor data
     patient: patientData ? formatPatientName(patientData) : formatPatientName(apiAppointment.patient),
     doctor: doctorData ? formatDoctorName(doctorData) : formatDoctorName(apiAppointment.doctor),
     
-    // Statut et type
+    // Status and type
     status: transformStatus(apiAppointment.status),
     type: getAppointmentType(apiAppointment.caseDetails, apiAppointment.duration),
     
-    // Détails financiers
+    // Financial details
     price: apiAppointment.price || 0,
     paymentStatus: apiAppointment.paymentStatus || 'pending',
     
-    // Informations supplémentaires
-    caseDetails: apiAppointment.caseDetails || 'Consultation standard',
+    // Additional information
+    caseDetails: apiAppointment.caseDetails || 'Standard consultation',
     sessionLink: apiAppointment.sessionLink || null,
     
-    // Données techniques
+    // Technical data
     availability: apiAppointment.availability,
     createdAt: apiAppointment.createdAt,
     updatedAt: apiAppointment.updatedAt,
     
-    // Données originales pour référence
+    // Original data for reference
     _originalData: apiAppointment
   };
 };
 
 /**
- * Service pour la gestion des rendez-vous
+ * Service for appointment management
  */
 const appointmentsService = {
   /**
-   * Récupérer la liste des rendez-vous
-   * @param {Object} params - Paramètres de filtre et pagination
-   * @returns {Promise} - Promesse avec la liste des rendez-vous transformés
+   * Get list of appointments
+   * @param {Object} params - Filter and pagination parameters
+   * @returns {Promise} - Promise with transformed appointments list
    */
   async getAllAppointments(params = {}) {
     try {
       const response = await api.get('/appointments', { params });
       
-      // Transformer chaque rendez-vous
+      // Transform each appointment
       const transformedAppointments = await Promise.all(
         response.data.map(async (appointment) => {
-          // Essayer de récupérer les données complètes du patient et du médecin
+          // Try to get complete patient and doctor data
           let doctorData = null;
           let patientData = null;
           
@@ -139,7 +139,7 @@ const appointmentsService = {
               doctorData = doctorResponse.data;
             }
           } catch (error) {
-            console.warn('Impossible de récupérer les données du médecin:', error);
+            console.warn('Unable to fetch doctor data:', error);
           }
           
           try {
@@ -148,31 +148,31 @@ const appointmentsService = {
               patientData = patientResponse.data;
             }
           } catch (error) {
-            console.warn('Impossible de récupérer les données du patient:', error);
+            console.warn('Unable to fetch patient data:', error);
           }
           
           return transformAppointmentData(appointment, doctorData, patientData);
         })
       );
       
-      console.log('Rendez-vous transformés:', transformedAppointments);
+      console.log('Transformed appointments:', transformedAppointments);
       return transformedAppointments;
     } catch (error) {
-      console.error('Erreur service appointments:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des rendez-vous' };
+      console.error('Appointments service error:', error);
+      throw error.response?.data || { message: 'Error fetching appointments' };
     }
   },
 
   /**
-   * Récupérer les détails d'un rendez-vous
-   * @param {string|number} id - ID du rendez-vous
-   * @returns {Promise} - Promesse avec les détails du rendez-vous transformés
+   * Get appointment details
+   * @param {string|number} id - Appointment ID
+   * @returns {Promise} - Promise with transformed appointment details
    */
   async getAppointmentById(id) {
     try {
       const response = await api.get(`/appointments/${id}`);
       
-      // Récupérer les données complètes du patient et du médecin
+      // Get complete patient and doctor data
       let doctorData = null;
       let patientData = null;
       
@@ -182,7 +182,7 @@ const appointmentsService = {
           doctorData = doctorResponse.data;
         }
       } catch (error) {
-        console.warn('Impossible de récupérer les données du médecin:', error);
+        console.warn('Unable to fetch doctor data:', error);
       }
       
       try {
@@ -191,24 +191,24 @@ const appointmentsService = {
           patientData = patientResponse.data;
         }
       } catch (error) {
-        console.warn('Impossible de récupérer les données du patient:', error);
+        console.warn('Unable to fetch patient data:', error);
       }
       
       return transformAppointmentData(response.data, doctorData, patientData);
     } catch (error) {
-      console.error('Erreur récupération rendez-vous:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération du rendez-vous' };
+      console.error('Error fetching appointment:', error);
+      throw error.response?.data || { message: 'Error fetching appointment' };
     }
   },
 
   /**
-   * Créer un nouveau rendez-vous
-   * @param {Object} appointmentData - Données du rendez-vous
-   * @returns {Promise} - Promesse avec les données du rendez-vous créé
+   * Create new appointment
+   * @param {Object} appointmentData - Appointment data
+   * @returns {Promise} - Promise with created appointment data
    */
   async createAppointment(appointmentData) {
     try {
-      // Transformer les données du frontend vers le format API
+      // Transform frontend data to API format
       const apiData = {
         doctor: appointmentData.doctorId,
         patient: appointmentData.patientId,
@@ -217,26 +217,26 @@ const appointmentsService = {
         slotEndTime: appointmentData.endTime,
         duration: appointmentData.duration || 30,
         price: appointmentData.price || 0,
-        caseDetails: appointmentData.caseDetails || 'Consultation standard',
+        caseDetails: appointmentData.caseDetails || 'Standard consultation',
         status: 'confirmed'
       };
 
       const response = await api.post('/appointments', apiData);
       return transformAppointmentData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la création du rendez-vous' };
+      throw error.response?.data || { message: 'Error creating appointment' };
     }
   },
 
   /**
-   * Mettre à jour un rendez-vous existant
-   * @param {string|number} id - ID du rendez-vous
-   * @param {Object} appointmentData - Données du rendez-vous à mettre à jour
-   * @returns {Promise} - Promesse avec les données du rendez-vous mis à jour
+   * Update existing appointment
+   * @param {string|number} id - Appointment ID
+   * @param {Object} appointmentData - Appointment data to update
+   * @returns {Promise} - Promise with updated appointment data
    */
   async updateAppointment(id, appointmentData) {
     try {
-      // Transformer les données du frontend vers le format API
+      // Transform frontend data to API format
       const apiData = {};
       
       if (appointmentData.time) apiData.slotStartTime = appointmentData.time;
@@ -249,28 +249,28 @@ const appointmentsService = {
       const response = await api.put(`/appointments/${id}`, apiData);
       return transformAppointmentData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la mise à jour du rendez-vous' };
+      throw error.response?.data || { message: 'Error updating appointment' };
     }
   },
 
   /**
-   * Supprimer un rendez-vous
-   * @param {string|number} id - ID du rendez-vous
-   * @returns {Promise} - Promesse avec le résultat de la suppression
+   * Delete appointment
+   * @param {string|number} id - Appointment ID
+   * @returns {Promise} - Promise with deletion result
    */
   async deleteAppointment(id) {
     try {
       const response = await api.delete(`/appointments/${id}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la suppression du rendez-vous' };
+      throw error.response?.data || { message: 'Error deleting appointment' };
     }
   },
   
   /**
-   * Récupérer les notes d'un rendez-vous
-   * @param {string|number} appointmentId - ID du rendez-vous
-   * @returns {Promise} - Promesse avec les notes du rendez-vous
+   * Get appointment notes
+   * @param {string|number} appointmentId - Appointment ID
+   * @returns {Promise} - Promise with appointment notes
    */
   async getAppointmentNotes(appointmentId) {
     try {
@@ -279,15 +279,15 @@ const appointmentsService = {
       });
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la récupération des notes du rendez-vous' };
+      throw error.response?.data || { message: 'Error fetching appointment notes' };
     }
   },
   
   /**
-   * Ajouter une note à un rendez-vous
-   * @param {string|number} appointmentId - ID du rendez-vous
-   * @param {string} note - Contenu de la note
-   * @returns {Promise} - Promesse avec la note créée
+   * Add note to appointment
+   * @param {string|number} appointmentId - Appointment ID
+   * @param {string} note - Note content
+   * @returns {Promise} - Promise with created note
    */
   async addAppointmentNote(appointmentId, note) {
     try {
@@ -297,19 +297,19 @@ const appointmentsService = {
       });
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de l\'ajout de la note au rendez-vous' };
+      throw error.response?.data || { message: 'Error adding note to appointment' };
     }
   },
 
   /**
-   * Changer le statut d'un rendez-vous
-   * @param {string|number} id - ID du rendez-vous
-   * @param {string} newStatus - Nouveau statut
-   * @returns {Promise} - Promesse avec le rendez-vous mis à jour
+   * Change appointment status
+   * @param {string|number} id - Appointment ID
+   * @param {string} newStatus - New status
+   * @returns {Promise} - Promise with updated appointment
    */
   async changeAppointmentStatus(id, newStatus) {
     try {
-      // Mapper les statuts frontend vers API si nécessaire
+      // Map frontend statuses to API if necessary
       const statusMap = {
         'pending': 'reschedule_requested',
         'confirmed': 'confirmed',
@@ -325,7 +325,7 @@ const appointmentsService = {
       
       return transformAppointmentData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors du changement de statut' };
+      throw error.response?.data || { message: 'Error changing status' };
     }
   }
 };

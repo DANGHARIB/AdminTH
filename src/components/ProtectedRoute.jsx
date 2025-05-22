@@ -3,13 +3,13 @@ import { useAuth } from '../hooks/useAuth';
 import { CircularProgress, Box } from '@mui/material';
 
 /**
- * Composant qui protège les routes nécessitant une authentification admin
+ * Component that protects routes requiring admin authentication
  */
 const ProtectedRoute = () => {
   const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();
 
-  // Afficher un indicateur de chargement pendant la vérification
+  // Show loading indicator during verification
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -18,17 +18,17 @@ const ProtectedRoute = () => {
     );
   }
 
-  // Rediriger vers la page de connexion si non authentifié ou non admin
+  // Redirect to login page if not authenticated or not admin
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Vérifier le rôle Admin (double sécurité)
+  // Check Admin role (double security)
   if (!user?.role || user.role !== 'Admin') {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Accès autorisé
+  // Access authorized
   return <Outlet />;
 };
 

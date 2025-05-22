@@ -1,15 +1,15 @@
 import axios from 'axios';
 
-// Configuration de l'URL de base de l'API
+// API base URL configuration
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-console.log('API URL configurée:', baseURL);
+console.log('Configured API URL:', baseURL);
 
-// Préfixe pour le stockage local
+// Local storage prefix
 const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX || 'admin_app_';
 const TOKEN_KEY = `${STORAGE_PREFIX}token`;
 
 /**
- * Instance axios configurée pour l'API
+ * Configured axios instance for API
  */
 const api = axios.create({
   baseURL,
@@ -19,36 +19,36 @@ const api = axios.create({
 });
 
 /**
- * Intercepteur pour ajouter le token JWT aux requêtes
+ * Interceptor to add JWT token to requests
  */
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem(TOKEN_KEY);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log(`Requête authentifiée: ${config.method} ${config.url}`);
+      console.log(`Authenticated request: ${config.method} ${config.url}`);
     } else {
-      console.log(`Requête non authentifiée: ${config.method} ${config.url}`);
+      console.log(`Unauthenticated request: ${config.method} ${config.url}`);
     }
     return config;
   },
   error => {
-    console.error('Erreur dans l\'intercepteur de requête:', error);
+    console.error('Error in request interceptor:', error);
     return Promise.reject(error);
   }
 );
 
 /**
- * Intercepteur pour gérer les erreurs de réponse
+ * Interceptor to handle response errors
  */
 api.interceptors.response.use(
   response => response,
   error => {
-    console.error('Erreur API:', error.message);
+    console.error('API Error:', error.message);
     
-    // Afficher plus de détails sur l'erreur pour le débogage
+    // Show more error details for debugging
     if (error.response) {
-      console.error('Détails de la réponse d\'erreur:', {
+      console.error('Error response details:', {
         status: error.response.status,
         statusText: error.response.statusText,
         data: error.response.data,
@@ -56,18 +56,18 @@ api.interceptors.response.use(
       });
     }
     
-    // Gérer les erreurs 401 (non authentifié)
+    // Handle 401 errors (unauthorized)
     if (error.response && error.response.status === 401) {
-      console.warn('Erreur 401: Non autorisé - Vérifiez que le format des données d\'authentification est correct');
+      console.warn('401 Error: Unauthorized - Check that authentication data format is correct');
       
-      // Ne pas déconnecter l'utilisateur pendant la tentative de connexion
+      // Don't logout user during login attempt
       if (!window.location.pathname.includes('/login')) {
-        // Déconnecter l'utilisateur
+        // Logout user
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(`${STORAGE_PREFIX}user`);
         
-        // Rediriger vers la page de connexion
-        console.log('Redirection vers la page de connexion');
+        // Redirect to login page
+        console.log('Redirecting to login page');
         window.location.href = '/login';
       }
     }
@@ -76,4 +76,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api; 
+export default api;

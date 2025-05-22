@@ -36,7 +36,7 @@ import DataTable from '../../components/common/DataTable';
 import './FinancesOverview.css';
 
 
-// Données simulées pour les finances
+// Mock data for finances
 const MOCK_FINANCIAL_DATA = {
   overview: {
     totalRevenue: 125420.50,
@@ -53,33 +53,33 @@ const MOCK_FINANCIAL_DATA = {
       date: '2025-05-22',
       type: 'payment',
       amount: 85.00,
-      patient: { id: 1, name: 'Jean Dupont' },
-      doctor: { id: 1, name: 'Dr. Martin Dupont' },
+      patient: { id: 1, name: 'John Smith' },
+      doctor: { id: 1, name: 'Dr. Martin Johnson' },
       status: 'completed',
       method: 'card',
-      description: 'Consultation cardiologique'
+      description: 'Cardiology consultation'
     },
     {
       id: 2,
       date: '2025-05-22',
       type: 'refund',
       amount: -45.00,
-      patient: { id: 2, name: 'Marie Martin' },
-      doctor: { id: 2, name: 'Dr. Sophie Laurent' },
+      patient: { id: 2, name: 'Mary Wilson' },
+      doctor: { id: 2, name: 'Dr. Sophie Anderson' },
       status: 'processed',
       method: 'card',
-      description: 'Remboursement consultation annulée'
+      description: 'Refund for cancelled consultation'
     },
     {
       id: 3,
       date: '2025-05-21',
       type: 'payment',
       amount: 120.00,
-      patient: { id: 3, name: 'Pierre Durand' },
-      doctor: { id: 1, name: 'Dr. Martin Dupont' },
+      patient: { id: 3, name: 'Peter Brown' },
+      doctor: { id: 1, name: 'Dr. Martin Johnson' },
       status: 'completed',
       method: 'bank_transfer',
-      description: 'Consultation + examens'
+      description: 'Consultation + examinations'
     },
     {
       id: 4,
@@ -87,34 +87,34 @@ const MOCK_FINANCIAL_DATA = {
       type: 'commission',
       amount: 25.50,
       patient: null,
-      doctor: { id: 3, name: 'Dr. Thomas Petit' },
+      doctor: { id: 3, name: 'Dr. Thomas Davis' },
       status: 'pending',
       method: 'platform',
-      description: 'Commission plateforme - Consultation'
+      description: 'Platform commission - Consultation'
     },
     {
       id: 5,
       date: '2025-05-20',
       type: 'payment',
       amount: 95.00,
-      patient: { id: 4, name: 'Sophie Leroy' },
-      doctor: { id: 2, name: 'Dr. Sophie Laurent' },
+      patient: { id: 4, name: 'Sophie Miller' },
+      doctor: { id: 2, name: 'Dr. Sophie Anderson' },
       status: 'completed',
       method: 'card',
-      description: 'Consultation pédiatrique'
+      description: 'Pediatric consultation'
     }
   ],
   
   topDoctorsByRevenue: [
-    { id: 1, name: 'Dr. Martin Dupont', specialty: 'Cardiologue', revenue: 8420.50, patients: 42, growth: 15.2 },
-    { id: 2, name: 'Dr. Sophie Laurent', specialty: 'Pédiatre', revenue: 6850.25, patients: 56, growth: 8.7 },
-    { id: 5, name: 'Dr. Paul Michel', specialty: 'Ophtalmologue', revenue: 5240.00, patients: 38, growth: 22.1 }
+    { id: 1, name: 'Dr. Martin Johnson', specialty: 'Cardiologist', revenue: 8420.50, patients: 42, growth: 15.2 },
+    { id: 2, name: 'Dr. Sophie Anderson', specialty: 'Pediatrician', revenue: 6850.25, patients: 56, growth: 8.7 },
+    { id: 5, name: 'Dr. Paul Mitchell', specialty: 'Ophthalmologist', revenue: 5240.00, patients: 38, growth: 22.1 }
   ],
   
   paymentMethods: [
-    { method: 'card', label: 'Carte bancaire', count: 892, percentage: 71.5, amount: 89750.30 },
-    { method: 'bank_transfer', label: 'Virement', count: 245, percentage: 19.6, amount: 24580.50 },
-    { method: 'digital_wallet', label: 'Portefeuille digital', count: 110, percentage: 8.9, amount: 11089.70 }
+    { method: 'card', label: 'Credit Card', count: 892, percentage: 71.5, amount: 89750.30 },
+    { method: 'bank_transfer', label: 'Bank Transfer', count: 245, percentage: 19.6, amount: 24580.50 },
+    { method: 'digital_wallet', label: 'Digital Wallet', count: 110, percentage: 8.9, amount: 11089.70 }
   ]
 };
 
@@ -162,9 +162,9 @@ const FinancesOverview = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount);
   };
 
@@ -177,7 +177,7 @@ const FinancesOverview = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DateIcon sx={{ fontSize: 16, color: '#6b7280' }} />
           <Typography variant="body2">
-            {new Date(value).toLocaleDateString('fr-FR', { 
+            {new Date(value).toLocaleDateString('en-US', { 
               day: '2-digit', 
               month: '2-digit' 
             })}
@@ -191,7 +191,7 @@ const FinancesOverview = () => {
       width: 130,
       renderCell: (value) => (
         <Chip 
-          label={value === 'payment' ? 'Paiement' : value === 'refund' ? 'Remboursement' : 'Commission'} 
+          label={value === 'payment' ? 'Payment' : value === 'refund' ? 'Refund' : 'Commission'} 
           color={getTransactionColor(value)}
           size="small"
           icon={getTransactionIcon(value)}
@@ -200,7 +200,7 @@ const FinancesOverview = () => {
     },
     {
       field: 'amount',
-      headerName: 'Montant',
+      headerName: 'Amount',
       width: 120,
       align: 'right',
       renderCell: (value) => (
@@ -232,7 +232,7 @@ const FinancesOverview = () => {
     },
     {
       field: 'doctor',
-      headerName: 'Médecin',
+      headerName: 'Doctor',
       width: 180,
       renderCell: (value) => (
         <Typography variant="body2">{value.name}</Typography>
@@ -240,11 +240,11 @@ const FinancesOverview = () => {
     },
     {
       field: 'status',
-      headerName: 'Statut',
+      headerName: 'Status',
       width: 120,
       renderCell: (value) => (
         <Chip 
-          label={value === 'completed' ? 'Terminé' : value === 'processed' ? 'Traité' : value === 'pending' ? 'En attente' : 'Échoué'} 
+          label={value === 'completed' ? 'Completed' : value === 'processed' ? 'Processed' : value === 'pending' ? 'Pending' : 'Failed'} 
           color={getStatusColor(value)}
           size="small"
         />
@@ -252,13 +252,13 @@ const FinancesOverview = () => {
     },
     {
       field: 'method',
-      headerName: 'Méthode',
+      headerName: 'Method',
       width: 140,
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {getMethodIcon(value)}
           <Typography variant="body2">
-            {value === 'card' ? 'Carte' : value === 'bank_transfer' ? 'Virement' : value === 'digital_wallet' ? 'Portefeuille' : 'Plateforme'}
+            {value === 'card' ? 'Card' : value === 'bank_transfer' ? 'Transfer' : value === 'digital_wallet' ? 'Wallet' : 'Platform'}
           </Typography>
         </Box>
       )
@@ -300,7 +300,7 @@ const FinancesOverview = () => {
             Finances
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Vue d'ensemble des finances de la plateforme
+            Platform financial overview
           </Typography>
         </Box>
         
@@ -309,7 +309,7 @@ const FinancesOverview = () => {
           startIcon={<DownloadIcon />}
           className="export-button"
         >
-          Exporter rapport
+          Export Report
         </Button>
       </Box>
 
@@ -324,7 +324,7 @@ const FinancesOverview = () => {
                     {formatCurrency(financialData.overview.totalRevenue)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Revenus totaux
+                    Total Revenue
                   </Typography>
                 </Box>
                 <MoneyIcon className="stat-icon" />
@@ -342,7 +342,7 @@ const FinancesOverview = () => {
                     {formatCurrency(financialData.overview.monthlyRevenue)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Revenus mensuels
+                    Monthly Revenue
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                     <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
@@ -366,7 +366,7 @@ const FinancesOverview = () => {
                     {formatCurrency(financialData.overview.pendingPayments)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Paiements en attente
+                    Pending Payments
                   </Typography>
                 </Box>
                 <ReceiptIcon className="stat-icon" />
@@ -387,7 +387,7 @@ const FinancesOverview = () => {
                     Transactions
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Moy: {formatCurrency(financialData.overview.avgTransactionValue)}
+                    Avg: {formatCurrency(financialData.overview.avgTransactionValue)}
                   </Typography>
                 </Box>
                 <CardIcon className="stat-icon" />
@@ -404,7 +404,7 @@ const FinancesOverview = () => {
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <DoctorIcon />
-                Top médecins par revenus
+                Top Doctors by Revenue
               </Typography>
               {financialData.topDoctorsByRevenue.map((doctor) => (
                 <Box key={doctor.id} sx={{ mb: 2, pb: 2, borderBottom: doctor.id < financialData.topDoctorsByRevenue.length ? 1 : 0, borderColor: 'divider' }}>
@@ -442,7 +442,7 @@ const FinancesOverview = () => {
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CardIcon />
-                Méthodes de paiement
+                Payment Methods
               </Typography>
               {financialData.paymentMethods.map((method) => (
                 <Box key={method.method} sx={{ mb: 2 }}>
@@ -480,7 +480,7 @@ const FinancesOverview = () => {
           <Box sx={{ p: 3, pb: 0 }}>
             <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ReceiptIcon />
-              Transactions récentes
+              Recent Transactions
             </Typography>
           </Box>
           
@@ -504,14 +504,14 @@ const FinancesOverview = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => { console.log('View transaction details'); handleMenuClose(); }}>
-          Voir les détails
+          View Details
         </MenuItem>
         <MenuItem onClick={() => { console.log('Download receipt'); handleMenuClose(); }}>
-          Télécharger reçu
+          Download Receipt
         </MenuItem>
         {selectedTransaction?.status === 'pending' && (
           <MenuItem onClick={() => { console.log('Process transaction'); handleMenuClose(); }}>
-            Traiter
+            Process
           </MenuItem>
         )}
       </Menu>
@@ -519,7 +519,7 @@ const FinancesOverview = () => {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={tabValue} onChange={handleTabChange} className="finance-tabs">
           <Tab icon={<ReceiptIcon />} label="Transactions" />
-          <Tab icon={<AssessmentIcon />} label="Rapports" />
+          <Tab icon={<AssessmentIcon />} label="Reports" />
           <Tab icon={<WalletIcon />} label="Budget" />
         </Tabs>
       </Box>

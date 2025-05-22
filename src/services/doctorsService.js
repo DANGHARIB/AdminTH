@@ -2,23 +2,23 @@ import api from './api';
 
 const doctorsService = {
   /**
-   * Mapper les données du backend vers le format frontend
+   * Map backend data to frontend format
    */
   mapDoctorData(backendDoctor) {
     return {
       id: backendDoctor._id,
-      _id: backendDoctor._id, // Garder aussi l'ID original
+      _id: backendDoctor._id, // Keep original ID as well
       firstName: backendDoctor.first_name || '',
       lastName: backendDoctor.last_name || '',
       name: backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`.trim(),
       fullName: backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`.trim(),
-      email: backendDoctor.email || backendDoctor.user?.email || 'Non disponible',
+      email: backendDoctor.email || backendDoctor.user?.email || 'Not available',
       specialty: backendDoctor.specialization || backendDoctor.specialty || '',
-      specialization: backendDoctor.specialization || '', // Garder aussi le champ original
+      specialization: backendDoctor.specialization || '', // Keep original field as well
       status: backendDoctor.verified ? 'verified' : 'pending',
       verified: backendDoctor.verified || false,
       isVerified: backendDoctor.verified || false,
-      gender: backendDoctor.gender || backendDoctor.user?.gender || 'Non spécifié',
+      gender: backendDoctor.gender || backendDoctor.user?.gender || 'Not specified',
       experience: backendDoctor.experience || 0,
       price: backendDoctor.price || 0,
       patients: backendDoctor.patients || 0,
@@ -26,7 +26,7 @@ const doctorsService = {
       joinDate: backendDoctor.createdAt,
       createdAt: backendDoctor.createdAt,
       updatedAt: backendDoctor.updatedAt,
-      // Champs supplémentaires
+      // Additional fields
       about: backendDoctor.about || '',
       education: backendDoctor.education || '',
       certifications: backendDoctor.certifications || [],
@@ -34,14 +34,14 @@ const doctorsService = {
       doctor_image: backendDoctor.doctor_image || null,
       dob: backendDoctor.dob || null,
       user: backendDoctor.user || null,
-      // Champs calculés
+      // Calculated fields
       displayName: `Dr. ${backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`.trim()}`,
       initials: this.getInitials(backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`)
     };
   },
 
   /**
-   * Générer les initiales à partir du nom
+   * Generate initials from name
    */
   getInitials(fullName) {
     if (!fullName) return 'DR';
@@ -54,161 +54,161 @@ const doctorsService = {
   },
 
   /**
-   * Récupérer tous les médecins
+   * Get all doctors
    */
   async getAllDoctors(params = {}) {
     try {
-      console.log('🔍 Récupération des médecins...');
+      console.log('🔍 Fetching doctors...');
       const response = await api.get('/doctors', { params });
-      console.log('📦 Données brutes doctors:', response.data);
+      console.log('📦 Raw doctors data:', response.data);
       
-      // Mapper chaque médecin
+      // Map each doctor
       const mappedDoctors = response.data.map(doctor => this.mapDoctorData(doctor));
-      console.log('✅ Données mappées doctors:', mappedDoctors);
+      console.log('✅ Mapped doctors data:', mappedDoctors);
       
       return mappedDoctors;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des médecins:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des médecins' };
+      console.error('❌ Error fetching doctors:', error);
+      throw error.response?.data || { message: 'Error fetching doctors' };
     }
   },
 
   /**
-   * Récupérer un médecin par ID
+   * Get doctor by ID
    */
   async getDoctorById(id) {
     try {
-      console.log(`🔍 Récupération du médecin ${id}...`);
+      console.log(`🔍 Fetching doctor ${id}...`);
       const response = await api.get(`/doctors/${id}`);
-      console.log('📦 Données brutes doctor:', response.data);
+      console.log('📦 Raw doctor data:', response.data);
       
       const mappedDoctor = this.mapDoctorData(response.data);
-      console.log('✅ Données mappées doctor:', mappedDoctor);
+      console.log('✅ Mapped doctor data:', mappedDoctor);
       
       return mappedDoctor;
     } catch (error) {
-      console.error(`❌ Erreur lors de la récupération du médecin ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération du médecin' };
+      console.error(`❌ Error fetching doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching doctor' };
     }
   },
 
   /**
-   * Créer un nouveau médecin
+   * Create new doctor
    */
   async createDoctor(doctorData) {
     try {
-      console.log('🆕 Création du médecin:', doctorData);
+      console.log('🆕 Creating doctor:', doctorData);
       const response = await api.post('/doctors', doctorData);
-      console.log('✅ Médecin créé:', response.data);
+      console.log('✅ Doctor created:', response.data);
       
       return this.mapDoctorData(response.data);
     } catch (error) {
-      console.error('❌ Erreur lors de la création du médecin:', error);
-      throw error.response?.data || { message: 'Erreur lors de la création du médecin' };
+      console.error('❌ Error creating doctor:', error);
+      throw error.response?.data || { message: 'Error creating doctor' };
     }
   },
 
   /**
-   * Mettre à jour un médecin
+   * Update doctor
    */
   async updateDoctor(id, doctorData) {
     try {
-      console.log(`🔄 Mise à jour du médecin ${id}:`, doctorData);
+      console.log(`🔄 Updating doctor ${id}:`, doctorData);
       const response = await api.put(`/doctors/${id}`, doctorData);
-      console.log('✅ Médecin mis à jour:', response.data);
+      console.log('✅ Doctor updated:', response.data);
       
       return this.mapDoctorData(response.data);
     } catch (error) {
-      console.error(`❌ Erreur lors de la mise à jour du médecin ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la mise à jour du médecin' };
+      console.error(`❌ Error updating doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error updating doctor' };
     }
   },
 
   /**
-   * Supprimer un médecin
+   * Delete doctor
    */
   async deleteDoctor(id) {
     try {
-      console.log(`🗑️ Suppression du médecin ${id}...`);
+      console.log(`🗑️ Deleting doctor ${id}...`);
       const response = await api.delete(`/doctors/${id}`);
-      console.log('✅ Médecin supprimé');
+      console.log('✅ Doctor deleted');
       
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression du médecin ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la suppression du médecin' };
+      console.error(`❌ Error deleting doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error deleting doctor' };
     }
   },
 
   /**
-   * Vérifier un médecin
+   * Verify doctor
    */
   async verifyDoctor(id) {
     try {
-      console.log(`✅ Vérification du médecin ${id}...`);
+      console.log(`✅ Verifying doctor ${id}...`);
       const response = await api.patch(`/doctors/${id}/verify`);
-      console.log('✅ Médecin vérifié:', response.data);
+      console.log('✅ Doctor verified:', response.data);
       
       return this.mapDoctorData(response.data);
     } catch (error) {
-      console.error(`❌ Erreur lors de la vérification du médecin ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la vérification du médecin' };
+      console.error(`❌ Error verifying doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error verifying doctor' };
     }
   },
 
   /**
-   * Rejeter un médecin
+   * Reject doctor
    */
   async rejectDoctor(id, reason = '') {
     try {
-      console.log(`❌ Rejet du médecin ${id}...`);
+      console.log(`❌ Rejecting doctor ${id}...`);
       const response = await api.patch(`/doctors/${id}/reject`, { reason });
-      console.log('✅ Médecin rejeté:', response.data);
+      console.log('✅ Doctor rejected:', response.data);
       
       return this.mapDoctorData(response.data);
     } catch (error) {
-      console.error(`❌ Erreur lors du rejet du médecin ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors du rejet du médecin' };
+      console.error(`❌ Error rejecting doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error rejecting doctor' };
     }
   },
 
   /**
-   * Rechercher des médecins
+   * Search doctors
    */
   async searchDoctors(query, filters = {}) {
     try {
-      console.log('🔍 Recherche de médecins:', { query, filters });
+      console.log('🔍 Searching doctors:', { query, filters });
       const params = {
         search: query,
         ...filters
       };
       
       const response = await api.get('/doctors/search', { params });
-      console.log('📦 Résultats de recherche:', response.data);
+      console.log('📦 Search results:', response.data);
       
       const mappedResults = response.data.map(doctor => this.mapDoctorData(doctor));
-      console.log('✅ Résultats mappés:', mappedResults);
+      console.log('✅ Mapped results:', mappedResults);
       
       return mappedResults;
     } catch (error) {
-      console.error('❌ Erreur lors de la recherche:', error);
-      throw error.response?.data || { message: 'Erreur lors de la recherche' };
+      console.error('❌ Search error:', error);
+      throw error.response?.data || { message: 'Search error' };
     }
   },
 
   /**
-   * Obtenir les statistiques des médecins
+   * Get doctors statistics
    */
   async getDoctorsStats() {
     try {
-      console.log('📊 Récupération des statistiques des médecins...');
+      console.log('📊 Fetching doctors statistics...');
       const response = await api.get('/doctors/stats');
-      console.log('✅ Statistiques reçues:', response.data);
+      console.log('✅ Statistics received:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur lors de la récupération des statistiques:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des statistiques' };
+      console.error('❌ Error fetching statistics:', error);
+      throw error.response?.data || { message: 'Error fetching statistics' };
     }
   }
 };

@@ -2,106 +2,106 @@ import api from './api';
 
 const paymentsService = {
   /**
-   * Récupérer tous les paiements avec fallback
+   * Get all payments with fallback
    */
   async getAllPayments(params = {}) {
     try {
-      console.log('🔍 Récupération des paiements...');
+      console.log('🔍 Fetching payments...');
       const response = await api.get('/payments', { params });
-      console.log('✅ Paiements récupérés:', response.data);
+      console.log('✅ Payments fetched:', response.data);
       
       return response.data;
     } catch (error) {
-      console.warn('❌ Route payments non disponible:', error.response?.status);
+      console.warn('❌ Payments route not available:', error.response?.status);
       
-      // Si c'est une 404, la route n'existe pas
+      // If it's a 404, the route doesn't exist
       if (error.response?.status === 404) {
-        console.log('💡 Génération de données de paiements simulées...');
+        console.log('💡 Generating mock payment data...');
         return this.generateMockPayments();
       }
       
-      // Pour les autres erreurs, les propager
-      throw error.response?.data || { message: 'Erreur lors de la récupération des paiements' };
+      // For other errors, propagate them
+      throw error.response?.data || { message: 'Error fetching payments' };
     }
   },
 
   /**
-   * Récupérer un paiement par ID
+   * Get payment by ID
    */
   async getPaymentById(id) {
     try {
-      console.log(`🔍 Récupération du paiement ${id}...`);
+      console.log(`🔍 Fetching payment ${id}...`);
       const response = await api.get(`/payments/${id}`);
-      console.log('✅ Paiement récupéré:', response.data);
+      console.log('✅ Payment fetched:', response.data);
       
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
-        // Générer un paiement simulé
+        // Generate mock payment
         return this.generateMockPayment(id);
       }
       
-      console.error(`❌ Erreur lors de la récupération du paiement ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération du paiement' };
+      console.error(`❌ Error fetching payment ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching payment' };
     }
   },
 
   /**
-   * Créer un nouveau paiement
+   * Create new payment
    */
   async createPayment(paymentData) {
     try {
-      console.log('🆕 Création du paiement:', paymentData);
+      console.log('🆕 Creating payment:', paymentData);
       const response = await api.post('/payments', paymentData);
-      console.log('✅ Paiement créé:', response.data);
+      console.log('✅ Payment created:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur lors de la création du paiement:', error);
-      throw error.response?.data || { message: 'Erreur lors de la création du paiement' };
+      console.error('❌ Error creating payment:', error);
+      throw error.response?.data || { message: 'Error creating payment' };
     }
   },
 
   /**
-   * Mettre à jour un paiement
+   * Update payment
    */
   async updatePayment(id, paymentData) {
     try {
-      console.log(`🔄 Mise à jour du paiement ${id}:`, paymentData);
+      console.log(`🔄 Updating payment ${id}:`, paymentData);
       const response = await api.put(`/payments/${id}`, paymentData);
-      console.log('✅ Paiement mis à jour:', response.data);
+      console.log('✅ Payment updated:', response.data);
       
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur lors de la mise à jour du paiement ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la mise à jour du paiement' };
+      console.error(`❌ Error updating payment ${id}:`, error);
+      throw error.response?.data || { message: 'Error updating payment' };
     }
   },
 
   /**
-   * Supprimer un paiement
+   * Delete payment
    */
   async deletePayment(id) {
     try {
-      console.log(`🗑️ Suppression du paiement ${id}...`);
+      console.log(`🗑️ Deleting payment ${id}...`);
       const response = await api.delete(`/payments/${id}`);
-      console.log('✅ Paiement supprimé');
+      console.log('✅ Payment deleted');
       
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur lors de la suppression du paiement ${id}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la suppression du paiement' };
+      console.error(`❌ Error deleting payment ${id}:`, error);
+      throw error.response?.data || { message: 'Error deleting payment' };
     }
   },
 
   /**
-   * Récupérer les paiements par médecin
+   * Get payments by doctor
    */
   async getPaymentsByDoctor(doctorId) {
     try {
-      console.log(`🔍 Récupération des paiements pour le médecin ${doctorId}...`);
+      console.log(`🔍 Fetching payments for doctor ${doctorId}...`);
       const response = await api.get(`/payments?doctorId=${doctorId}`);
-      console.log('✅ Paiements du médecin récupérés:', response.data);
+      console.log('✅ Doctor payments fetched:', response.data);
       
       return response.data;
     } catch (error) {
@@ -109,19 +109,19 @@ const paymentsService = {
         return this.generateMockPaymentsForDoctor(doctorId);
       }
       
-      console.error(`❌ Erreur lors de la récupération des paiements du médecin ${doctorId}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des paiements' };
+      console.error(`❌ Error fetching payments for doctor ${doctorId}:`, error);
+      throw error.response?.data || { message: 'Error fetching payments' };
     }
   },
 
   /**
-   * Récupérer les paiements par patient
+   * Get payments by patient
    */
   async getPaymentsByPatient(patientId) {
     try {
-      console.log(`🔍 Récupération des paiements pour le patient ${patientId}...`);
+      console.log(`🔍 Fetching payments for patient ${patientId}...`);
       const response = await api.get(`/payments?patientId=${patientId}`);
-      console.log('✅ Paiements du patient récupérés:', response.data);
+      console.log('✅ Patient payments fetched:', response.data);
       
       return response.data;
     } catch (error) {
@@ -129,19 +129,19 @@ const paymentsService = {
         return this.generateMockPaymentsForPatient(patientId);
       }
       
-      console.error(`❌ Erreur lors de la récupération des paiements du patient ${patientId}:`, error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des paiements' };
+      console.error(`❌ Error fetching payments for patient ${patientId}:`, error);
+      throw error.response?.data || { message: 'Error fetching payments' };
     }
   },
 
   /**
-   * Récupérer les statistiques de paiements
+   * Get payment statistics
    */
   async getPaymentsStats(period = 'month') {
     try {
-      console.log(`📊 Récupération des statistiques de paiements (${period})...`);
+      console.log(`📊 Fetching payment statistics (${period})...`);
       const response = await api.get(`/payments/stats?period=${period}`);
-      console.log('✅ Statistiques récupérées:', response.data);
+      console.log('✅ Statistics fetched:', response.data);
       
       return response.data;
     } catch (error) {
@@ -149,27 +149,27 @@ const paymentsService = {
         return this.generateMockStats(period);
       }
       
-      console.error('❌ Erreur lors de la récupération des statistiques:', error);
-      throw error.response?.data || { message: 'Erreur lors de la récupération des statistiques' };
+      console.error('❌ Error fetching statistics:', error);
+      throw error.response?.data || { message: 'Error fetching statistics' };
     }
   },
 
   /**
-   * Générer des données de paiements simulées
+   * Generate mock payment data
    */
   generateMockPayments() {
     const mockPayments = [];
     const now = new Date();
     
-    // Générer 15 paiements simulés
+    // Generate 15 mock payments
     for (let i = 1; i <= 15; i++) {
-      const daysAgo = Math.floor(Math.random() * 30); // 0-30 jours
+      const daysAgo = Math.floor(Math.random() * 30); // 0-30 days
       const paymentDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
       
       mockPayments.push({
         id: i,
         _id: `mock_payment_${i}`,
-        amount: Math.floor(Math.random() * 100) + 50, // 50-150€
+        amount: Math.floor(Math.random() * 100) + 50, // $50-150
         doctorId: `mock_doctor_${Math.floor(Math.random() * 4) + 1}`,
         patientId: `mock_patient_${Math.floor(Math.random() * 10) + 1}`,
         appointmentId: `mock_appointment_${i}`,
@@ -177,11 +177,11 @@ const paymentsService = {
         status: Math.random() > 0.1 ? 'completed' : 'pending',
         method: ['card', 'bank_transfer', 'cash'][Math.floor(Math.random() * 3)],
         description: [
-          'Consultation générale',
-          'Consultation spécialisée',
-          'Thérapie individuelle',
-          'Consultation urgence',
-          'Suivi thérapeutique'
+          'General consultation',
+          'Specialized consultation',
+          'Individual therapy',
+          'Emergency consultation',
+          'Therapeutic follow-up'
         ][Math.floor(Math.random() * 5)],
         transactionId: `TXN_${Date.now()}_${i}`,
         createdAt: paymentDate.toISOString(),
@@ -189,12 +189,12 @@ const paymentsService = {
       });
     }
     
-    console.log('🎭 Paiements simulés générés:', mockPayments);
+    console.log('🎭 Mock payments generated:', mockPayments);
     return mockPayments;
   },
 
   /**
-   * Générer un paiement simulé spécifique
+   * Generate specific mock payment
    */
   generateMockPayment(id) {
     return {
@@ -207,7 +207,7 @@ const paymentsService = {
       date: new Date().toISOString(),
       status: 'completed',
       method: 'card',
-      description: 'Consultation générale',
+      description: 'General consultation',
       transactionId: `TXN_${Date.now()}_${id}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
@@ -215,7 +215,7 @@ const paymentsService = {
   },
 
   /**
-   * Générer des paiements simulés pour un médecin
+   * Generate mock payments for a doctor
    */
   generateMockPaymentsForDoctor(doctorId) {
     const payments = this.generateMockPayments();
@@ -223,7 +223,7 @@ const paymentsService = {
   },
 
   /**
-   * Générer des paiements simulés pour un patient
+   * Generate mock payments for a patient
    */
   generateMockPaymentsForPatient(patientId) {
     const payments = this.generateMockPayments();
@@ -231,17 +231,17 @@ const paymentsService = {
   },
 
   /**
-   * Générer des statistiques simulées
+   * Generate mock statistics
    */
   generateMockStats(period) {
     const baseAmount = 5000;
-    const variation = () => Math.floor(Math.random() * 2000) - 1000; // ±1000€
+    const variation = () => Math.floor(Math.random() * 2000) - 1000; // ±$1000
     
     return {
       period: period,
       totalRevenue: baseAmount + variation(),
       totalTransactions: Math.floor(Math.random() * 50) + 30,
-      averageTransaction: Math.floor(Math.random() * 40) + 60, // 60-100€
+      averageTransaction: Math.floor(Math.random() * 40) + 60, // $60-100
       completedPayments: Math.floor(Math.random() * 45) + 25,
       pendingPayments: Math.floor(Math.random() * 5) + 1,
       byMethod: {
@@ -250,8 +250,8 @@ const paymentsService = {
         cash: Math.floor(Math.random() * 10) + 5
       },
       trend: {
-        revenue: Math.floor(Math.random() * 20) - 10, // -10% à +10%
-        transactions: Math.floor(Math.random() * 15) - 5 // -5% à +10%
+        revenue: Math.floor(Math.random() * 20) - 10, // -10% to +10%
+        transactions: Math.floor(Math.random() * 15) - 5 // -5% to +10%
       },
       generatedAt: new Date().toISOString()
     };

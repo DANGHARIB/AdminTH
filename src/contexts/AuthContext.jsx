@@ -1,33 +1,33 @@
 import { createContext, useState, useEffect } from 'react';
 import authService from '../services/authService';
 
-// Création du contexte
+// Create context
 const AuthContext = createContext(null);
 
-// Provider du contexte
+// Context provider
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Initialiser l'état d'authentification au chargement
+  // Initialize authentication state on load
   useEffect(() => {
     const initAuth = async () => {
       setLoading(true);
       try {
-        // Récupérer l'utilisateur depuis le stockage local
+        // Get user from local storage
         const currentUser = authService.getCurrentUser();
         
-        // Vérifier si l'utilisateur est un administrateur
+        // Check if user is an administrator
         if (currentUser && currentUser.role !== 'Admin') {
-          console.error('Utilisateur connecté n\'est pas un administrateur');
-          authService.logout(); // Déconnecter l'utilisateur non-Admin
+          console.error('Logged in user is not an administrator');
+          authService.logout(); // Logout non-Admin user
           setUser(null);
         } else {
           setUser(currentUser);
         }
       } catch (err) {
-        console.error('Erreur lors de l\'initialisation de l\'authentification:', err);
+        console.error('Error during authentication initialization:', err);
         setError(err);
       } finally {
         setLoading(false);
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     initAuth();
   }, []);
 
-  // Fonction de connexion
+  // Login function
   const login = async (email, password) => {
     setLoading(true);
     setError(null);
@@ -45,15 +45,15 @@ export const AuthProvider = ({ children }) => {
     try {
       const userData = await authService.login(email, password);
       
-      // Vérifier si l'utilisateur est un administrateur
+      // Check if user is an administrator
       if (userData.role !== 'Admin') {
-        throw new Error('Accès non autorisé. Seuls les administrateurs peuvent accéder à cette application.');
+        throw new Error('Unauthorized access. Only administrators can access this application.');
       }
       
       setUser(userData);
       return userData;
     } catch (err) {
-      console.error('Erreur de connexion dans AuthContext:', err);
+      console.error('Login error in AuthContext:', err);
       setError(err);
       throw err;
     } finally {
@@ -61,13 +61,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Fonction de déconnexion
+  // Logout function
   const logout = () => {
     authService.logout();
     setUser(null);
   };
 
-  // Valeur du contexte
+  // Context value
   const value = {
     user,
     isAuthenticated: !!user,

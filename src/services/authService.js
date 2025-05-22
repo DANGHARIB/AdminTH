@@ -1,132 +1,132 @@
 import api from './api';
 
-// Préfixe pour le stockage local (à configurer dans .env)
+// Local storage prefix (to configure in .env)
 const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX || 'admin_app_';
 
-// Clés de stockage
+// Storage keys
 const TOKEN_KEY = `${STORAGE_PREFIX}token`;
 const USER_KEY = `${STORAGE_PREFIX}user`;
 
 /**
- * Service d'authentification pour l'application admin
+ * Authentication service for admin application
  */
 const authService = {
   /**
-   * Création d'un compte administrateur
-   * @param {Object} userData - Données de l'utilisateur
-   * @returns {Promise} - Promesse avec les données utilisateur
+   * Create admin account
+   * @param {Object} userData - User data
+   * @returns {Promise} - Promise with user data
    */
   async register(userData) {
     try {
       const response = await api.post('/auth/register', {
         ...userData,
-        role: "Admin" // Assure que le rôle est bien Admin avec majuscule
+        role: "Admin" // Ensure role is Admin with capital letter
       });
       
       const { token, user } = response.data;
       
-      // Stocker le token et les infos utilisateur
+      // Store token and user info
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       
       return user;
     } catch (error) {
-      console.error("Erreur d'inscription:", error);
-      throw error.response?.data || { message: 'Erreur lors de l\'inscription' };
+      console.error("Registration error:", error);
+      throw error.response?.data || { message: 'Error during registration' };
     }
   },
 
   /**
- * Tester la connectivité avec le backend
- */
-async testConnection() {
-  try {
-    console.log('🔍 Test de connectivité backend...');
-    const response = await api.get('/health'); // ou tout endpoint de test
-    console.log('✅ Backend accessible:', response.status);
-    return true;
-  } catch (error) {
-    console.error('❌ Backend inaccessible:', error.message);
-    if (error.code === 'ERR_NETWORK') {
-      console.error('💡 Vérifiez que votre backend est démarré et accessible');
+   * Test backend connectivity
+   */
+  async testConnection() {
+    try {
+      console.log('🔍 Testing backend connectivity...');
+      const response = await api.get('/health'); // or any test endpoint
+      console.log('✅ Backend accessible:', response.status);
+      return true;
+    } catch (error) {
+      console.error('❌ Backend inaccessible:', error.message);
+      if (error.code === 'ERR_NETWORK') {
+        console.error('💡 Check that your backend is started and accessible');
+      }
+      return false;
     }
-    return false;
-  }
-},
+  },
 
   /**
-   * Connexion de l'administrateur
-   * @param {string} email - Email de l'administrateur
-   * @param {string} password - Mot de passe
-   * @returns {Promise} - Promesse avec les données utilisateur
+   * Admin login
+   * @param {string} email - Admin email
+   * @param {string} password - Password
+   * @returns {Promise} - Promise with user data
    */
   async login(email, password) {
     try {
-      console.log(`Tentative de connexion avec ${email}`);
-      // Ne jamais logger le mot de passe en clair pour des raisons de sécurité
-      // Créer l'objet de données avec la structure attendue par l'API
+      console.log(`Login attempt with ${email}`);
+      // Never log password in plain text for security reasons
+      // Create data object with structure expected by API
       const loginData = { 
         email, 
         password,
-        role: 'Admin' // S'assurer que le rôle est explicitement spécifié
+        role: 'Admin' // Ensure role is explicitly specified
       };
-      console.log('Données envoyées:', { ...loginData, password: '[PROTÉGÉ]' });
+      console.log('Data sent:', { ...loginData, password: '[PROTECTED]' });
       
-      // Envoyer la requête
+      // Send request
       const response = await api.post('/auth/login', loginData);
       
-      console.log('Réponse de connexion:', response.status, response.statusText);
-      console.log('Données de réponse:', response.data);
+      console.log('Login response:', response.status, response.statusText);
+      console.log('Response data:', response.data);
       
-      // Extraire les données
+      // Extract data
       const { token, ...userData } = response.data;
       
-      // Pour la compatibilité avec différents formats de réponse API
+      // For compatibility with different API response formats
       const user = userData.user || userData;
       
-      console.log('Utilisateur extrait:', user);
-      console.log('Rôle de l\'utilisateur:', user.role);
+      console.log('Extracted user:', user);
+      console.log('User role:', user.role);
       
-      // Vérifier si l'utilisateur est un administrateur
+      // Check if user is an administrator
       if (user.role && user.role !== 'Admin') {
-        console.warn(`Rôle non autorisé: ${user.role}`);
-        throw { message: 'Accès non autorisé. Seuls les administrateurs peuvent accéder à cette application.' };
+        console.warn(`Unauthorized role: ${user.role}`);
+        throw { message: 'Unauthorized access. Only administrators can access this application.' };
       }
       
-      // Stocker le token et les infos utilisateur
+      // Store token and user info
       localStorage.setItem(TOKEN_KEY, token);
       localStorage.setItem(USER_KEY, JSON.stringify(user));
       
-      console.log('Authentification réussie');
+      console.log('Authentication successful');
       return user;
     } catch (error) {
-      console.error("Erreur de connexion:", error);
+      console.error("Login error:", error);
       
-      // Afficher autant d'informations que possible pour le débogage
+      // Show as much information as possible for debugging
       if (error.response) {
-        console.error("Détails de l'erreur:", error.response.status, error.response.data);
+        console.error("Error details:", error.response.status, error.response.data);
         
-        // Message d'erreur personnalisé en fonction du code de statut
+        // Custom error message based on status code
         if (error.response.status === 401) {
           throw { 
-            message: `Échec d'authentification: Email ou mot de passe incorrect. Vérifiez vos identifiants.`,
-            details: `Assurez-vous que votre serveur backend attend bien le rôle 'Admin' avec une majuscule.`
+            message: `Authentication failed: Incorrect email or password. Please check your credentials.`,
+            details: `Make sure your backend server expects the 'Admin' role with a capital letter.`
           };
         } else if (error.response.status === 500) {
-          throw { message: `Erreur serveur: Veuillez contacter l'administrateur système.` };
+          throw { message: `Server error: Please contact the system administrator.` };
         }
       }
       
-      // Message d'erreur général
+      // General error message
       throw { 
-        message: error.response?.data?.message || error.message || 'Erreur de connexion: Identifiants incorrects ou serveur indisponible',
+        message: error.response?.data?.message || error.message || 'Login error: Incorrect credentials or server unavailable',
         details: error.toString()
       };
     }
   },
   
   /**
-   * Déconnexion de l'administrateur
+   * Admin logout
    */
   logout() {
     localStorage.removeItem(TOKEN_KEY);
@@ -134,8 +134,8 @@ async testConnection() {
   },
   
   /**
-   * Récupérer l'utilisateur actuellement connecté
-   * @returns {Object|null} - Données utilisateur ou null
+   * Get currently logged in user
+   * @returns {Object|null} - User data or null
    */
   getCurrentUser() {
     const userStr = localStorage.getItem(USER_KEY);
@@ -149,31 +149,31 @@ async testConnection() {
   },
   
   /**
-   * Vérifier si l'utilisateur est authentifié
-   * @returns {boolean} - True si authentifié
+   * Check if user is authenticated
+   * @returns {boolean} - True if authenticated
    */
   isAuthenticated() {
     return !!this.getToken() && !!this.getCurrentUser();
   },
   
   /**
-   * Récupérer le token d'authentification
-   * @returns {string|null} - Token ou null
+   * Get authentication token
+   * @returns {string|null} - Token or null
    */
   getToken() {
     return localStorage.getItem(TOKEN_KEY);
   },
   
   /**
-   * Récupérer le profil de l'utilisateur connecté depuis l'API
-   * @returns {Promise} - Promesse avec les données du profil
+   * Get logged in user profile from API
+   * @returns {Promise} - Promise with profile data
    */
   async getProfile() {
     try {
       const response = await api.get('/auth/profile');
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la récupération du profil' };
+      throw error.response?.data || { message: 'Error fetching profile' };
     }
   }
 };
