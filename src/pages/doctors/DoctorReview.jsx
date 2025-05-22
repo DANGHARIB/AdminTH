@@ -37,96 +37,96 @@ import {
 } from '@mui/icons-material';
 import './DoctorReview.css';
 
-// Données simulées pour un docteur en attente
+// Mock data for a pending doctor
 const MOCK_PENDING_DOCTOR = {
   id: 3,
   name: 'Dr. Thomas Petit',
   email: 'thomas.petit@example.com',
   phone: '+33 6 34 56 78 90',
-  gender: 'Masculin',
+  gender: 'Male',
   birthDate: '1985-03-15',
   address: '123 Avenue des Médecins, 75008 Paris, France',
-  nationality: 'Française',
-  specialty: 'Généraliste',
+  nationality: 'French',
+  specialty: 'General Practitioner',
   status: 'pending',
   submissionDate: '2025-05-20',
   profilePhoto: null,
-  
-  // Informations professionnelles
+
+  // Professional details
   medicalLicense: 'FR-MED-123456789',
   licenseExpiry: '2028-12-31',
   practiceYears: 8,
   currentHospital: 'Hôpital Saint-Louis',
-  
-  // Formation
+
+  // Education
   education: [
     {
-      degree: 'Doctorat en Médecine',
+      degree: 'MD in Medicine',
       institution: 'Université Paris Descartes',
       year: '2017',
-      grade: 'Mention Très Bien'
+      grade: 'High Honors'
     },
     {
-      degree: 'Diplôme d\'Études Spécialisées en Médecine Générale',
+      degree: 'Specialty Diploma in General Medicine',
       institution: 'Université Paris Diderot',
       year: '2020',
-      grade: 'Mention Bien'
+      grade: 'Honors'
     }
   ],
-  
+
   // Certifications
   certifications: [
     {
-      name: 'Certification en Urgances Médicales',
+      name: 'Emergency Medicine Certification',
       issuer: 'SAMU de Paris',
       date: '2021-06-15',
       valid: true
     },
     {
-      name: 'Formation en Télémédecine',
+      name: 'Telemedicine Training',
       issuer: 'Ordre des Médecins',
       date: '2022-03-20',
       valid: true
     }
   ],
-  
-  // Expérience
+
+  // Experience
   experience: [
     {
-      position: 'Médecin Généraliste',
+      position: 'General Practitioner',
       institution: 'Hôpital Saint-Louis',
-      period: '2020 - Présent',
-      description: 'Consultations générales, urgences, suivi de patients chroniques'
+      period: '2020 - Present',
+      description: 'General consultations, emergencies, chronic patient follow-up'
     },
     {
-      position: 'Interne en Médecine Générale',
+      position: 'Medical Intern',
       institution: 'CHU Pitié-Salpêtrière',
       period: '2017 - 2020',
-      description: 'Formation pratique en médecine générale et spécialités'
+      description: 'Practical training in general medicine and specialties'
     }
   ],
-  
-  // Récompenses et reconnaissances
+
+  // Awards
   awards: [
     {
-      title: 'Prix du Jeune Médecin 2022',
+      title: 'Young Physician Award 2022',
       issuer: 'Ordre des Médecins de Paris',
       date: '2022-11-15',
-      description: 'Reconnaissance pour l\'excellence en médecine générale'
+      description: 'Recognition for excellence in general medicine'
     }
   ],
-  
-  // Documents soumis
+
+  // Submitted documents
   documents: [
-    { name: 'Diplôme de Médecine', verified: true },
-    { name: 'Licence Médicale', verified: true },
-    { name: 'Certificat d\'Expérience', verified: false },
-    { name: 'Photo d\'Identité', verified: true },
-    { name: 'Casier Judiciaire', verified: true }
+    { name: 'Medical Diploma', verified: true },
+    { name: 'Medical License', verified: true },
+    { name: 'Experience Certificate', verified: false },
+    { name: 'ID Photo', verified: true },
+    { name: 'Criminal Record Check', verified: true }
   ],
-  
-  // Motivation
-  motivation: "Je souhaite rejoindre votre plateforme pour élargir ma pratique médicale et offrir des consultations de qualité à un plus large public. Mon expérience en médecine générale et ma formation continue me permettent d'apporter une expertise solide dans le domaine de la télémédecine."
+
+  // Motivation letter
+  motivation: "I want to join your platform to expand my medical practice and provide quality consultations to a wider audience. My experience in general medicine and continuous training allow me to bring solid expertise to telemedicine."
 };
 
 const DoctorReview = () => {
@@ -142,13 +142,11 @@ const DoctorReview = () => {
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
-        // Simuler un délai réseau
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
         if (id === '3' || id === '4') {
           setDoctor(MOCK_PENDING_DOCTOR);
         } else {
-          throw new Error('Médecin non trouvé');
+          throw new Error('Doctor not found');
         }
       } catch (err) {
         setError(err.message);
@@ -156,7 +154,6 @@ const DoctorReview = () => {
         setLoading(false);
       }
     };
-
     fetchDoctor();
   }, [id]);
 
@@ -167,7 +164,6 @@ const DoctorReview = () => {
   const handleConfirmAction = async () => {
     try {
       setLoading(true);
-      
       switch (actionDialog.type) {
         case 'approve':
           // await doctorsService.approveDoctor(doctor.id);
@@ -176,19 +172,15 @@ const DoctorReview = () => {
           // await doctorsService.rejectDoctor(doctor.id, rejectionReason);
           break;
         case 'request-info': {
-          // Déplacement des déclarations dans un bloc pour éviter no-case-declarations
-          const subject = `Demande d'informations supplémentaires - ${doctor.name}`;
-          const body = emailContent || `Bonjour ${doctor.name},\n\nNous avons examiné votre candidature et aurions besoin d'informations supplémentaires...\n\nCordialement,\nL'équipe d'administration`;
+          const subject = `Additional Information Request - ${doctor.name}`;
+          const body = emailContent || `Hello ${doctor.name},\n\nWe have reviewed your application and need some additional details.\n\nBest regards,\nAdmin Team`;
           window.location.href = `mailto:${doctor.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
           break;
         }
       }
-      
       setActionDialog({ open: false, type: null });
       setRejectionReason('');
       setEmailContent('');
-      
-      // Rediriger vers la liste des médecins après action
       if (actionDialog.type !== 'request-info') {
         navigate('/doctors');
       }
@@ -207,7 +199,7 @@ const DoctorReview = () => {
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
       <Typography variant="body2">{doc.name}</Typography>
       <Chip 
-        label={doc.verified ? 'Vérifié' : 'En attente'} 
+        label={doc.verified ? 'Verified' : 'Pending'} 
         color={doc.verified ? 'success' : 'warning'}
         size="small"
       />
@@ -224,10 +216,10 @@ const DoctorReview = () => {
 
   if (error) {
     return (
-      <Box sx={{ padding: 3 }}>
+      <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
         <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Retour à la liste
+          Back to list
         </Button>
       </Box>
     );
@@ -235,184 +227,113 @@ const DoctorReview = () => {
 
   return (
     <Box className="doctor-review-page">
-      {/* Header */}
       <Box className="review-header">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar 
-            sx={{ width: 64, height: 64, bgcolor: '#2563eb', fontSize: '24px' }}
-          >
+          <Avatar sx={{ width: 64, height: 64, bgcolor: '#2563eb', fontSize: '24px' }}>
             {doctor.name.split(' ').map(n => n[0]).join('')}
           </Avatar>
           <Box>
-            <Typography variant="h4" className="doctor-name">
-              {doctor.name}
-            </Typography>
+            <Typography variant="h4">{doctor.name}</Typography>
             <Typography variant="body1" color="text.secondary">
-              {doctor.specialty} • Candidature soumise le {new Date(doctor.submissionDate).toLocaleDateString('fr-FR')}
+              {doctor.specialty} • Submitted on {new Date(doctor.submissionDate).toLocaleDateString()}
             </Typography>
             <Chip 
-              label="En attente de validation" 
+              label="Pending review" 
               color="warning" 
               sx={{ mt: 1 }}
             />
           </Box>
         </Box>
-        
         <Button variant="outlined" onClick={handleBack}>
-          Retour à la liste
+          Back to list
         </Button>
       </Box>
 
       <Grid container spacing={3}>
-        {/* Informations personnelles */}
+        {/* Personal Information */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader 
-              title="Informations personnelles"
-              avatar={<PersonIcon />}
-            />
+          <Card>
+            <CardHeader title="Personal Information" avatar={<PersonIcon />} />
             <CardContent>
               <List disablePadding>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Email" 
-                    secondary={doctor.email}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <EmailIcon sx={{ mr: 2 }} />
+                  <ListItemText primary="Email" secondary={doctor.email} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Téléphone" 
-                    secondary={doctor.phone}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <PhoneIcon sx={{ mr: 2 }} />
+                  <ListItemText primary="Phone" secondary={doctor.phone} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Date de naissance" 
-                    secondary={new Date(doctor.birthDate).toLocaleDateString('fr-FR')}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Date of Birth" secondary={new Date(doctor.birthDate).toLocaleDateString()} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Genre" 
-                    secondary={doctor.gender}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Gender" secondary={doctor.gender} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Adresse" 
-                    secondary={doctor.address}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <LocationIcon sx={{ mr: 2 }} />
+                  <ListItemText primary="Address" secondary={doctor.address} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Nationalité" 
-                    secondary={doctor.nationality}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Nationality" secondary={doctor.nationality} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
               </List>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Informations professionnelles */}
+        {/* Professional Information */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader 
-              title="Informations professionnelles"
-              avatar={<BadgeIcon />}
-            />
+          <Card>
+            <CardHeader title="Professional Information" avatar={<BadgeIcon />} />
             <CardContent>
               <List disablePadding>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Spécialité" 
-                    secondary={doctor.specialty}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Specialty" secondary={doctor.specialty} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Licence médicale" 
-                    secondary={doctor.medicalLicense}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Medical License" secondary={doctor.medicalLicense} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Expiration licence" 
-                    secondary={new Date(doctor.licenseExpiry).toLocaleDateString('fr-FR')}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="License Expiry" secondary={new Date(doctor.licenseExpiry).toLocaleDateString()} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Années d'expérience" 
-                    secondary={`${doctor.practiceYears} ans`}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Years of Practice" secondary={`${doctor.practiceYears} years`} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Établissement actuel" 
-                    secondary={doctor.currentHospital}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
+                  <ListItemText primary="Current Hospital" secondary={doctor.currentHospital} primaryTypographyProps={{ variant: 'subtitle2' }} />
                 </ListItem>
               </List>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Formation */}
+        {/* Education */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader 
-              title="Formation"
-              avatar={<EducationIcon />}
-            />
+          <Card>
+            <CardHeader title="Education" avatar={<EducationIcon />} />
             <CardContent>
-              {doctor.education.map((edu, index) => (
-                <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < doctor.education.length - 1 ? 1 : 0, borderColor: 'divider' }}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    {edu.degree}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {edu.institution} • {edu.year}
-                  </Typography>
-                  <Typography variant="caption" color="primary">
-                    {edu.grade}
-                  </Typography>
+              {doctor.education.map((edu, idx) => (
+                <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: idx < doctor.education.length - 1 ? 1 : 0, borderColor: 'divider' }}>
+                  <Typography variant="subtitle2" fontWeight={600}>{edu.degree}</Typography>
+                  <Typography variant="body2" color="text.secondary">{edu.institution} • {edu.year}</Typography>
+                  <Typography variant="caption" color="primary">{edu.grade}</Typography>
                 </Box>
               ))}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Expérience */}
+        {/* Work Experience */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader 
-              title="Expérience professionnelle"
-              avatar={<ExperienceIcon />}
-            />
+          <Card>
+            <CardHeader title="Work Experience" avatar={<ExperienceIcon />} />
             <CardContent>
-              {doctor.experience.map((exp, index) => (
-                <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < doctor.experience.length - 1 ? 1 : 0, borderColor: 'divider' }}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    {exp.position}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {exp.institution} • {exp.period}
-                  </Typography>
-                  <Typography variant="caption">
-                    {exp.description}
-                  </Typography>
+              {doctor.experience.map((exp, idx) => (
+                <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: idx < doctor.experience.length - 1 ? 1 : 0, borderColor: 'divider' }}>
+                  <Typography variant="subtitle2" fontWeight={600}>{exp.position}</Typography>
+                  <Typography variant="body2" color="text.secondary">{exp.institution} • {exp.period}</Typography>
+                  <Typography variant="caption">{exp.description}</Typography>
                 </Box>
               ))}
             </CardContent>
@@ -421,39 +342,28 @@ const DoctorReview = () => {
 
         {/* Certifications */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader 
-              title="Certifications"
-              avatar={<AwardIcon />}
-            />
+          <Card>
+            <CardHeader title="Certifications" avatar={<AwardIcon />} />
             <CardContent>
-              {doctor.certifications.map((cert, index) => (
-                <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < doctor.certifications.length - 1 ? 1 : 0, borderColor: 'divider' }}>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    {cert.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {cert.issuer} • {new Date(cert.date).toLocaleDateString('fr-FR')}
-                  </Typography>
-                  <Chip 
-                    label={cert.valid ? 'Valide' : 'Expiré'} 
-                    color={cert.valid ? 'success' : 'error'}
-                    size="small"
-                  />
+              {doctor.certifications.map((cert, idx) => (
+                <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: idx < doctor.certifications.length - 1 ? 1 : 0, borderColor: 'divider' }}>
+                  <Typography variant="subtitle2" fontWeight={600}>{cert.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{cert.issuer} • {new Date(cert.date).toLocaleDateString()}</Typography>
+                  <Chip label={cert.valid ? 'Valid' : 'Expired'} color={cert.valid ? 'success' : 'error'} size="small" />
                 </Box>
               ))}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Documents */}
+        {/* Submitted Documents */}
         <Grid item xs={12} md={6}>
-          <Card className="info-card">
-            <CardHeader title="Documents soumis" />
+          <Card>
+            <CardHeader title="Submitted Documents" />
             <CardContent>
               <List disablePadding>
-                {doctor.documents.map((doc, index) => (
-                  <ListItem key={index} disablePadding sx={{ py: 1 }}>
+                {doctor.documents.map((doc, idx) => (
+                  <ListItem key={idx} disablePadding sx={{ py: 1 }}>
                     {renderDocumentStatus(doc)}
                   </ListItem>
                 ))}
@@ -462,26 +372,17 @@ const DoctorReview = () => {
           </Card>
         </Grid>
 
-        {/* Récompenses */}
+        {/* Awards */}
         {doctor.awards.length > 0 && (
           <Grid item xs={12}>
-            <Card className="info-card">
-              <CardHeader 
-                title="Récompenses et reconnaissances"
-                avatar={<AwardIcon />}
-              />
+            <Card>
+              <CardHeader title="Awards and Recognitions" avatar={<AwardIcon />} />
               <CardContent>
-                {doctor.awards.map((award, index) => (
-                  <Box key={index} sx={{ mb: 2, pb: 2, borderBottom: index < doctor.awards.length - 1 ? 1 : 0, borderColor: 'divider' }}>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {award.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {award.issuer} • {new Date(award.date).toLocaleDateString('fr-FR')}
-                    </Typography>
-                    <Typography variant="caption">
-                      {award.description}
-                    </Typography>
+                {doctor.awards.map((award, idx) => (
+                  <Box key={idx} sx={{ mb: 2, pb: 2, borderBottom: idx < doctor.awards.length - 1 ? 1 : 0, borderColor: 'divider' }}>
+                    <Typography variant="subtitle2" fontWeight={600}>{award.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">{award.issuer} • {new Date(award.date).toLocaleDateString()}</Typography>
+                    <Typography variant="caption">{award.description}</Typography>
                   </Box>
                 ))}
               </CardContent>
@@ -489,10 +390,10 @@ const DoctorReview = () => {
           </Grid>
         )}
 
-        {/* Motivation */}
+        {/* Motivation Letter */}
         <Grid item xs={12}>
-          <Card className="info-card">
-            <CardHeader title="Lettre de motivation" />
+          <Card>
+            <CardHeader title="Motivation Letter" />
             <CardContent>
               <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
                 {doctor.motivation}
@@ -510,11 +411,9 @@ const DoctorReview = () => {
           startIcon={<ApproveIcon />}
           size="large"
           onClick={() => handleAction('approve')}
-          className="approve-button"
         >
-          Approuver le médecin
+          Approve Doctor
         </Button>
-        
         <Button
           variant="outlined"
           color="primary"
@@ -522,43 +421,41 @@ const DoctorReview = () => {
           size="large"
           onClick={() => handleAction('request-info')}
         >
-          Demander des infos
+          Request More Info
         </Button>
-        
         <Button
           variant="contained"
           color="error"
           startIcon={<RejectIcon />}
           size="large"
           onClick={() => handleAction('reject')}
-          className="reject-button"
         >
-          Rejeter la candidature
+          Reject Application
         </Button>
       </Box>
 
-      {/* Action Dialogs */}
-      <Dialog 
-        open={actionDialog.open} 
+      {/* Action Dialog */}
+      <Dialog
+        open={actionDialog.open}
         onClose={() => setActionDialog({ open: false, type: null })}
         maxWidth="sm"
         fullWidth
       >
         <DialogTitle>
-          {actionDialog.type === 'approve' && 'Approuver le médecin'}
-          {actionDialog.type === 'reject' && 'Rejeter la candidature'}
-          {actionDialog.type === 'request-info' && 'Demander des informations'}
+          {actionDialog.type === 'approve' && 'Approve Doctor'}
+          {actionDialog.type === 'reject' && 'Reject Application'}
+          {actionDialog.type === 'request-info' && 'Request Additional Information'}
         </DialogTitle>
         <DialogContent>
           {actionDialog.type === 'approve' && (
             <Typography>
-              Êtes-vous sûr de vouloir approuver ce médecin ? Il pourra alors accéder à la plateforme et commencer à recevoir des patients.
+              Are you sure you want to approve this doctor? They will gain platform access and start receiving patients.
             </Typography>
           )}
           {actionDialog.type === 'reject' && (
             <Box>
               <Typography sx={{ mb: 2 }}>
-                Veuillez indiquer la raison du rejet :
+                Please provide a reason for rejection:
               </Typography>
               <TextField
                 fullWidth
@@ -566,14 +463,14 @@ const DoctorReview = () => {
                 rows={4}
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                placeholder="Expliquez pourquoi cette candidature est rejetée..."
+                placeholder="Explain why this application is rejected..."
               />
             </Box>
           )}
           {actionDialog.type === 'request-info' && (
             <Box>
               <Typography sx={{ mb: 2 }}>
-                Personnalisez le message à envoyer au médecin :
+                Customize the message to send to the doctor:
               </Typography>
               <TextField
                 fullWidth
@@ -581,22 +478,22 @@ const DoctorReview = () => {
                 rows={6}
                 value={emailContent}
                 onChange={(e) => setEmailContent(e.target.value)}
-                placeholder={`Bonjour ${doctor?.name},\n\nNous avons examiné votre candidature et aurions besoin d'informations supplémentaires...\n\nCordialement,\nL'équipe d'administration`}
+                placeholder={`Hello ${doctor?.name},\n\nWe have reviewed your application and need some additional information...\n\nBest regards,\nAdmin Team`}
               />
             </Box>
           )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setActionDialog({ open: false, type: null })}>
-            Annuler
+            Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleConfirmAction}
             variant="contained"
             color={actionDialog.type === 'reject' ? 'error' : 'primary'}
             disabled={actionDialog.type === 'reject' && !rejectionReason.trim()}
           >
-            Confirmer
+            Confirm
           </Button>
         </DialogActions>
       </Dialog>

@@ -53,20 +53,16 @@ const DoctorDetails = () => {
   const fetchDoctorData = async () => {
     try {
       setLoading(true);
-      console.log(`🔍 Récupération des données du médecin ${id}...`);
-      
-      // Récupérer les données du médecin
+      console.log(`Fetching data for doctor ${id}...`);
+
       const doctorData = await doctorsService.getDoctorById(id);
-      console.log('✅ Données du médecin récupérées:', doctorData);
-      
+      console.log('Doctor data retrieved:', doctorData);
       setDoctor(doctorData);
-      
-      // Récupérer les transactions/paiements du médecin
+
       await fetchDoctorTransactions(doctorData._id || doctorData.id);
-      
     } catch (err) {
-      console.error('❌ Erreur lors de la récupération du médecin:', err);
-      setError(err.message || 'Médecin non trouvé');
+      console.error('Error fetching doctor:', err);
+      setError(err.message || 'Doctor not found');
     } finally {
       setLoading(false);
     }
@@ -75,134 +71,113 @@ const DoctorDetails = () => {
   const fetchDoctorTransactions = async (doctorId) => {
     try {
       setLoadingTransactions(true);
-      console.log(`💰 Récupération des transactions pour le médecin ${doctorId}...`);
-      
+      console.log(`Fetching transactions for doctor ${doctorId}...`);
+
       const paymentsData = await paymentsService.getPaymentsByDoctor(doctorId);
-      console.log('✅ Transactions récupérées:', paymentsData);
-      
-      // Mapper les paiements vers le format attendu par le tableau
+      console.log('Transactions retrieved:', paymentsData);
+
       const mappedTransactions = paymentsData.map(payment => ({
         id: payment.id || payment._id,
         date: payment.date || payment.createdAt,
-        patient: payment.patient?.name || payment.patientName || 'Patient inconnu',
+        patient: payment.patient?.name || payment.patientName || 'Unknown patient',
         amount: payment.amount || 0,
-        commission: payment.commission || (payment.amount * 0.15), // 15% par défaut
-        net: payment.net || (payment.amount * 0.85), // 85% par défaut
+        commission: payment.commission != null ? payment.commission : payment.amount * 0.15,
+        net: payment.net != null ? payment.net : payment.amount * 0.85,
         status: payment.status || 'completed',
         type: payment.type || payment.description || 'consultation',
         description: payment.description || 'Consultation'
       }));
-      
+
       setTransactions(mappedTransactions);
     } catch (err) {
-      console.warn('⚠️ Erreur lors de la récupération des transactions:', err);
-      // Générer des transactions simulées basées sur le médecin
+      console.warn('Error fetching transactions:', err);
       setTransactions(generateMockTransactions(doctorId));
     } finally {
       setLoadingTransactions(false);
     }
   };
 
-  // Générer des transactions simulées si les vraies ne sont pas disponibles
   const generateMockTransactions = (doctorId) => {
-    const mockTransactions = [];
+    const mock = [];
     const now = new Date();
-    
+
     for (let i = 1; i <= 5; i++) {
       const daysAgo = Math.floor(Math.random() * 30);
-      const transactionDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
-      const amount = Math.floor(Math.random() * 100) + 50; // 50-150€
+      const date = new Date(now.getTime() - daysAgo * 86400000).toISOString();
+      const amount = Math.floor(Math.random() * 100) + 50;
       const commission = amount * 0.15;
       const net = amount - commission;
-      
-      mockTransactions.push({
+
+      mock.push({
         id: i,
-        date: transactionDate.toISOString(),
+        date,
         patient: `Patient ${i}`,
-        amount: amount,
-        commission: commission,
-        net: net,
+        amount,
+        commission,
+        net,
         status: Math.random() > 0.2 ? 'completed' : 'pending',
-        type: ['consultation', 'urgence', 'suivi'][Math.floor(Math.random() * 3)],
-        description: 'Consultation simulée'
+        type: ['consultation', 'emergency', 'follow-up'][Math.floor(Math.random() * 3)],
+        description: 'Sample consultation'
       });
     }
-    
-    return mockTransactions;
+
+    return mock;
   };
 
-  // Calculer les statistiques financières basées sur les transactions
   const calculateFinancialStats = (doctor, transactions) => {
-    const completedTransactions = transactions.filter(t => t.status === 'completed');
-    const totalRevenue = completedTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const totalCommission = completedTransactions.reduce((sum, t) => sum + t.commission, 0);
-    const netRevenue = totalRevenue - totalCommission;
-    
-    // Revenus du mois en cours
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    
-    const monthlyTransactions = completedTransactions.filter(t => {
-      const transactionDate = new Date(t.date);
-      return transactionDate.getMonth() === currentMonth && transactionDate.getFullYear() === currentYear;
-    });
-    
-    const monthlyRevenue = monthlyTransactions.reduce((sum, t) => sum + t.amount, 0);
-    const avgPrice = completedTransactions.length > 0 ? totalRevenue / completedTransactions.length : (doctor.price || 75);
-    
+    const completed = transactions.filter(t => t.status === 'completed');
+    const totalRevenue = completed.reduce((sum, t) => sum + t.amount, 0);
+    const totalCommission = completed.reduce((sum, t) => sum + t.commission, 0);
+
+    const now = new Date();
+    const month = now.getMonth();
+    const year = now.getFullYear();
+
+    const monthly = completed.filter(t => {
+      const d = new Date(t.date);
+      return d.getMonth() === month && d.getFullYear() === year;
+    }).reduce((sum, t) => sum + t.amount, 0);
+
+    const avgPrice = completed.length ? totalRevenue / completed.length : doctor.price || 75;
+
     return {
-      totalRevenue: totalRevenue || (doctor.price * 50) || 5000, // Estimation si pas de données
-      monthlyRevenue: monthlyRevenue || (doctor.price * 10) || 1000,
-      completedConsultations: completedTransactions.length || 25,
+      totalRevenue: totalRevenue || (doctor.price * 50) || 5000,
+      monthlyRevenue: monthly || (doctor.price * 10) || 1000,
+      completedConsultations: completed.length || 25,
       avgConsultationPrice: avgPrice,
-      commission: 15, // 15% de commission par défaut
+      commissionRate: 15,
       pendingPayments: transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0),
-      growth: Math.floor(Math.random() * 20) + 5 // Croissance simulée 5-25%
+      growth: Math.floor(Math.random() * 20) + 5
     };
   };
 
-  // Générer des statistiques mensuelles simulées
   const generateMonthlyStats = (finances) => {
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai'];
-    return months.map(month => ({
-      month,
-      revenue: Math.floor(finances.monthlyRevenue * (0.8 + Math.random() * 0.4)), // ±20%
-      consultations: Math.floor(Math.random() * 10) + 10 // 10-20 consultations
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May'];
+    return months.map(m => ({
+      month: m,
+      revenue: Math.floor(finances.monthlyRevenue * (0.8 + Math.random() * 0.4)),
+      consultations: Math.floor(Math.random() * 10) + 10
     }));
   };
 
-  const handleBack = () => {
-    navigate('/doctors');
-  };
+  const handleBack = () => navigate('/doctors');
+  const handleTabChange = (_, newValue) => setActiveTab(newValue);
 
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount || 0);
-  };
+  const formatCurrency = (amt) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'EUR' }).format(amt || 0);
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed': return 'success';
-      case 'pending': return 'warning';
-      case 'failed': return 'error';
-      default: return 'default';
-    }
+    if (status === 'completed') return 'success';
+    if (status === 'pending') return 'warning';
+    if (status === 'failed') return 'error';
+    return 'default';
   };
 
   const getTypeLabel = (type) => {
-    switch (type) {
-      case 'consultation': return 'Consultation';
-      case 'urgence': return 'Urgence';
-      case 'suivi': return 'Suivi';
-      default: return type || 'Consultation';
-    }
+    if (type === 'consultation') return 'Consultation';
+    if (type === 'emergency') return 'Emergency';
+    if (type === 'follow-up') return 'Follow-up';
+    return type || 'Consultation';
   };
 
   const transactionColumns = [
@@ -210,13 +185,9 @@ const DoctorDetails = () => {
       field: 'date',
       headerName: 'Date',
       width: 120,
-      renderCell: (value) => new Date(value).toLocaleDateString('fr-FR')
+      renderCell: (value) => new Date(value).toLocaleDateString()
     },
-    {
-      field: 'patient',
-      headerName: 'Patient',
-      width: 150
-    },
+    { field: 'patient', headerName: 'Patient', width: 150 },
     {
       field: 'type',
       headerName: 'Type',
@@ -225,7 +196,7 @@ const DoctorDetails = () => {
     },
     {
       field: 'amount',
-      headerName: 'Montant',
+      headerName: 'Amount',
       width: 100,
       align: 'right',
       renderCell: (value) => (
@@ -258,11 +229,15 @@ const DoctorDetails = () => {
     },
     {
       field: 'status',
-      headerName: 'Statut',
+      headerName: 'Status',
       width: 120,
       renderCell: (value) => (
-        <Chip 
-          label={value === 'completed' ? 'Terminé' : value === 'pending' ? 'En attente' : 'Échoué'} 
+        <Chip
+          label={
+            value === 'completed' ? 'Completed' :
+            value === 'pending'   ? 'Pending'   :
+                                    'Failed'
+          }
           color={getStatusColor(value)}
           size="small"
         />
@@ -280,10 +255,10 @@ const DoctorDetails = () => {
 
   if (error) {
     return (
-      <Box sx={{ padding: 3 }}>
+      <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
         <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Retour à la liste
+          Back to List
         </Button>
       </Box>
     );
@@ -291,16 +266,15 @@ const DoctorDetails = () => {
 
   if (!doctor) {
     return (
-      <Box sx={{ padding: 3 }}>
-        <Alert severity="warning">Médecin non trouvé</Alert>
+      <Box sx={{ p: 3 }}>
+        <Alert severity="warning">Doctor not found</Alert>
         <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Retour à la liste
+          Back to List
         </Button>
       </Box>
     );
   }
 
-  // Calculer les données financières et statistiques
   const finances = calculateFinancialStats(doctor, transactions);
   const monthlyStats = generateMonthlyStats(finances);
 
@@ -318,133 +292,163 @@ const DoctorDetails = () => {
 
   return (
     <Box className="doctor-details-page">
-      {/* Header */}
       <Box className="details-header">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar 
-            sx={{ width: 64, height: 64, bgcolor: '#2563eb', fontSize: '24px' }}
-          >
-            {doctor.initials || 
-             (doctor.fullName ? doctor.fullName.split(' ').map(n => n[0]).join('') : 'DR')}
+          <Avatar sx={{ width: 64, height: 64, bgcolor: '#2563eb', fontSize: '24px' }}>
+            {doctor.initials ||
+              (doctor.fullName
+                ? doctor.fullName.split(' ').map(n => n[0]).join('')
+                : 'DR')}
           </Avatar>
           <Box>
             <Typography variant="h4" className="doctor-name">
               {doctor.displayName || `Dr. ${doctor.fullName || doctor.name}`}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-              {doctor.specialty || doctor.specialization} • {doctor.experience ? `${doctor.experience} ans` : 'Expérience non renseignée'} d'expérience
+              {doctor.specialty || doctor.specialization} •{' '}
+              {doctor.experience
+                ? `${doctor.experience} years`
+                : 'Experience not provided'}
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Chip 
-                label={doctor.verified || doctor.status === 'verified' ? 'Vérifié' : 'En attente'} 
-                color={doctor.verified || doctor.status === 'verified' ? 'success' : 'warning'} 
+              <Chip
+                label={
+                  doctor.verified || doctor.status === 'verified'
+                    ? 'Verified'
+                    : 'Pending'
+                }
+                color={
+                  doctor.verified || doctor.status === 'verified'
+                    ? 'success'
+                    : 'warning'
+                }
               />
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <Typography
+                variant="body2"
+                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+              >
                 ⭐ {doctor.rating || '0'} • {doctor.patients || 0} patients
               </Typography>
             </Box>
           </Box>
         </Box>
-        
         <Button variant="outlined" onClick={handleBack}>
-          Retour à la liste
+          Back to List
         </Button>
       </Box>
 
-      {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} className="doctor-tabs">
-          <Tab icon={<PersonIcon />} label="Informations" />
-          <Tab icon={<WorkIcon />} label="Professionnel" />
-          <Tab icon={<FinanceIcon />} label="Finances" />
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          className="doctor-tabs"
+        >
+          <Tab icon={<PersonIcon />} label="Information" />
+          <Tab icon={<WorkIcon />} label="Professional" />
+          <Tab icon={<FinanceIcon />} label="Financials" />
         </Tabs>
       </Box>
 
-      {/* Onglet Informations */}
       <TabPanel value={activeTab} index={0}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Informations personnelles
+                Personal Information
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <List disablePadding>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <EmailIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Email" 
-                    secondary={doctor.email || 'Non renseigné'} 
+                  <ListItemText
+                    primary="Email"
+                    secondary={doctor.email || 'Not provided'}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <PhoneIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Téléphone" 
-                    secondary={doctor.phone || 'Non renseigné'} 
+                  <ListItemText
+                    primary="Phone"
+                    secondary={doctor.phone || 'Not provided'}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <LocationIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Adresse" 
-                    secondary={doctor.address || 'Non renseignée'} 
+                  <ListItemText
+                    primary="Address"
+                    secondary={doctor.address || 'Not provided'}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <PersonIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Date de naissance" 
-                    secondary={doctor.dob ? new Date(doctor.dob).toLocaleDateString('fr-FR') : 'Non renseignée'} 
+                  <ListItemText
+                    primary="Date of Birth"
+                    secondary={
+                      doctor.dob
+                        ? new Date(doctor.dob).toLocaleDateString()
+                        : 'Not provided'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
               </List>
             </Paper>
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Statistiques
+                Statistics
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <List disablePadding>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Patients actifs" 
-                    secondary={doctor.patients || 0} 
+                  <ListItemText
+                    primary="Active Patients"
+                    secondary={doctor.patients || 0}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Note moyenne" 
-                    secondary={doctor.rating ? `⭐ ${doctor.rating}/5` : 'Pas encore de notes'} 
+                  <ListItemText
+                    primary="Average Rating"
+                    secondary={
+                      doctor.rating ? `⭐ ${doctor.rating}/5` : 'No ratings yet'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Membre depuis" 
-                    secondary={doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'} 
+                  <ListItemText
+                    primary="Member Since"
+                    secondary={
+                      doctor.createdAt
+                        ? new Date(doctor.createdAt).toLocaleDateString()
+                        : 'Not available'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Statut" 
-                    secondary={doctor.verified || doctor.status === 'verified' ? 'Compte vérifié' : 'En attente de validation'} 
+                  <ListItemText
+                    primary="Account Status"
+                    secondary={
+                      doctor.verified || doctor.status === 'verified'
+                        ? 'Verified'
+                        : 'Pending verification'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="Prix consultation" 
-                    secondary={doctor.price ? `${doctor.price}€` : 'Non défini'} 
+                  <ListItemText
+                    primary="Consultation Fee"
+                    secondary={
+                      doctor.price ? `${doctor.price}€` : 'Not set'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
@@ -454,64 +458,69 @@ const DoctorDetails = () => {
         </Grid>
       </TabPanel>
 
-      {/* Onglet Professionnel */}
       <TabPanel value={activeTab} index={1}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Parcours professionnel
+                Professional Background
               </Typography>
               <Divider sx={{ mb: 2 }} />
               <List disablePadding>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <SchoolIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Formation" 
-                    secondary={doctor.education || 'Non renseignée'} 
+                  <ListItemText
+                    primary="Education"
+                    secondary={doctor.education || 'Not provided'}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <WorkIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Expérience" 
-                    secondary={doctor.experience ? `${doctor.experience} ans` : 'Non renseignée'} 
+                  <ListItemText
+                    primary="Experience"
+                    secondary={
+                      doctor.experience
+                        ? `${doctor.experience} years`
+                        : 'Not provided'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
                   <PersonIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText 
-                    primary="Spécialisation" 
-                    secondary={doctor.specialty || doctor.specialization || 'Non définie'} 
+                  <ListItemText
+                    primary="Specialization"
+                    secondary={
+                      doctor.specialty || doctor.specialization || 'Not defined'
+                    }
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
                 <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText 
-                    primary="À propos" 
-                    secondary={doctor.about || 'Non renseigné'} 
+                  <ListItemText
+                    primary="About"
+                    secondary={doctor.about || 'Not provided'}
                     primaryTypographyProps={{ variant: 'subtitle2' }}
                   />
                 </ListItem>
               </List>
             </Paper>
           </Grid>
-          
+
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
                 Certifications
               </Typography>
               <Divider sx={{ mb: 2 }} />
-              {doctor.certifications && doctor.certifications.length > 0 ? (
+              {doctor.certifications && doctor.certifications.length ? (
                 <List disablePadding>
-                  {doctor.certifications.map((cert, index) => (
-                    <ListItem key={index} disablePadding sx={{ py: 1 }}>
-                      <ListItemText 
-                        primary={cert.name || cert} 
-                        secondary={cert.issuer || 'Organisme non spécifié'} 
+                  {doctor.certifications.map((cert, idx) => (
+                    <ListItem key={idx} disablePadding sx={{ py: 1 }}>
+                      <ListItemText
+                        primary={cert.name || cert}
+                        secondary={cert.issuer || 'Issuer not specified'}
                         primaryTypographyProps={{ variant: 'subtitle2' }}
                       />
                     </ListItem>
@@ -519,7 +528,7 @@ const DoctorDetails = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  Aucune certification renseignée
+                  No certifications listed
                 </Typography>
               )}
             </Paper>
@@ -527,38 +536,35 @@ const DoctorDetails = () => {
         </Grid>
       </TabPanel>
 
-      {/* Onglet Finances */}
       <TabPanel value={activeTab} index={2}>
-        {/* Cartes de statistiques financières */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
+            <Card>
               <CardContent>
-                <Box className="finance-content">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h5" className="finance-number">
+                    <Typography variant="h5">
                       {formatCurrency(finances.totalRevenue)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Revenus totaux
+                      Total Revenue
                     </Typography>
                   </Box>
-                  <TrendingUpIcon className="finance-icon" />
+                  <TrendingUpIcon />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-          
           <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
+            <Card>
               <CardContent>
-                <Box className="finance-content">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h5" className="finance-number">
+                    <Typography variant="h5">
                       {formatCurrency(finances.monthlyRevenue)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Ce mois-ci
+                      This Month
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                       <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
@@ -567,64 +573,61 @@ const DoctorDetails = () => {
                       </Typography>
                     </Box>
                   </Box>
-                  <CalendarIcon className="finance-icon" />
+                  <CalendarIcon />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-          
           <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
+            <Card>
               <CardContent>
-                <Box className="finance-content">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h5" className="finance-number">
+                    <Typography variant="h5">
                       {finances.completedConsultations}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Consultations
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Moy: {formatCurrency(finances.avgConsultationPrice)}
+                      Avg: {formatCurrency(finances.avgConsultationPrice)}
                     </Typography>
                   </Box>
-                  <ReceiptIcon className="finance-icon" />
+                  <ReceiptIcon />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
-          
           <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
+            <Card>
               <CardContent>
-                <Box className="finance-content">
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Box>
-                    <Typography variant="h5" className="finance-number">
+                    <Typography variant="h5">
                       {formatCurrency(finances.pendingPayments)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      En attente
+                      Pending
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Commission: {finances.commission}%
+                      Fee: {finances.commissionRate}%
                     </Typography>
                   </Box>
-                  <ReceiptIcon className="finance-icon" />
+                  <ReceiptIcon />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
         </Grid>
 
-        {/* Évolution mensuelle */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Évolution des revenus (5 derniers mois)
+                  Revenue Over Last 5 Months
                 </Typography>
-                {monthlyStats.map((stat) => (
+                {monthlyStats.map(stat => (
                   <Box key={stat.month} sx={{ mb: 2 }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2">{stat.month}</Typography>
@@ -632,9 +635,13 @@ const DoctorDetails = () => {
                         {formatCurrency(stat.revenue)}
                       </Typography>
                     </Box>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={(stat.revenue / Math.max(...monthlyStats.map(s => s.revenue))) * 100} 
+                    <LinearProgress
+                      variant="determinate"
+                      value={
+                        (stat.revenue /
+                          Math.max(...monthlyStats.map(s => s.revenue))) *
+                        100
+                      }
                       sx={{ height: 6, borderRadius: 3 }}
                     />
                     <Typography variant="caption" color="text.secondary">
@@ -645,35 +652,39 @@ const DoctorDetails = () => {
               </CardContent>
             </Card>
           </Grid>
-          
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Répartition des revenus
+                  Revenue Breakdown
                 </Typography>
                 <Box sx={{ mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">Revenus bruts</Typography>
+                    <Typography variant="body2">Gross Revenue</Typography>
                     <Typography variant="body2" fontWeight={600}>
                       {formatCurrency(finances.totalRevenue)}
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography variant="body2" color="error.main">
-                      Commission plateforme ({finances.commission}%)
+                      Platform Fee ({finances.commissionRate}%)
                     </Typography>
                     <Typography variant="body2" color="error.main">
-                      -{formatCurrency(finances.totalRevenue * (finances.commission / 100))}
+                      -{formatCurrency(
+                        finances.totalRevenue * (finances.commissionRate / 100)
+                      )}
                     </Typography>
                   </Box>
                   <Divider sx={{ my: 1 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant="body2" fontWeight={600}>
-                      Revenus nets
+                      Net Revenue
                     </Typography>
                     <Typography variant="body2" fontWeight={600} color="success.main">
-                      {formatCurrency(finances.totalRevenue * (1 - finances.commission / 100))}
+                      {formatCurrency(
+                        finances.totalRevenue *
+                          (1 - finances.commissionRate / 100)
+                      )}
                     </Typography>
                   </Box>
                 </Box>
@@ -682,45 +693,40 @@ const DoctorDetails = () => {
           </Grid>
         </Grid>
 
-        {/* Transactions récentes */}
         <Card>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 3, pb: 0 }}>
               <Typography variant="h6">
-                Transactions récentes
+                Recent Transactions
                 {loadingTransactions && (
                   <CircularProgress size={20} sx={{ ml: 2 }} />
                 )}
               </Typography>
             </Box>
-            
             <DataTable
               data={transactions}
               columns={transactionColumns}
               searchable={false}
-              pagination={true}
+              pagination
               initialRowsPerPage={10}
             />
           </CardContent>
         </Card>
       </TabPanel>
-      
-      {/* Action Buttons */}
+
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-        <Button variant="contained" color="primary">
-          Modifier
-        </Button>
+        <Button variant="contained">Edit</Button>
         {!(doctor.verified || doctor.status === 'verified') && (
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             color="warning"
             onClick={() => navigate(`/doctors/${doctor._id || doctor.id}/review`)}
           >
-            Réviser
+            Review
           </Button>
         )}
         <Button variant="outlined" color="error">
-          Suspendre
+          Suspend
         </Button>
       </Box>
     </Box>

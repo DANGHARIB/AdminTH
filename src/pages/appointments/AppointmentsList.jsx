@@ -37,14 +37,14 @@ const AppointmentsList = () => {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
-        console.log('Récupération des rendez-vous...');
+        console.log('Fetching appointments...');
         const appointmentsData = await appointmentsService.getAllAppointments();
-        console.log('Rendez-vous reçus:', appointmentsData);
+        console.log('Appointments received:', appointmentsData);
         setAppointments(appointmentsData);
         setError(null);
       } catch (err) {
-        console.error('Erreur lors de la récupération des rendez-vous:', err);
-        setError(err.message || 'Une erreur s\'est produite lors du chargement des rendez-vous');
+        console.error('Error fetching appointments:', err);
+        setError(err.message || 'An error occurred while loading appointments');
       } finally {
         setLoading(false);
       }
@@ -53,7 +53,7 @@ const AppointmentsList = () => {
     fetchAppointments();
   }, []);
 
-  // Stats calculées avec vérification des données
+  // Calculated stats with data verification
   const stats = {
     total: appointments.length,
     confirmed: appointments.filter(a => a.status === 'confirmed').length,
@@ -74,18 +74,24 @@ const AppointmentsList = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'confirmed': return 'Confirmé';
-      case 'pending': return 'En attente';
-      case 'completed': return 'Terminé';
-      case 'cancelled': return 'Annulé';
-      default: return status || 'Statut inconnu';
+      case 'confirmed': 
+      case 'Confirmé': return 'Confirmed';
+      case 'pending': 
+      case 'En attente': return 'Pending';
+      case 'completed': 
+      case 'Terminé': return 'Completed';
+      case 'cancelled': 
+      case 'Annulé': return 'Cancelled';
+      default: return status || 'Unknown status';
     }
   };
 
   const getTypeColor = (type) => {
     switch (type) {
-      case 'urgence': return 'error';
-      case 'controle': return 'info';
+      case 'urgence': 
+      case 'emergency': return 'error';
+      case 'controle': 
+      case 'checkup': return 'info';
       case 'consultation': return 'primary';
       default: return 'default';
     }
@@ -93,25 +99,28 @@ const AppointmentsList = () => {
 
   const getTypeLabel = (type) => {
     switch (type) {
-      case 'consultation': return 'Consultation';
-      case 'urgence': return 'Urgence';
-      case 'controle': return 'Contrôle';
+      case 'consultation': 
+      case 'Consultation': return 'Consultation';
+      case 'urgence': 
+      case 'emergency': return 'Emergency';
+      case 'controle': 
+      case 'checkup': return 'Check-up';
       default: return type || 'N/A';
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Date invalide';
+    if (!dateString) return 'Invalid date';
     
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('fr-FR', { 
+      return date.toLocaleDateString('en-US', { 
         day: '2-digit', 
         month: '2-digit',
         year: '2-digit'
       });
     } catch (error) {
-      return 'Date invalide';
+      return 'Invalid date';
     }
   };
 
@@ -131,12 +140,12 @@ const AppointmentsList = () => {
     },
     {
       field: 'time',
-      headerName: 'Heure',
+      headerName: 'Time',
       width: 100,
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TimeIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-          <Typography variant="body2">{value || 'Heure non définie'}</Typography>
+          <Typography variant="body2">{value || 'Time not set'}</Typography>
         </Box>
       )
     },
@@ -150,19 +159,19 @@ const AppointmentsList = () => {
             {value?.name ? value.name.charAt(0) : 'P'}
           </Avatar>
           <Typography variant="body2">
-            {value?.name || 'Patient inconnu'}
+            {value?.name || 'Unknown patient'}
           </Typography>
         </Box>
       )
     },
     {
       field: 'doctor',
-      headerName: 'Médecin',
+      headerName: 'Doctor',
       width: 220,
       renderCell: (value) => (
         <Box>
           <Typography variant="body2" fontWeight={500}>
-            {value?.name || 'Médecin inconnu'}
+            {value?.name || 'Unknown doctor'}
           </Typography>
           <Typography variant="caption" color="text.secondary">
             {value?.specialty || ''}
@@ -185,7 +194,7 @@ const AppointmentsList = () => {
     },
     {
       field: 'status',
-      headerName: 'Statut',
+      headerName: 'Status',
       width: 120,
       renderCell: (value) => (
         <Chip 
@@ -197,18 +206,18 @@ const AppointmentsList = () => {
     },
     {
       field: 'duration',
-      headerName: 'Durée',
+      headerName: 'Duration',
       width: 80,
       renderCell: (value) => `${value || 0}min`
     },
     {
       field: 'price',
-      headerName: 'Prix',
+      headerName: 'Price',
       width: 80,
       align: 'right',
       renderCell: (value) => (
         <Typography variant="body2" fontWeight={500}>
-          {value ? `${value}€` : 'Gratuit'}
+          {value ? `$${value}` : 'Free'}
         </Typography>
       )
     },
@@ -239,12 +248,12 @@ const AppointmentsList = () => {
 
   const handleRowClick = (appointment) => {
     console.log('Appointment clicked:', appointment);
-    // Naviguer vers les détails du rendez-vous si nécessaire
+    // Navigate to appointment details if needed
   };
 
   const handleAddAppointment = () => {
     console.log('Add appointment clicked');
-    // Naviguer vers la page de création de rendez-vous
+    // Navigate to appointment creation page
   };
 
   const handleDeleteAppointment = async () => {
@@ -255,8 +264,8 @@ const AppointmentsList = () => {
       setAppointments(appointments.filter(appt => appt.id !== selectedAppointment.id));
       handleMenuClose();
     } catch (err) {
-      console.error('Erreur lors de la suppression du rendez-vous:', err);
-      setError('Erreur lors de la suppression du rendez-vous');
+      console.error('Error deleting appointment:', err);
+      setError('Error deleting appointment');
     }
   };
 
@@ -269,15 +278,15 @@ const AppointmentsList = () => {
         newStatus
       );
       
-      // Mettre à jour la liste locale
+      // Update local list
       setAppointments(appointments.map(appt => 
         appt.id === selectedAppointment.id ? updatedAppointment : appt
       ));
       
       handleMenuClose();
     } catch (err) {
-      console.error('Erreur lors du changement de statut:', err);
-      setError('Erreur lors du changement de statut');
+      console.error('Error changing status:', err);
+      setError('Error changing status');
     }
   };
 
@@ -299,7 +308,7 @@ const AppointmentsList = () => {
           variant="contained" 
           onClick={() => window.location.reload()}
         >
-          Réessayer
+          Retry
         </Button>
       </Box>
     );
@@ -310,10 +319,10 @@ const AppointmentsList = () => {
       <Box className="page-header">
         <Box>
           <Typography variant="h4" className="page-title">
-            Rendez-vous
+            Appointments
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Gérez tous les rendez-vous de la plateforme
+            Manage all appointments on the platform
           </Typography>
         </Box>
         
@@ -323,7 +332,7 @@ const AppointmentsList = () => {
           className="add-button"
           onClick={handleAddAppointment}
         >
-          Nouveau RDV
+          New Appointment
         </Button>
       </Box>
 
@@ -356,7 +365,7 @@ const AppointmentsList = () => {
                     {stats.confirmed}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Confirmés
+                    Confirmed
                   </Typography>
                 </Box>
                 <CalendarIcon className="stat-icon" />
@@ -374,7 +383,7 @@ const AppointmentsList = () => {
                     {stats.pending}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    En attente
+                    Pending
                   </Typography>
                 </Box>
                 <TimeIcon className="stat-icon" />
@@ -392,7 +401,7 @@ const AppointmentsList = () => {
                     {stats.completed}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Terminés
+                    Completed
                   </Typography>
                 </Box>
                 <CalendarIcon className="stat-icon" />
@@ -402,10 +411,10 @@ const AppointmentsList = () => {
         </Grid>
       </Grid>
 
-      {/* Debug info en mode développement */}
+      {/* Debug info in development mode */}
       {import.meta.env.DEV && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Debug: {appointments.length} rendez-vous chargés. Premier RDV ID: {appointments[0]?.id}
+          Debug: {appointments.length} appointments loaded. First appointment ID: {appointments[0]?.id}
         </Alert>
       )}
 
@@ -426,35 +435,35 @@ const AppointmentsList = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => {
-          console.log('Voir détails rendez-vous:', selectedAppointment?.id);
+          console.log('View appointment details:', selectedAppointment?.id);
           handleMenuClose();
         }}>
-          Voir les détails
+          View Details
         </MenuItem>
         
         <MenuItem onClick={() => {
-          console.log('Modifier rendez-vous:', selectedAppointment?.id);
+          console.log('Edit appointment:', selectedAppointment?.id);
           handleMenuClose();
         }}>
-          Modifier
+          Edit
         </MenuItem>
         
-        {/* Sous-menu pour changer le statut */}
+        {/* Status change submenu */}
         {selectedAppointment?.status === 'pending' && (
           <MenuItem onClick={() => handleChangeStatus('confirmed')}>
-            Confirmer
+            Confirm
           </MenuItem>
         )}
         
         {selectedAppointment?.status === 'confirmed' && (
           <MenuItem onClick={() => handleChangeStatus('completed')}>
-            Marquer comme terminé
+            Mark as Completed
           </MenuItem>
         )}
         
         {(selectedAppointment?.status === 'pending' || selectedAppointment?.status === 'confirmed') && (
           <MenuItem onClick={() => handleChangeStatus('cancelled')}>
-            Annuler
+            Cancel
           </MenuItem>
         )}
         
@@ -462,7 +471,7 @@ const AppointmentsList = () => {
           onClick={handleDeleteAppointment}
           sx={{ color: 'error.main' }}
         >
-          Supprimer
+          Delete
         </MenuItem>
       </Menu>
     </Box>

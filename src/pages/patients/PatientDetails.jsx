@@ -50,20 +50,20 @@ const PatientDetails = () => {
   useEffect(() => {
     const fetchPatient = async () => {
       if (!id) {
-        setError('ID patient manquant');
+        setError('Missing patient ID');
         setLoading(false);
         return;
       }
 
       try {
-        console.log('Récupération du patient avec ID:', id);
+        console.log('Fetching patient with ID:', id);
         const fetchedPatient = await patientsService.getPatientById(id);
-        console.log('Patient récupéré:', fetchedPatient);
+        console.log('Patient fetched:', fetchedPatient);
         setPatient(fetchedPatient);
         setError(null);
       } catch (err) {
-        console.error('Erreur lors de la récupération du patient:', err);
-        setError(err.message || 'Patient non trouvé');
+        console.error('Error fetching patient:', err);
+        setError(err.message || 'Patient not found');
       } finally {
         setLoading(false);
       }
@@ -81,9 +81,9 @@ const PatientDetails = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount || 0);
   };
 
@@ -99,19 +99,25 @@ const PatientDetails = () => {
 
   const getTypeLabel = (type) => {
     switch (type) {
-      case 'consultation': return 'Consultation';
-      case 'urgence': return 'Urgence';
-      case 'refund': return 'Remboursement';
-      default: return type || 'Type inconnu';
+      case 'consultation':
+      case 'Consultation': return 'Consultation';
+      case 'urgence':
+      case 'Emergency': return 'Emergency';
+      case 'refund':
+      case 'Remboursement': return 'Refund';
+      default: return type || 'Unknown type';
     }
   };
 
   const getMethodLabel = (method) => {
     switch (method) {
-      case 'card': return 'Carte bancaire';
-      case 'bank_transfer': return 'Virement';
-      case 'cash': return 'Espèces';
-      default: return method || 'Méthode inconnue';
+      case 'card':
+      case 'Carte bancaire': return 'Credit Card';
+      case 'bank_transfer':
+      case 'Virement': return 'Bank Transfer';
+      case 'cash':
+      case 'Espèces': return 'Cash';
+      default: return method || 'Unknown method';
     }
   };
 
@@ -121,21 +127,21 @@ const PatientDetails = () => {
       headerName: 'Date',
       width: 120,
       renderCell: (value) => {
-        if (!value) return 'Date inconnue';
-        return new Date(value).toLocaleDateString('fr-FR');
+        if (!value) return 'Unknown date';
+        return new Date(value).toLocaleDateString('en-US');
       }
     },
     {
       field: 'description',
       headerName: 'Description',
       width: 200,
-      renderCell: (value) => value || 'Description non disponible'
+      renderCell: (value) => value || 'Description not available'
     },
     {
       field: 'doctor',
-      headerName: 'Médecin',
+      headerName: 'Doctor',
       width: 150,
-      renderCell: (value) => value || 'Médecin non spécifié'
+      renderCell: (value) => value || 'Doctor not specified'
     },
     {
       field: 'type',
@@ -151,7 +157,7 @@ const PatientDetails = () => {
     },
     {
       field: 'amount',
-      headerName: 'Montant',
+      headerName: 'Amount',
       width: 100,
       align: 'right',
       renderCell: (value) => (
@@ -166,17 +172,22 @@ const PatientDetails = () => {
     },
     {
       field: 'paymentMethod',
-      headerName: 'Méthode',
+      headerName: 'Method',
       width: 120,
       renderCell: (value) => getMethodLabel(value)
     },
     {
       field: 'status',
-      headerName: 'Statut',
+      headerName: 'Status',
       width: 100,
       renderCell: (value) => (
         <Chip 
-          label={value === 'paid' ? 'Payé' : value === 'pending' ? 'En attente' : value === 'processed' ? 'Traité' : 'Statut inconnu'} 
+          label={
+            value === 'paid' || value === 'Payé' ? 'Paid' : 
+            value === 'pending' || value === 'En attente' ? 'Pending' : 
+            value === 'processed' || value === 'Traité' ? 'Processed' : 
+            'Unknown status'
+          } 
           color={getStatusColor(value)}
           size="small"
         />
@@ -197,7 +208,7 @@ const PatientDetails = () => {
       <Box sx={{ padding: 3 }}>
         <Alert severity="error">{error}</Alert>
         <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Retour à la liste
+          Back to list
         </Button>
       </Box>
     );
@@ -206,9 +217,9 @@ const PatientDetails = () => {
   if (!patient) {
     return (
       <Box sx={{ padding: 3 }}>
-        <Alert severity="warning">Patient non trouvé</Alert>
+        <Alert severity="warning">Patient not found</Alert>
         <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Retour à la liste
+          Back to list
         </Button>
       </Box>
     );
@@ -216,7 +227,7 @@ const PatientDetails = () => {
 
   const renderStatus = (status) => {
     const color = status === 'active' ? 'success' : status === 'inactive' ? 'error' : 'warning';
-    const label = status === 'active' ? 'Actif' : status === 'inactive' ? 'Inactif' : 'En attente';
+    const label = status === 'active' ? 'Active' : status === 'inactive' ? 'Inactive' : 'Pending';
     return <Chip label={label} color={color} size="small" />;
   };
 
@@ -246,49 +257,49 @@ const PatientDetails = () => {
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
             }}
           >
-            {patient.gender === 'Masculin' ? '👨' : patient.gender === 'Féminin' ? '👩' : '👤'}
+            {patient.gender === 'Male' || patient.gender === 'Masculin' ? '👨' : patient.gender === 'Female' || patient.gender === 'Féminin' ? '👩' : '👤'}
           </Avatar>
           <Box>
             <Typography variant="h4" className="patient-name">
-              {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Nom non disponible'} {renderStatus(patient.status)}
+              {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Name not available'} {renderStatus(patient.status)}
             </Typography>
             <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-              {patient.age || 0} ans • {patient.gender || 'Genre non spécifié'} • Groupe sanguin {patient.bloodType || 'Non renseigné'}
+              {patient.age || 0} years old • {patient.gender || 'Gender not specified'} • Blood type {patient.bloodType || 'Not specified'}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Patient depuis le {patient.joinDate ? new Date(patient.joinDate).toLocaleDateString('fr-FR') : 'Date inconnue'}
+              Patient since {patient.joinDate ? new Date(patient.joinDate).toLocaleDateString('en-US') : 'Unknown date'}
             </Typography>
           </Box>
         </Box>
         
         <Button variant="outlined" onClick={handleBack}>
-          Retour à la liste
+          Back to list
         </Button>
       </Box>
 
-      {/* Debug info en mode développement */}
+      {/* Debug info in development mode */}
       {import.meta.env.DEV && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Debug: Patient ID: {patient.id}, Données disponibles: {Object.keys(patient).join(', ')}
+          Debug: Patient ID: {patient.id}, Available data: {Object.keys(patient).join(', ')}
         </Alert>
       )}
 
       {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange} className="patient-tabs">
-          <Tab icon={<PersonIcon />} label="Informations personnelles" />
-          <Tab icon={<MedicalIcon />} label="Dossier médical" />
+          <Tab icon={<PersonIcon />} label="Personal Information" />
+          <Tab icon={<MedicalIcon />} label="Medical Record" />
           <Tab icon={<AccountBalanceIcon />} label="Finances" />
         </Tabs>
       </Box>
 
-      {/* Onglet Informations personnelles */}
+      {/* Personal Information Tab */}
       <TabPanel value={tabValue} index={0}>
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <Card className="info-card">
               <CardHeader 
-                title="Coordonnées"
+                title="Contact Information"
                 avatar={<PersonIcon />}
               />
               <CardContent>
@@ -297,31 +308,31 @@ const PatientDetails = () => {
                     <EmailIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
                       primary="Email" 
-                      secondary={patient.email || 'Email non disponible'} 
+                      secondary={patient.email || 'Email not available'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <PhoneIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Téléphone" 
-                      secondary={patient.phone || 'Téléphone non disponible'} 
+                      primary="Phone" 
+                      secondary={patient.phone || 'Phone not available'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <LocationIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Adresse" 
-                      secondary={patient.address || 'Adresse non disponible'} 
+                      primary="Address" 
+                      secondary={patient.address || 'Address not available'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <EmergencyIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Contact d'urgence" 
-                      secondary={patient.emergencyContact || 'Contact d\'urgence non disponible'} 
+                      primary="Emergency Contact" 
+                      secondary={patient.emergencyContact || 'Emergency contact not available'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
@@ -333,7 +344,7 @@ const PatientDetails = () => {
           <Grid item xs={12} md={6}>
             <Card className="info-card">
               <CardHeader 
-                title="Informations médicales"
+                title="Medical Information"
                 avatar={<MedicalIcon />}
               />
               <CardContent>
@@ -341,24 +352,24 @@ const PatientDetails = () => {
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <BloodIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Groupe sanguin" 
-                      secondary={patient.bloodType || 'Non renseigné'} 
+                      primary="Blood Type" 
+                      secondary={patient.bloodType || 'Not specified'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <MedicalIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Médecin traitant" 
-                      secondary={patient.assignedDoctor || 'Aucun médecin assigné'} 
+                      primary="Primary Doctor" 
+                      secondary={patient.assignedDoctor || 'No doctor assigned'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <CalendarIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Dernière consultation" 
-                      secondary={patient.lastConsultation ? new Date(patient.lastConsultation).toLocaleDateString('fr-FR') : 'Aucune consultation'} 
+                      primary="Last Consultation" 
+                      secondary={patient.lastConsultation ? new Date(patient.lastConsultation).toLocaleDateString('en-US') : 'No consultation'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
@@ -369,7 +380,7 @@ const PatientDetails = () => {
                       secondary={
                         patient.allergies && patient.allergies.length > 0 
                           ? patient.allergies.map(a => <Chip key={a} label={a} size="small" color="warning" sx={{ mr: 0.5, mb: 0.5 }} />)
-                          : "Aucune allergie connue"
+                          : "No known allergies"
                       } 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
@@ -377,8 +388,8 @@ const PatientDetails = () => {
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <AccountBalanceIcon sx={{ mr: 2, color: '#6b7280' }} />
                     <ListItemText 
-                      primary="Assurance" 
-                      secondary={patient.insurance || 'Non renseignée'} 
+                      primary="Insurance" 
+                      secondary={patient.insurance || 'Not specified'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
@@ -389,11 +400,11 @@ const PatientDetails = () => {
         </Grid>
       </TabPanel>
 
-      {/* Onglet Dossier médical */}
+      {/* Medical Record Tab */}
       <TabPanel value={tabValue} index={1}>
         <Card className="medical-card">
           <CardHeader 
-            title="Historique médical"
+            title="Medical History"
             avatar={<MedicalIcon />}
           />
           <CardContent>
@@ -409,26 +420,26 @@ const PatientDetails = () => {
                       primary={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                           <Typography variant="subtitle2" fontWeight={600}>
-                            {item.description || 'Description non disponible'}
+                            {item.description || 'Description not available'}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {item.date || 'Date inconnue'}
+                            {item.date || 'Unknown date'}
                           </Typography>
                         </Box>
                       }
                       secondary={
                         <Box>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Médecin:</strong> {item.doctor || 'Médecin non spécifié'}
+                            <strong>Doctor:</strong> {item.doctor || 'Doctor not specified'}
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Diagnostic:</strong> {item.diagnosis || 'Diagnostic non disponible'}
+                            <strong>Diagnosis:</strong> {item.diagnosis || 'Diagnosis not available'}
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Traitement:</strong> {item.treatment || 'Traitement non spécifié'}
+                            <strong>Treatment:</strong> {item.treatment || 'Treatment not specified'}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            <strong>Notes:</strong> {item.notes || 'Aucune note'}
+                            <strong>Notes:</strong> {item.notes || 'No notes'}
                           </Typography>
                         </Box>
                       }
@@ -438,16 +449,16 @@ const PatientDetails = () => {
               </List>
             ) : (
               <Typography variant="body2" color="text.secondary">
-                Aucun historique médical disponible
+                No medical history available
               </Typography>
             )}
           </CardContent>
         </Card>
       </TabPanel>
 
-      {/* Onglet Finances */}
+      {/* Finances Tab */}
       <TabPanel value={tabValue} index={2}>
-        {/* Cartes de statistiques financières */}
+        {/* Financial statistics cards */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card className="finance-card">
@@ -458,7 +469,7 @@ const PatientDetails = () => {
                       {formatCurrency(patient.finances?.totalSpent)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Total dépensé
+                      Total Spent
                     </Typography>
                   </Box>
                   <TrendingUpIcon className="finance-icon" />
@@ -479,7 +490,7 @@ const PatientDetails = () => {
                       Consultations
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Moy: {formatCurrency(patient.finances?.averageConsultationCost)}
+                      Avg: {formatCurrency(patient.finances?.averageConsultationCost)}
                     </Typography>
                   </Box>
                   <CalendarIcon className="finance-icon" />
@@ -497,10 +508,10 @@ const PatientDetails = () => {
                       {formatCurrency(patient.finances?.pendingPayments)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      En attente
+                      Pending
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Dernier: {patient.finances?.lastPayment || 'Aucun'}
+                      Last: {patient.finances?.lastPayment || 'None'}
                     </Typography>
                   </Box>
                   <ReceiptIcon className="finance-icon" />
@@ -518,10 +529,10 @@ const PatientDetails = () => {
                       {formatCurrency(patient.finances?.totalRefunds)}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Remboursements
+                      Refunds
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Méthode: {patient.finances?.preferredPaymentMethod || 'Non spécifiée'}
+                      Method: {patient.finances?.preferredPaymentMethod || 'Not specified'}
                     </Typography>
                   </Box>
                   <AccountBalanceIcon className="finance-icon" />
@@ -531,13 +542,13 @@ const PatientDetails = () => {
           </Grid>
         </Grid>
 
-        {/* Évolution mensuelle */}
+        {/* Monthly evolution */}
         <Grid container spacing={3} sx={{ mb: 3 }}>
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Évolution des dépenses (5 derniers mois)
+                  Spending Evolution (Last 5 months)
                 </Typography>
                 {patient.monthlyStats && patient.monthlyStats.length > 0 ? (
                   patient.monthlyStats.map((stat) => (
@@ -560,7 +571,7 @@ const PatientDetails = () => {
                   ))
                 ) : (
                   <Typography variant="body2" color="text.secondary">
-                    Aucune donnée mensuelle disponible
+                    No monthly data available
                   </Typography>
                 )}
               </CardContent>
@@ -571,41 +582,41 @@ const PatientDetails = () => {
             <Card>
               <CardContent>
                 <Typography variant="h6" sx={{ mb: 2 }}>
-                  Résumé financier
+                  Financial Summary
                 </Typography>
                 <List disablePadding>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <ListItemText 
-                      primary="Total dépensé" 
+                      primary="Total spent" 
                       secondary={formatCurrency(patient.finances?.totalSpent)} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <ListItemText 
-                      primary="Coût moyen par consultation" 
+                      primary="Average cost per consultation" 
                       secondary={formatCurrency(patient.finances?.averageConsultationCost)} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <ListItemText 
-                      primary="Paiements en attente" 
+                      primary="Pending payments" 
                       secondary={formatCurrency(patient.finances?.pendingPayments)} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <ListItemText 
-                      primary="Méthode de paiement préférée" 
-                      secondary={patient.finances?.preferredPaymentMethod || 'Non spécifiée'} 
+                      primary="Preferred payment method" 
+                      secondary={patient.finances?.preferredPaymentMethod || 'Not specified'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
                     <ListItemText 
-                      primary="Dernier paiement" 
-                      secondary={patient.finances?.lastPayment || 'Aucun paiement'} 
+                      primary="Last payment" 
+                      secondary={patient.finances?.lastPayment || 'No payment'} 
                       primaryTypographyProps={{ variant: 'subtitle2' }}
                     />
                   </ListItem>
@@ -615,12 +626,12 @@ const PatientDetails = () => {
           </Grid>
         </Grid>
 
-        {/* Transactions récentes */}
+        {/* Recent transactions */}
         <Card>
           <CardContent sx={{ p: 0 }}>
             <Box sx={{ p: 3, pb: 0 }}>
               <Typography variant="h6">
-                Historique des transactions
+                Transaction History
               </Typography>
             </Box>
             
@@ -638,13 +649,13 @@ const PatientDetails = () => {
       {/* Action Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
         <Button variant="contained" color="primary">
-          Modifier
+          Edit
         </Button>
         <Button variant="outlined" color="warning">
-          Envoyer un message
+          Send Message
         </Button>
         <Button variant="outlined" color="error">
-          Archiver
+          Archive
         </Button>
       </Box>
     </Box>

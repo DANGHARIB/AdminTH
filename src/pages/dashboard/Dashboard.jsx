@@ -76,7 +76,7 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
       setLoading(true);
       try {
-        // Récupérer les statistiques des médecins avec pagination et tri
+        // Fetch doctors statistics with pagination and sorting
         const doctorsData = await doctorsService.getAllDoctors({
           page: 1,
           limit: 100,
@@ -92,7 +92,7 @@ const Dashboard = () => {
           ? doctorsData.filter(doctor => !doctor.isVerified)
           : [];
         
-        // Récupérer les statistiques des patients avec pagination et tri
+        // Fetch patients statistics with pagination and sorting
         const patientsData = await patientsService.getAllPatients({
           page: 1,
           limit: 100,
@@ -104,7 +104,7 @@ const Dashboard = () => {
           ? patientsData.filter(patient => patient.isActive)
           : [];
         
-        // Récupérer les rendez-vous avec tri par date
+        // Fetch appointments sorted by date
         const appointmentsData = await appointmentsService.getAllAppointments({
           page: 1,
           limit: 100,
@@ -130,34 +130,34 @@ const Dashboard = () => {
           ? appointmentsData.filter(appt => appt.status === 'cancelled')
           : [];
         
-        // Générer des alertes basées sur les données
+        // Generate alerts based on data
         const alerts = [];
         
         if (pendingDoctors.length > 0) {
           alerts.push({
             id: 1,
             type: 'warning',
-            message: `${pendingDoctors.length} médecins en attente de validation`,
-            action: 'Voir les candidatures',
+            message: `${pendingDoctors.length} doctors pending validation`,
+            action: 'View applications',
             link: '/doctors'
           });
         }
         
-        // Mettre à jour les données du tableau de bord
+        // Update dashboard data
         setDashboardData({
           stats: {
             doctors: {
               total: Array.isArray(doctorsData) ? doctorsData.length : 0,
               verified: verifiedDoctors.length,
               pending: pendingDoctors.length,
-              growth: 0, // À calculer à partir des données historiques
-              newThisMonth: 0 // À calculer à partir des dates d'inscription
+              growth: 0, // To be calculated from historical data
+              newThisMonth: 0 // To be calculated from registration dates
             },
             patients: {
               total: Array.isArray(patientsData) ? patientsData.length : 0,
               active: activePatients.length,
-              newThisMonth: 0, // À calculer à partir des dates d'inscription
-              growth: 0 // À calculer à partir des données historiques
+              newThisMonth: 0, // To be calculated from registration dates
+              growth: 0 // To be calculated from historical data
             },
             appointments: {
               total: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
@@ -178,8 +178,8 @@ const Dashboard = () => {
           alerts: alerts
         });
       } catch (err) {
-        console.error('Erreur lors de la récupération des données du tableau de bord:', err);
-        setError(err.message || 'Une erreur s\'est produite lors du chargement des données');
+        console.error('Error fetching dashboard data:', err);
+        setError(err.message || 'An error occurred while loading data');
       } finally {
         setLoading(false);
       }
@@ -228,14 +228,14 @@ const Dashboard = () => {
       <Box sx={{ p: 3 }}>
         <Paper sx={{ p: 2, backgroundColor: 'error.light' }}>
           <Typography color="error" variant="h6">
-            Erreur: {error}
+            Error: {error}
           </Typography>
           <Button 
             variant="contained" 
             sx={{ mt: 2 }}
             onClick={() => window.location.reload()}
           >
-            Réessayer
+            Retry
           </Button>
         </Paper>
       </Box>
@@ -246,10 +246,10 @@ const Dashboard = () => {
     <Box className="dashboard-page">
       <Box className="page-header">
         <Typography variant="h4" className="page-title">
-          Tableau de bord
+          Dashboard
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Vue d'ensemble de la plateforme médicale
+          Medical platform overview
         </Typography>
       </Box>
 
@@ -264,7 +264,7 @@ const Dashboard = () => {
                     {dashboardData.stats.doctors.total}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Médecins
+                    Doctors
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                     <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
@@ -278,7 +278,7 @@ const Dashboard = () => {
               {dashboardData.stats.doctors.pending > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Chip 
-                    label={`${dashboardData.stats.doctors.pending} en attente`} 
+                    label={`${dashboardData.stats.doctors.pending} pending`} 
                     color="warning" 
                     size="small"
                   />
@@ -321,10 +321,10 @@ const Dashboard = () => {
                     {dashboardData.stats.appointments.total.toLocaleString()}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Rendez-vous
+                    Appointments
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {dashboardData.stats.appointments.today} aujourd'hui
+                    {dashboardData.stats.appointments.today} today
                   </Typography>
                 </Box>
                 <EventIcon className="stat-icon" />
@@ -335,13 +335,13 @@ const Dashboard = () => {
       </Grid>
 
       <Grid container spacing={3}>
-        {/* Alertes */}
+        {/* Alerts */}
         <Grid item xs={12} lg={6}>
           <Card className="alerts-card">
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <WarningIcon />
-                Alertes importantes
+                Important Alerts
               </Typography>
               {dashboardData.alerts.length > 0 ? (
                 <List disablePadding>
@@ -384,20 +384,20 @@ const Dashboard = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                  Aucune alerte pour le moment
+                  No alerts at the moment
                 </Typography>
               )}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Activité récente */}
+        {/* Recent Activity */}
         <Grid item xs={12} lg={6}>
           <Card className="activity-card">
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <NotificationIcon />
-                Activité récente
+                Recent Activity
               </Typography>
               {dashboardData.recentActivity.length > 0 ? (
                 <List disablePadding>
@@ -418,7 +418,7 @@ const Dashboard = () => {
                       </ListItemAvatar>
                       <ListItemText
                         primary={activity.message}
-                        secondary={`Il y a ${activity.time}`}
+                        secondary={`${activity.time} ago`}
                         primaryTypographyProps={{ fontSize: '14px' }}
                         secondaryTypographyProps={{ fontSize: '12px' }}
                       />
@@ -432,7 +432,7 @@ const Dashboard = () => {
                 </List>
               ) : (
                 <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                  Aucune activité récente
+                  No recent activity
                 </Typography>
               )}
             </CardContent>

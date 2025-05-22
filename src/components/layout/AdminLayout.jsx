@@ -16,11 +16,6 @@ import {
 } from '@mui/material';
 import {
   Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  People as PeopleIcon,
-  LocalHospital as DoctorIcon,
-  Event as EventIcon,
-  AccountBalance as FinanceIcon,
   Logout as LogoutIcon,
   Settings as SettingsIcon
 } from '@mui/icons-material';
@@ -35,7 +30,6 @@ const AdminLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const { user, logout } = useAuth();
-//   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -59,54 +53,53 @@ const AdminLayout = () => {
   return (
     <Box className="admin-layout">
       {/* Header */}
-      <AppBar 
-        position="fixed" 
+      <AppBar
+        position="fixed"
         className="header"
-        sx={{ 
+        sx={{
           zIndex: theme.zIndex.drawer + 1,
-          backgroundColor: '#ffffff',
-          color: '#1a1a1a',
+          bgcolor: '#fff',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
         }}
       >
         <Toolbar className="toolbar">
           <IconButton
-            color="inherit"
             edge="start"
             onClick={handleDrawerToggle}
             sx={{ mr: 2, display: { md: 'none' } }}
           >
-            <MenuIcon />
+            <MenuIcon sx={{ color: '#7AA7CC' }} />
           </IconButton>
-          
-          <Typography variant="h6" className="header-title">
+
+          <Typography
+            variant="h6"
+            className="header-title"
+            sx={{ color: '#7AA7CC', fontWeight: 600 }}
+          >
             Admin Dashboard
           </Typography>
-          
+
           <Box sx={{ flexGrow: 1 }} />
-          
+
           {/* Breadcrumb */}
           <Box sx={{ mr: 3, display: { xs: 'none', sm: 'block' } }}>
             <Breadcrumb />
           </Box>
-          
+
           {/* Profile Menu */}
-          <IconButton
-            onClick={handleProfileMenuOpen}
-            className="profile-button"
-          >
-            <Avatar 
-              sx={{ 
-                width: 36, 
+          <IconButton onClick={handleProfileMenuOpen} className="profile-button">
+            <Avatar
+              sx={{
+                width: 36,
                 height: 36,
-                backgroundColor: '#2563eb',
+                bgcolor: '#7AA7CC',
                 fontSize: '14px'
               }}
             >
               {user?.name?.charAt(0) || 'A'}
             </Avatar>
           </IconButton>
-          
+
           <Menu
             anchorEl={anchorEl}
             open={Boolean(anchorEl)}
@@ -115,14 +108,14 @@ const AdminLayout = () => {
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
             className="profile-menu"
           >
-            <MenuItem onClick={handleProfileMenuClose}>
-              <SettingsIcon sx={{ mr: 2, fontSize: '20px' }} />
-              Paramètres
+            <MenuItem onClick={handleProfileMenuClose} sx={{ color: '#090F47' }}>
+              <SettingsIcon sx={{ mr: 2, fontSize: 20, color: '#7AA7CC' }} />
+              Settings
             </MenuItem>
-            <Divider />
-            <MenuItem onClick={handleLogout}>
-              <LogoutIcon sx={{ mr: 2, fontSize: '20px' }} />
-              Déconnexion
+            <Divider sx={{ mx: 2, borderColor: '#e2e8f0' }} />
+            <MenuItem onClick={handleLogout} sx={{ color: '#090F47' }}>
+              <LogoutIcon sx={{ mr: 2, fontSize: 20, color: '#7AA7CC' }} />
+              Logout
             </MenuItem>
           </Menu>
         </Toolbar>
@@ -139,9 +132,9 @@ const AdminLayout = () => {
             '& .MuiDrawer-paper': {
               width: DRAWER_WIDTH,
               boxSizing: 'border-box',
-              backgroundColor: '#fafafa',
+              bgcolor: '#fff',
               borderRight: '1px solid #e5e7eb',
-              paddingTop: '64px', // Espace pour l'AppBar
+              pt: '64px'
             }
           }}
         >
@@ -156,11 +149,11 @@ const AdminLayout = () => {
         sx={{
           flexGrow: 1,
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
-          marginLeft: { sm: 0, md: `${DRAWER_WIDTH}px` },
-          paddingTop: '64px', // Hauteur de l'AppBar
+          ml: { sm: 0, md: `${DRAWER_WIDTH}px` },
+          pt: '64px',
           minHeight: '100vh',
-          backgroundColor: '#f8fafc',
-          paddingX: { xs: 0, sm: 0 },
+          bgcolor: '#f8fafc',
+          px: { xs: 0, sm: 0 }
         }}
       >
         <Outlet />

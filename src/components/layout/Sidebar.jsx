@@ -15,181 +15,108 @@ import {
   People as PeopleIcon,
   LocalHospital as DoctorIcon,
   Event as EventIcon,
-  AccountBalance as FinanceIcon,
-  Assessment as ReportsIcon,
-  Settings as SettingsIcon
+  AccountBalance as FinanceIcon
 } from '@mui/icons-material';
 import './Sidebar.css';
 
-const navigationItems = [
-  {
-    id: 'dashboard',
-    label: 'Dashboard',
-    path: '/dashboard',
-    icon: DashboardIcon,
-    category: 'main'
-  },
-  {
-    id: 'doctors',
-    label: 'Médecins',
-    path: '/doctors',
-    icon: DoctorIcon,
-    category: 'main',
-    badge: 'pending'
-  },
-  {
-    id: 'patients',
-    label: 'Patients',
-    path: '/patients',
-    icon: PeopleIcon,
-    category: 'main'
-  },
-  {
-    id: 'appointments',
-    label: 'Rendez-vous',
-    path: '/appointments',
-    icon: EventIcon,
-    category: 'main'
-  },
-  {
-    id: 'finances',
-    label: 'Finances',
-    path: '/finances',
-    icon: FinanceIcon,
-    category: 'management'
-  },
-  {
-    id: 'reports',
-    label: 'Rapports',
-    path: '/reports',
-    icon: ReportsIcon,
-    category: 'management'
-  },
-  {
-    id: 'settings',
-    label: 'Paramètres',
-    path: '/settings',
-    icon: SettingsIcon,
-    category: 'system'
-  }
+const NAV_ITEMS = [
+  { id: 'dashboard',    label: 'Dashboard',     path: '/dashboard',    icon: DashboardIcon },
+  { id: 'doctors',      label: 'Doctors',       path: '/doctors',      icon: DoctorIcon,    badge: '3' },
+  { id: 'patients',     label: 'Patients',      path: '/patients',     icon: PeopleIcon },
+  { id: 'appointments', label: 'Appointments',  path: '/appointments', icon: EventIcon },
+  { id: 'finances',     label: 'Finances',      path: '/finances',     icon: FinanceIcon }
 ];
 
 const Sidebar = ({ onItemClick }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const handleNavigation = (path) => {
+  const handleNav = (path) => {
     navigate(path);
-    if (onItemClick) onItemClick();
+    onItemClick?.();
   };
 
-  const isActive = (path) => {
-    return location.pathname === path || location.pathname.startsWith(path + '/');
-  };
-
-  const renderNavItems = (category) => {
-    return navigationItems
-      .filter(item => item.category === category)
-      .map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.path);
-        
-        return (
-          <ListItem key={item.id} disablePadding className="nav-item">
-            <ListItemButton
-              onClick={() => handleNavigation(item.path)}
-              className={`nav-button ${active ? 'active' : ''}`}
-              sx={{
-                borderRadius: '12px',
-                margin: '2px 12px',
-                minHeight: '48px',
-                '&.active': {
-                  backgroundColor: '#2563eb',
-                  color: 'white',
-                  '& .MuiListItemIcon-root': {
-                    color: 'white'
-                  }
-                },
-                '&:hover:not(.active)': {
-                  backgroundColor: '#f1f5f9'
-                }
-              }}
-            >
-              <ListItemIcon className="nav-icon">
-                <Icon sx={{ fontSize: '20px' }} />
-              </ListItemIcon>
-              <ListItemText 
-                primary={item.label}
-                primaryTypographyProps={{
-                  fontSize: '14px',
-                  fontWeight: active ? 600 : 500,
-                  letterSpacing: '-0.025em'
-                }}
-              />
-              {item.badge === 'pending' && (
-                <Chip 
-                  label="3" 
-                  size="small" 
-                  color="warning"
-                  sx={{ 
-                    height: '20px',
-                    fontSize: '11px',
-                    fontWeight: 600
-                  }}
-                />
-              )}
-            </ListItemButton>
-          </ListItem>
-        );
-      });
-  };
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <Box className="sidebar">
+    <Box
+      sx={{
+        width: 280,
+        bgcolor: '#fff',
+        borderRight: '1px solid #e2e8f0',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
+      }}
+    >
       {/* Logo */}
-      <Box className="sidebar-header">
-        <Box className="logo">
-          <DoctorIcon sx={{ fontSize: '32px', color: '#2563eb' }} />
-          <Typography variant="h6" className="logo-text">
-            MedAdmin
-          </Typography>
-        </Box>
-      </Box>
-
-      <Divider sx={{ mx: 2, my: 1, borderColor: '#e2e8f0' }} />
-
-      {/* Navigation principale */}
-      <Box className="nav-section">
-        <Typography variant="overline" className="section-title">
-          Principal
+      <Box sx={{ p: 3, textAlign: 'center' }}>
+        <DoctorIcon sx={{ fontSize: 40, color: '#7AA7CC' }} />
+        <Typography variant="h6" sx={{ mt: 1, color: '#7AA7CC', fontWeight: 700 }}>
+          Tabeebou.com
         </Typography>
-        <List disablePadding>
-          {renderNavItems('main')}
-        </List>
       </Box>
 
-      {/* Navigation gestion */}
-      <Box className="nav-section">
-        <Typography variant="overline" className="section-title">
-          Gestion
-        </Typography>
-        <List disablePadding>
-          {renderNavItems('management')}
-        </List>
-      </Box>
+      <Divider sx={{ borderColor: '#e2e8f0' }} />
 
-      {/* Navigation système */}
-      <Box className="nav-section">
-        <Typography variant="overline" className="section-title">
-          Système
-        </Typography>
-        <List disablePadding>
-          {renderNavItems('system')}
-        </List>
-      </Box>
+      {/* Navigation Items */}
+      <List sx={{ flexGrow: 1, mt: 2 }}>
+        {NAV_ITEMS.map(item => {
+          const Icon = item.icon;
+          const active = isActive(item.path);
+
+          return (
+            <ListItem key={item.id} disablePadding>
+              <ListItemButton
+                onClick={() => handleNav(item.path)}
+                sx={{
+                  px: 3,
+                  py: 1.25,
+                  mx: 1,
+                  borderRadius: 2,
+                  bgcolor: active ? '#7AA7CC' : 'transparent',
+                  color: active ? '#fff' : '#090F47',
+                  transition: 'background-color 0.2s',
+                  '&:hover': {
+                    bgcolor: active ? '#7AA7CC' : 'rgba(122,167,204,0.1)'
+                  }
+                }}
+              >
+                <ListItemIcon sx={{ color: active ? '#fff' : '#7AA7CC', minWidth: 36 }}>
+                  <Icon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.label}
+                  primaryTypographyProps={{
+                    fontSize: '15px',
+                    fontWeight: active ? 600 : 500,
+                    letterSpacing: '-0.02em'
+                  }}
+                />
+                {item.badge && (
+                  <Chip
+                    label={item.badge}
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      bgcolor: active ? '#090F47' : '#FFE8A1',
+                      color: active ? '#fff' : '#875A00',
+                      height: 20,
+                      fontSize: '11px',
+                      fontWeight: 600
+                    }}
+                  />
+                )}
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
 
       {/* Footer */}
-      <Box className="sidebar-footer">
+      <Box sx={{ p: 2, textAlign: 'center' }}>
         <Typography variant="caption" color="text.secondary">
           Version 1.0.0
         </Typography>

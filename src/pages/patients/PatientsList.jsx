@@ -43,14 +43,14 @@ const PatientsList = () => {
     const fetchPatients = async () => {
       setLoading(true);
       try {
-        console.log('Récupération des patients...');
+        console.log('Fetching patients...');
         const patientsData = await patientsService.getAllPatients();
-        console.log('Patients reçus:', patientsData);
+        console.log('Patients received:', patientsData);
         setPatients(patientsData);
         setError(null);
       } catch (err) {
-        console.error('Erreur lors de la récupération des patients:', err);
-        setError(err.message || 'Une erreur s\'est produite lors du chargement des patients');
+        console.error('Error fetching patients:', err);
+        setError(err.message || 'An error occurred while loading patients');
       } finally {
         setLoading(false);
       }
@@ -59,7 +59,7 @@ const PatientsList = () => {
     fetchPatients();
   }, []);
 
-  // Filtrer les patients selon l'onglet actif
+  // Filter patients according to active tab
   const filteredPatients = activeTab === 0 
     ? patients 
     : activeTab === 1 
@@ -68,7 +68,7 @@ const PatientsList = () => {
         ? patients.filter(p => p.status === 'inactive')
         : patients.filter(p => p.status === 'pending');
 
-  // Stats calculées avec vérification des données
+  // Calculated stats with data verification
   const stats = {
     total: patients.length,
     active: patients.filter(p => p.status === 'active').length,
@@ -90,37 +90,40 @@ const PatientsList = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 'active': return 'Actif';
-      case 'inactive': return 'Inactif';
-      case 'pending': return 'En attente';
-      default: return status || 'Inconnu';
+      case 'active': 
+      case 'Actif': return 'Active';
+      case 'inactive': 
+      case 'Inactif': return 'Inactive';
+      case 'pending': 
+      case 'En attente': return 'Pending';
+      default: return status || 'Unknown';
     }
   };
 
   const getGenderIcon = (gender) => {
     if (!gender) return '👤';
-    return gender === 'Masculin' ? '👨' : '👩';
+    return gender === 'Male' || gender === 'Masculin' ? '👨' : '👩';
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('fr-FR', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'EUR'
+      currency: 'USD'
     }).format(amount || 0);
   };
 
   const calculateDaysSinceLastConsultation = (lastConsultation) => {
-    if (!lastConsultation) return 'Aucune';
+    if (!lastConsultation) return 'None';
     const today = new Date();
     const last = new Date(lastConsultation);
     const diffTime = Math.abs(today - last);
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return 'Aujourd\'hui';
-    if (diffDays === 1) return 'Hier';
-    if (diffDays < 30) return `Il y a ${diffDays} jours`;
-    if (diffDays < 365) return `Il y a ${Math.floor(diffDays / 30)} mois`;
-    return `Il y a ${Math.floor(diffDays / 365)} ans`;
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+    return `${Math.floor(diffDays / 365)} years ago`;
   };
 
   const columns = [
@@ -135,10 +138,10 @@ const PatientsList = () => {
           </Avatar>
           <Box>
             <Typography variant="body2" fontWeight={600}>
-              {row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Nom non disponible'}
+              {row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Name not available'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.age || 0} ans • {row.gender || 'Non spécifié'}
+              {row.age || 0} years old • {row.gender === 'Masculin' ? 'Male' : row.gender === 'Féminin' ? 'Female' : row.gender || 'Not specified'}
             </Typography>
           </Box>
         </Box>
@@ -150,30 +153,30 @@ const PatientsList = () => {
       width: 200,
       renderCell: (value, row) => (
         <Box>
-          <Typography variant="body2">{value || 'Email non disponible'}</Typography>
+          <Typography variant="body2">{value || 'Email not available'}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {row.phone || 'Téléphone non disponible'}
+            {row.phone || 'Phone not available'}
           </Typography>
         </Box>
       )
     },
     {
       field: 'assignedDoctor',
-      headerName: 'Médecin traitant',
+      headerName: 'Primary Doctor',
       width: 180,
       renderCell: (value) => (
         value ? (
           <Typography variant="body2">{value}</Typography>
         ) : (
           <Typography variant="body2" color="text.secondary" fontStyle="italic">
-            Non assigné
+            Not assigned
           </Typography>
         )
       )
     },
     {
       field: 'status',
-      headerName: 'Statut',
+      headerName: 'Status',
       width: 120,
       renderCell: (value) => (
         <Chip 
@@ -185,7 +188,7 @@ const PatientsList = () => {
     },
     {
       field: 'lastConsultation',
-      headerName: 'Dernière consultation',
+      headerName: 'Last Consultation',
       width: 160,
       renderCell: (value) => (
         <Typography variant="body2" color={value ? 'inherit' : 'text.secondary'}>
@@ -206,7 +209,7 @@ const PatientsList = () => {
     },
     {
       field: 'totalSpent',
-      headerName: 'Total dépensé',
+      headerName: 'Total Spent',
       width: 120,
       align: 'right',
       renderCell: (value) => (
@@ -227,11 +230,11 @@ const PatientsList = () => {
             variant="outlined"
             onClick={(e) => {
               e.stopPropagation();
-              console.log('Navigation vers patient:', row.id);
+              console.log('Navigating to patient:', row.id);
               navigate(`/patients/${row.id}`);
             }}
           >
-            Voir
+            View
           </Button>
           <IconButton
             size="small"
@@ -258,7 +261,7 @@ const PatientsList = () => {
   };
 
   const handleRowClick = (patient) => {
-    console.log('Clic sur la ligne patient:', patient.id);
+    console.log('Row click on patient:', patient.id);
     navigate(`/patients/${patient.id}`);
   };
 
@@ -275,12 +278,12 @@ const PatientsList = () => {
     
     try {
       await patientsService.deletePatient(selectedPatient.id);
-      // Mettre à jour la liste en retirant le patient supprimé
+      // Update list by removing deleted patient
       setPatients(patients.filter(p => p.id !== selectedPatient.id));
       handleMenuClose();
     } catch (err) {
-      console.error('Erreur lors de la suppression du patient:', err);
-      setError('Erreur lors de la suppression du patient');
+      console.error('Error deleting patient:', err);
+      setError('Error deleting patient');
     }
   };
 
@@ -302,7 +305,7 @@ const PatientsList = () => {
           variant="contained" 
           onClick={() => window.location.reload()}
         >
-          Réessayer
+          Retry
         </Button>
       </Box>
     );
@@ -316,7 +319,7 @@ const PatientsList = () => {
             Patients
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Gérez tous les patients de la plateforme
+            Manage all patients on the platform
           </Typography>
         </Box>
         
@@ -326,7 +329,7 @@ const PatientsList = () => {
           className="add-button"
           onClick={handleAddPatient}
         >
-          Ajouter un patient
+          Add Patient
         </Button>
       </Box>
 
@@ -341,7 +344,7 @@ const PatientsList = () => {
                     {stats.total}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Total patients
+                    Total Patients
                   </Typography>
                 </Box>
                 <PeopleIcon className="stat-icon" />
@@ -359,10 +362,10 @@ const PatientsList = () => {
                     {stats.active}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Patients actifs
+                    Active Patients
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Âge moyen: {stats.avgAge} ans
+                    Average age: {stats.avgAge} years
                   </Typography>
                 </Box>
                 <PersonAddIcon className="stat-icon" />
@@ -383,7 +386,7 @@ const PatientsList = () => {
                     Consultations
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Moyenne: {stats.active > 0 ? Math.round(stats.totalConsultations / stats.active) : 0} par patient
+                    Average: {stats.active > 0 ? Math.round(stats.totalConsultations / stats.active) : 0} per patient
                   </Typography>
                 </Box>
                 <DoctorIcon className="stat-icon" />
@@ -401,7 +404,7 @@ const PatientsList = () => {
                     {formatCurrency(stats.totalRevenue)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Revenus générés
+                    Generated Revenue
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
                     <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
@@ -424,17 +427,17 @@ const PatientsList = () => {
           onChange={handleTabChange}
           className="filter-tabs"
         >
-          <Tab label={`Tous (${stats.total})`} />
-          <Tab label={`Actifs (${stats.active})`} />
-          <Tab label={`Inactifs (${stats.inactive})`} />
-          <Tab label={`En attente (${stats.pending})`} />
+          <Tab label={`All (${stats.total})`} />
+          <Tab label={`Active (${stats.active})`} />
+          <Tab label={`Inactive (${stats.inactive})`} />
+          <Tab label={`Pending (${stats.pending})`} />
         </Tabs>
       </Box>
 
-      {/* Debug info en mode développement */}
+      {/* Debug info in development mode */}
       {import.meta.env.DEV && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          Debug: {patients.length} patients chargés. Premier patient ID: {patients[0]?.id}
+          Debug: {patients.length} patients loaded. First patient ID: {patients[0]?.id}
         </Alert>
       )}
 
@@ -456,40 +459,40 @@ const PatientsList = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => { 
-          console.log('Navigation menu vers patient:', selectedPatient?.id);
+          console.log('Menu navigation to patient:', selectedPatient?.id);
           navigate(`/patients/${selectedPatient?.id}`);
           handleMenuClose(); 
         }}>
-          Voir le profil complet
+          View Full Profile
         </MenuItem>
         <MenuItem onClick={() => { 
           console.log('Edit patient'); 
           handleMenuClose(); 
         }}>
-          Modifier les informations
+          Edit Information
         </MenuItem>
         <MenuItem onClick={() => { 
           console.log('View medical history'); 
           handleMenuClose(); 
         }}>
-          Consulter l'historique médical
+          View Medical History
         </MenuItem>
         <MenuItem onClick={() => { 
           console.log('View finances'); 
           handleMenuClose(); 
         }}>
-          Voir les finances
+          View Finances
         </MenuItem>
         <MenuItem onClick={() => { 
           console.log('Send message'); 
           handleMenuClose(); 
         }}>
-          Envoyer un message
+          Send Message
         </MenuItem>
         <MenuItem onClick={() => {
           handleDeletePatient();
         }}>
-          Archiver le patient
+          Archive Patient
         </MenuItem>
       </Menu>
     </Box>
