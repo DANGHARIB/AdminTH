@@ -37,8 +37,11 @@ const AppointmentsList = () => {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
+        console.log('Récupération des rendez-vous...');
         const appointmentsData = await appointmentsService.getAllAppointments();
+        console.log('Rendez-vous reçus:', appointmentsData);
         setAppointments(appointmentsData);
+        setError(null);
       } catch (err) {
         console.error('Erreur lors de la récupération des rendez-vous:', err);
         setError(err.message || 'Une erreur s\'est produite lors du chargement des rendez-vous');
@@ -50,7 +53,7 @@ const AppointmentsList = () => {
     fetchAppointments();
   }, []);
 
-  // Stats calculées
+  // Stats calculées avec vérification des données
   const stats = {
     total: appointments.length,
     confirmed: appointments.filter(a => a.status === 'confirmed').length,
@@ -75,7 +78,7 @@ const AppointmentsList = () => {
       case 'pending': return 'En attente';
       case 'completed': return 'Terminé';
       case 'cancelled': return 'Annulé';
-      default: return status;
+      default: return status || 'Statut inconnu';
     }
   };
 
@@ -88,6 +91,52 @@ const AppointmentsList = () => {
     }
   };
 
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'urgence': return 'Urgence';
+      case 'controle': return 'Contrôle';
+      case 'consultation': return 'Consultation';
+      default: return type || 'Type inconnu';
+    }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return 'Date invalide';
+    try {
+      const dateObj = new Date(date);
+      if (isNaN(dateObj.getTime())) return 'Date invalide';
+      return dateObj.toLocaleDateString('fr-FR', { 
+        day: '2-digit', 
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Erreur formatage date:', error);
+      return 'Date invalide';
+    }
+  };
+
+  const formatTime = (time) => {
+    if (!time) return 'Heure inconnue';
+    try {
+      // Si c'est déjà formaté (HH:MM)
+      if (typeof time === 'string' && time.includes(':')) {
+        return time;
+      }
+      // Si c'est un objet Date
+      if (time instanceof Date) {
+        return time.toLocaleTimeString('fr-FR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        });
+      }
+      return time.toString();
+    } catch (error) {
+      console.error('Erreur formatage heure:', error);
+      return 'Heure inconnue';
+    }
+  };
+
   const columns = [
     {
       field: 'date',
@@ -97,10 +146,7 @@ const AppointmentsList = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <CalendarIcon sx={{ fontSize: 16, color: '#6b7280' }} />
           <Typography variant="body2">
-            {new Date(value).toLocaleDateString('fr-FR', { 
-              day: '2-digit', 
-              month: '2-digit' 
-            })}
+            {formatDate(value)}
           </Typography>
         </Box>
       )
@@ -112,7 +158,7 @@ const AppointmentsList = () => {
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <TimeIcon sx={{ fontSize: 16, color: '#6b7280' }} />
-          <Typography variant="body2">{value}</Typography>
+          <Typography variant="body2">{formatTime(value)}</Typography>
         </Box>
       )
     },
@@ -122,10 +168,12 @@ const AppointmentsList = () => {
       width: 200,
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Avatar sx={{ width: 24, height: 24, fontSize: '12px' }}>
+          <Avatar sx={{ width: 24, height: 24, fontSize: '12px', bgcolor: '#3b82f6' }}>
             {value && value.name ? value.name.charAt(0) : 'P'}
           </Avatar>
-          <Typography variant="body2">{value && value.name ? value.name : 'Patient inconnu'}</Typography>
+          <Typography variant="body2">
+            {value && value.name ? value.name : 'Patient inconnu'}
+          </Typography>
         </Box>
       )
     },
@@ -150,7 +198,7 @@ const AppointmentsList = () => {
       width: 120,
       renderCell: (value) => (
         <Chip 
-          label={value || 'N/A'} 
+          label={getTypeLabel(value)} 
           color={getTypeColor(value)}
           size="small"
           sx={{ textTransform: 'capitalize' }}
@@ -173,7 +221,7 @@ const AppointmentsList = () => {
       field: 'duration',
       headerName: 'Durée',
       width: 80,
-      renderCell: (value) => `${value || 0}min`
+      renderCell: (value) => `${value || 30}min`
     },
     {
       field: 'actions',
@@ -197,6 +245,7 @@ const AppointmentsList = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+    setSelectedAppointment(null);
   };
 
   const handleRowClick = (appointment) => {
@@ -218,6 +267,27 @@ const AppointmentsList = () => {
       handleMenuClose();
     } catch (err) {
       console.error('Erreur lors de la suppression du rendez-vous:', err);
+      setError(err.message || 'Une erreur s\'est produite');
+    }
+  };
+
+  const handleChangeStatus = async (newStatus) => {
+    if (!selectedAppointment) return;
+    
+    try {
+      const updatedAppointment = await appointmentsService.updateAppointment(
+        selectedAppointment.id, 
+        { status: newStatus }
+      );
+      
+      // Mettre à jour la liste locale
+      setAppointments(appointments.map(appt => 
+        appt.id === selectedAppointment.id ? { ...appt, status: newStatus } : appt
+      ));
+      
+      handleMenuClose();
+    } catch (err) {
+      console.error('Erreur lors de la mise à jour du statut:', err);
       setError(err.message || 'Une erreur s\'est produite');
     }
   };
@@ -343,12 +413,19 @@ const AppointmentsList = () => {
         </Grid>
       </Grid>
 
+      {/* Debug info en mode développement */}
+      {import.meta.env.DEV && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Debug: {appointments.length} rendez-vous chargés. Premier RDV ID: {appointments[0]?.id}
+        </Alert>
+      )}
+
       <DataTable
         data={appointments}
         columns={columns}
         searchable={true}
         onRowClick={handleRowClick}
-        loading={loading}
+        loading={false}
       />
 
       {/* Actions Menu */}
@@ -362,13 +439,16 @@ const AppointmentsList = () => {
         <MenuItem onClick={handleMenuClose}>
           Voir les détails
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Modifier
+        <MenuItem onClick={() => handleChangeStatus('confirmed')}>
+          Confirmer
         </MenuItem>
-        <MenuItem onClick={handleMenuClose}>
-          Changer le statut
+        <MenuItem onClick={() => handleChangeStatus('completed')}>
+          Marquer comme terminé
         </MenuItem>
-        <MenuItem onClick={handleDeleteAppointment}>
+        <MenuItem onClick={() => handleChangeStatus('cancelled')}>
+          Annuler
+        </MenuItem>
+        <MenuItem onClick={handleDeleteAppointment} sx={{ color: 'error.main' }}>
           Supprimer
         </MenuItem>
       </Menu>

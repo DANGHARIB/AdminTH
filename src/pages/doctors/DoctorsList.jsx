@@ -237,11 +237,7 @@ const DoctorsList = () => {
   };
 
   const handleRowClick = (doctor) => {
-    if (doctor.verified || doctor.status === 'verified') {
-      navigate(`/doctors/${doctor._id || doctor.id}`);
-    } else {
-      navigate(`/doctors/${doctor._id || doctor.id}/review`);
-    }
+    navigate(`/doctors/${doctor._id || doctor.id}`);
   };
 
   const handleTabChange = (event, newValue) => {

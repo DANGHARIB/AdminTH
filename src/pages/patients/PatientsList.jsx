@@ -43,8 +43,11 @@ const PatientsList = () => {
     const fetchPatients = async () => {
       setLoading(true);
       try {
+        console.log('Récupération des patients...');
         const patientsData = await patientsService.getAllPatients();
+        console.log('Patients reçus:', patientsData);
         setPatients(patientsData);
+        setError(null);
       } catch (err) {
         console.error('Erreur lors de la récupération des patients:', err);
         setError(err.message || 'Une erreur s\'est produite lors du chargement des patients');
@@ -65,7 +68,7 @@ const PatientsList = () => {
         ? patients.filter(p => p.status === 'inactive')
         : patients.filter(p => p.status === 'pending');
 
-  // Stats calculées
+  // Stats calculées avec vérification des données
   const stats = {
     total: patients.length,
     active: patients.filter(p => p.status === 'active').length,
@@ -90,11 +93,12 @@ const PatientsList = () => {
       case 'active': return 'Actif';
       case 'inactive': return 'Inactif';
       case 'pending': return 'En attente';
-      default: return status;
+      default: return status || 'Inconnu';
     }
   };
 
   const getGenderIcon = (gender) => {
+    if (!gender) return '👤';
     return gender === 'Masculin' ? '👨' : '👩';
   };
 
@@ -131,12 +135,10 @@ const PatientsList = () => {
           </Avatar>
           <Box>
             <Typography variant="body2" fontWeight={600}>
-              {row.firstName && row.lastName 
-                ? `${row.firstName} ${row.lastName}`
-                : value}
+              {row.name || `${row.firstName || ''} ${row.lastName || ''}`.trim() || 'Nom non disponible'}
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              {row.age} ans • {row.gender}
+              {row.age || 0} ans • {row.gender || 'Non spécifié'}
             </Typography>
           </Box>
         </Box>
@@ -148,9 +150,9 @@ const PatientsList = () => {
       width: 200,
       renderCell: (value, row) => (
         <Box>
-          <Typography variant="body2">{value}</Typography>
+          <Typography variant="body2">{value || 'Email non disponible'}</Typography>
           <Typography variant="caption" color="text.secondary">
-            {row.phone}
+            {row.phone || 'Téléphone non disponible'}
           </Typography>
         </Box>
       )
@@ -198,7 +200,7 @@ const PatientsList = () => {
       align: 'center',
       renderCell: (value) => (
         <Typography variant="body2" fontWeight={500}>
-          {value}
+          {value || 0}
         </Typography>
       )
     },
@@ -225,6 +227,7 @@ const PatientsList = () => {
             variant="outlined"
             onClick={(e) => {
               e.stopPropagation();
+              console.log('Navigation vers patient:', row.id);
               navigate(`/patients/${row.id}`);
             }}
           >
@@ -251,9 +254,11 @@ const PatientsList = () => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+    setSelectedPatient(null);
   };
 
   const handleRowClick = (patient) => {
+    console.log('Clic sur la ligne patient:', patient.id);
     navigate(`/patients/${patient.id}`);
   };
 
@@ -275,7 +280,7 @@ const PatientsList = () => {
       handleMenuClose();
     } catch (err) {
       console.error('Erreur lors de la suppression du patient:', err);
-      // Gérer l'erreur (afficher une notification, etc.)
+      setError('Erreur lors de la suppression du patient');
     }
   };
 
@@ -378,7 +383,7 @@ const PatientsList = () => {
                     Consultations
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Moyenne: {Math.round(stats.totalConsultations / stats.active)} par patient
+                    Moyenne: {stats.active > 0 ? Math.round(stats.totalConsultations / stats.active) : 0} par patient
                   </Typography>
                 </Box>
                 <DoctorIcon className="stat-icon" />
@@ -426,6 +431,13 @@ const PatientsList = () => {
         </Tabs>
       </Box>
 
+      {/* Debug info en mode développement */}
+      {import.meta.env.DEV && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          Debug: {patients.length} patients chargés. Premier patient ID: {patients[0]?.id}
+        </Alert>
+      )}
+
       <DataTable
         data={filteredPatients}
         columns={columns}
@@ -444,6 +456,7 @@ const PatientsList = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         <MenuItem onClick={() => { 
+          console.log('Navigation menu vers patient:', selectedPatient?.id);
           navigate(`/patients/${selectedPatient?.id}`);
           handleMenuClose(); 
         }}>
