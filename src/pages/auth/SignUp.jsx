@@ -21,8 +21,8 @@ const SignUp = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  
-  // Configuration du formulaire
+
+  // Form setup
   const { 
     register, 
     handleSubmit,
@@ -37,225 +37,292 @@ const SignUp = () => {
       confirmPassword: ''
     }
   });
-  
-  // Observer le mot de passe pour la validation de confirmation
+
+  // Watch password for confirmation validation
   const password = watch('password');
-  
-  // Soumission du formulaire
+
+  // Form submission
   const onSubmit = async (data) => {
     try {
-      // Réinitialiser les messages
       setError('');
       setSuccess(false);
       setLoading(true);
-      
-      // Vérifier la connectivité avec le backend
+
+      // Check backend connectivity
       const isConnected = await authService.testConnection();
       if (!isConnected) {
-        throw new Error('Impossible de se connecter au serveur. Vérifiez que le backend est démarré.');
+        throw new Error('Unable to connect to server. Please ensure the backend is running.');
       }
-      
-      // Préparer les données d'inscription
+
+      // Prepare registration data
       const userData = {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         password: data.password,
-        role: 'Admin' // S'assurer que le rôle est bien défini comme Admin
+        role: 'Admin'
       };
-      
-      // Appeler le service d'inscription
-      console.log('Création de compte administrateur:', { ...userData, password: '[MASQUÉ]' });
+
+      console.log('Creating admin account:', { ...userData, password: '[HIDDEN]' });
       await authService.register(userData);
-      
-      // Afficher le message de succès
+
       setSuccess(true);
-      
-      // Rediriger vers la connexion après un court délai
+
+      // Redirect to login after short delay
       setTimeout(() => {
         navigate('/login', { 
-          state: { 
-            message: 'Votre compte a été créé avec succès. Vous pouvez maintenant vous connecter.' 
-          } 
+          state: { message: 'Your account has been created successfully. You can now log in.' }
         });
       }, 2000);
-      
-    } catch (error) {
-      console.error('Erreur d\'inscription:', error);
-      const errorMessage = error.message || (typeof error === 'object' && error.message) || 'Échec de l\'inscription';
-      const errorDetails = error.details ? `\n${error.details}` : '';
-      setError(`${errorMessage}${errorDetails}`);
+
+    } catch (err) {
+      console.error('Registration error:', err);
+      const msg = err.message || 'Registration failed';
+      const details = err.details ? `\n${err.details}` : '';
+      setError(msg + details);
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
-    <Container component="main" maxWidth="sm">
-      <Box
+    <Container
+      component="main"
+      maxWidth="sm"
+      sx={{
+        minHeight: '100vh',
+        py: 4,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: '#fff'   // full-page white
+      }}
+    >
+      <Paper
+        elevation={0}
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          mb: 8
+          width: '100%',
+          p: 4,
+          borderRadius: 4,
+          bgcolor: '#fff'   // card white
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            padding: 4, 
-            width: '100%',
-            borderRadius: 2
-          }}
+        <Typography
+          component="h1"
+          variant="h5"
+          align="center"
+          gutterBottom
+          sx={{ color: '#090F47', fontWeight: 600, fontSize: '1.75rem' }}
         >
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Créer un compte administrateur
-          </Typography>
-          
-          <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-            Les comptes administrateurs permettent de gérer l'ensemble de la plateforme
-          </Typography>
-          
-          <Divider sx={{ mb: 3 }} />
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          
-          {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              Compte créé avec succès! Redirection vers la page de connexion...
-            </Alert>
-          )}
-          
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="firstName"
-                  label="Prénom"
-                  autoFocus
-                  {...register('firstName', { 
-                    required: 'Le prénom est requis',
-                    minLength: {
-                      value: 2,
-                      message: 'Le prénom doit contenir au moins 2 caractères'
-                    }
-                  })}
-                  error={!!errors.firstName}
-                  helperText={errors.firstName?.message}
-                />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Nom"
-                  {...register('lastName', { 
-                    required: 'Le nom est requis',
-                    minLength: {
-                      value: 2,
-                      message: 'Le nom doit contenir au moins 2 caractères'
-                    }
-                  })}
-                  error={!!errors.lastName}
-                  helperText={errors.lastName?.message}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Adresse email"
-                  type="email"
-                  autoComplete="email"
-                  {...register('email', { 
-                    required: 'L\'email est requis',
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Adresse email invalide'
-                    }
-                  })}
-                  error={!!errors.email}
-                  helperText={errors.email?.message}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="password"
-                  label="Mot de passe"
-                  type="password"
-                  autoComplete="new-password"
-                  {...register('password', { 
-                    required: 'Le mot de passe est requis',
-                    minLength: {
-                      value: 8,
-                      message: 'Le mot de passe doit contenir au moins 8 caractères'
-                    },
-                    pattern: {
-                      value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-                      message: 'Le mot de passe doit contenir au moins une majuscule, une minuscule, un chiffre et un caractère spécial'
-                    }
-                  })}
-                  error={!!errors.password}
-                  helperText={errors.password?.message}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="confirmPassword"
-                  label="Confirmer le mot de passe"
-                  type="password"
-                  {...register('confirmPassword', { 
-                    required: 'Veuillez confirmer le mot de passe',
-                    validate: value => value === password || 'Les mots de passe ne correspondent pas'
-                  })}
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
-                />
-              </Grid>
+          Create Admin Account
+        </Typography>
+
+        <Typography
+          variant="body2"
+          align="center"
+          sx={{ mb: 3, color: '#090F47' }}
+        >
+          Admin accounts allow you to manage the entire platform
+        </Typography>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            Account created successfully! Redirecting to login...
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Grid container spacing={2}>
+            {/** First Name **/}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="standard"
+                required
+                fullWidth
+                id="firstName"
+                label="First Name"
+                autoFocus
+                {...register('firstName', {
+                  required: 'First name is required',
+                  minLength: {
+                    value: 2,
+                    message: 'Must be at least 2 characters'
+                  }
+                })}
+                error={!!errors.firstName}
+                helperText={errors.firstName?.message}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                    borderBottomColor: '#7AA7CC'
+                  },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+                }}
+              />
             </Grid>
-            
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={isSubmitting || loading || success}
+
+            {/** Last Name **/}
+            <Grid item xs={12} sm={6}>
+              <TextField
+                variant="standard"
+                required
+                fullWidth
+                id="lastName"
+                label="Last Name"
+                {...register('lastName', {
+                  required: 'Last name is required',
+                  minLength: {
+                    value: 2,
+                    message: 'Must be at least 2 characters'
+                  }
+                })}
+                error={!!errors.lastName}
+                helperText={errors.lastName?.message}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                    borderBottomColor: '#7AA7CC'
+                  },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+                }}
+              />
+            </Grid>
+
+            {/** Email **/}
+            <Grid item xs={12}>
+              <TextField
+                variant="standard"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                type="email"
+                autoComplete="email"
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email'
+                  }
+                })}
+                error={!!errors.email}
+                helperText={errors.email?.message}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                    borderBottomColor: '#7AA7CC'
+                  },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+                }}
+              />
+            </Grid>
+
+            {/** Password **/}
+            <Grid item xs={12}>
+              <TextField
+                variant="standard"
+                required
+                fullWidth
+                id="password"
+                label="Password"
+                type="password"
+                autoComplete="new-password"
+                {...register('password', {
+                  required: 'Password is required',
+                  minLength: {
+                    value: 8,
+                    message: 'Must be at least 8 characters'
+                  },
+                  pattern: {
+                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+                    message: 'Must include uppercase, lowercase, number & special char'
+                  }
+                })}
+                error={!!errors.password}
+                helperText={errors.password?.message}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                    borderBottomColor: '#7AA7CC'
+                  },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+                }}
+              />
+            </Grid>
+
+            {/** Confirm Password **/}
+            <Grid item xs={12}>
+              <TextField
+                variant="standard"
+                required
+                fullWidth
+                id="confirmPassword"
+                label="Confirm Password"
+                type="password"
+                {...register('confirmPassword', {
+                  required: 'Please confirm your password',
+                  validate: (val) => val === password || 'Passwords do not match'
+                })}
+                error={!!errors.confirmPassword}
+                helperText={errors.confirmPassword?.message}
+                sx={{
+                  '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+                  '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                    borderBottomColor: '#7AA7CC'
+                  },
+                  '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isSubmitting || loading || success}
+            sx={{
+              mt: 4,
+              mb: 2,
+              py: 1.5,
+              borderRadius: 3,
+              bgcolor: '#7AA7CC',
+              color: '#fff',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#6A95B0' }
+            }}
+          >
+            {isSubmitting || loading ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1, color: '#fff' }} />
+                Creating...
+              </>
+            ) : (
+              'Create Account'
+            )}
+          </Button>
+
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Link
+              component={RouterLink}
+              to="/login"
+              variant="body2"
+              sx={{ color: '#7AA7CC' }}
             >
-              {(isSubmitting || loading) ? (
-                <>
-                  <CircularProgress size={24} sx={{ mr: 1 }} />
-                  Création en cours...
-                </>
-              ) : 'Créer le compte'}
-            </Button>
-            
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <Link component={RouterLink} to="/login" variant="body2">
-                Déjà un compte ? Connectez-vous
-              </Link>
-            </Box>
+              Already have an account? Sign in
+            </Link>
           </Box>
-        </Paper>
-      </Box>
+        </Box>
+      </Paper>
     </Container>
   );
 };
 
-export default SignUp; 
+export default SignUp;

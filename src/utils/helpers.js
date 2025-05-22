@@ -1,5 +1,5 @@
 /**
- * Utilitaires et fonctions d'aide pour l'application MedAdmin
+ * Utilitaires et fonctions d'aide pour l'application 
  */
 
 // ==================== FORMATAGE ====================

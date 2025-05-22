@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { 
-  Box, 
-  Button, 
-  TextField, 
-  Typography, 
-  Container, 
-  Paper, 
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
   Alert,
   CircularProgress,
   Link
@@ -21,155 +20,174 @@ const Login = () => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // Destination après connexion réussie
+
+  // after-login redirect
   const from = location.state?.from?.pathname || '/dashboard';
-  
-  // Configuration du formulaire
-  const { 
-    register, 
+
+  // form
+  const {
+    register,
     handleSubmit,
-    formState: { errors, isSubmitting } 
+    formState: { errors, isSubmitting }
   } = useForm({
-    defaultValues: {
-      email: '',
-      password: ''
-    }
+    defaultValues: { email: '', password: '' }
   });
-  
-  // Vérifier s'il y a un message de succès dans l'état de navigation
+
+  // flash message?
   useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
-      // Effacer le message après 5 secondes
-      const timer = setTimeout(() => setSuccessMessage(''), 5000);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setSuccessMessage(''), 5000);
+      return () => clearTimeout(t);
     }
   }, [location.state]);
-  
-  // Si déjà authentifié, rediriger
+
+  // if already logged in → go
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate(from, { replace: true });
-    }
+    if (isAuthenticated) navigate(from, { replace: true });
   }, [isAuthenticated, navigate, from]);
-  
-  // Soumission du formulaire
+
   const onSubmit = async (data) => {
     try {
       setError('');
       setSuccessMessage('');
       setLoading(true);
-      console.log(`Tentative de connexion avec: ${data.email} / [mot de passe masqué]`);
+      console.log(`Attempting login with: ${data.email} / [hidden]`);
       await login(data.email, data.password);
       navigate(from, { replace: true });
-    } catch (error) {
-      console.error('Erreur de connexion:', error);
-      const errorMessage = error.message || (typeof error === 'object' && error.message) || 'Échec de la connexion';
-      const errorDetails = error.details ? `\n${error.details}` : '';
-      setError(`${errorMessage}${errorDetails}`);
+    } catch (err) {
+      console.error('Login error:', err);
+      const msg = err.message || 'Login failed';
+      setError(msg + (err.details ? `\n${err.details}` : ''));
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
-    <Container component="main" maxWidth="xs">
-      <Box
+    <Box
+      component="main"
+      sx={{
+        width: '100vw',
+        minHeight: '100vh',
+        bgcolor: '#fff',          // ← entire page white
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Paper
+        elevation={0}
         sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          width: '100%',
+          maxWidth: 400,
+          p: 4,
+          borderRadius: 4,
+          bgcolor: '#fff'          // ← card white
         }}
       >
-        <Paper 
-          elevation={3} 
-          sx={{ 
-            padding: 4, 
-            width: '100%',
-            borderRadius: 2
-          }}
+        <Typography
+          component="h1"
+          variant="h5"
+          align="center"
+          gutterBottom
+          sx={{ color: '#090F47', fontWeight: 600, fontSize: '1.75rem' }}
         >
-          <Typography component="h1" variant="h5" align="center" gutterBottom>
-            Connexion Administrateur
-          </Typography>
-          
-          {successMessage && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {successMessage}
-            </Alert>
-          )}
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-          
-          <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Adresse email"
-              autoComplete="email"
-              autoFocus
-              {...register('email', { 
-                required: 'L\'email est requis',
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                  message: 'Adresse email invalide'
-                }
-              })}
-              error={!!errors.email}
-              helperText={errors.email?.message}
-            />
-            
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="password"
-              label="Mot de passe"
-              type="password"
-              autoComplete="current-password"
-              {...register('password', { 
-                required: 'Le mot de passe est requis',
-                minLength: {
-                  value: 6,
-                  message: 'Le mot de passe doit contenir au moins 6 caractères'
-                }
-              })}
-              error={!!errors.password}
-              helperText={errors.password?.message}
-            />
-            
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={isSubmitting || loading}
-            >
-              {(isSubmitting || loading) ? (
-                <>
-                  <CircularProgress size={24} sx={{ mr: 1 }} />
-                  Connexion en cours...
-                </>
-              ) : 'Se connecter'}
-            </Button>
-            
-            <Box sx={{ textAlign: 'center', mt: 2 }}>
-              <Link href="/signup" variant="body2">
-                Pas encore de compte ? Créer un compte administrateur
-              </Link>
-            </Box>
+          Admin Login
+        </Typography>
+
+        {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
+        {error          && <Alert severity="error"   sx={{ mb: 2 }}>{error}</Alert>}
+
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <TextField
+            variant="standard"
+            fullWidth
+            required
+            id="email"
+            label="Email Address"
+            autoComplete="email"
+            autoFocus
+            {...register('email', {
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: 'Invalid email address'
+              }
+            })}
+            error={!!errors.email}
+            helperText={errors.email?.message}
+            sx={{
+              my: 2,
+              '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+              '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                borderBottomColor: '#7AA7CC'
+              },
+              '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+            }}
+          />
+
+          <TextField
+            variant="standard"
+            fullWidth
+            required
+            id="password"
+            label="Password"
+            type="password"
+            autoComplete="current-password"
+            {...register('password', {
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Must be at least 6 characters'
+              }
+            })}
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            sx={{
+              my: 2,
+              '& .MuiInput-underline:before': { borderBottomColor: '#ccc' },
+              '& .MuiInput-underline:hover:not(.Mui-disabled):before': {
+                borderBottomColor: '#7AA7CC'
+              },
+              '& .MuiInput-underline:after': { borderBottomColor: '#7AA7CC' }
+            }}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isSubmitting || loading}
+            sx={{
+              mt: 6,
+              mb: 2,
+              py: 1.5,
+              borderRadius: 3,
+              bgcolor: '#7AA7CC',
+              color: '#fff',
+              fontSize: '1.1rem',
+              fontWeight: 600,
+              '&:hover': { bgcolor: '#6A95B0' }
+            }}
+          >
+            {isSubmitting || loading ? (
+              <>
+                <CircularProgress size={24} sx={{ mr: 1, color: '#fff' }} />
+                Logging in…
+              </>
+            ) : (
+              'Sign In'
+            )}
+          </Button>
+
+          <Box sx={{ textAlign: 'center', mt: 2 }}>
+            <Link href="/signup" variant="body2" sx={{ color: '#7AA7CC' }}>
+              Don’t have an account? Create Admin
+            </Link>
           </Box>
-        </Paper>
-      </Box>
-    </Container>
+        </Box>
+      </Paper>
+    </Box>
   );
 };
 
