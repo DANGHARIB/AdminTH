@@ -17,14 +17,23 @@ import {
   CircularProgress,
   useTheme,
   alpha,
-  Container
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  TextField,
+  Snackbar
 } from '@mui/material';
 import {
   LocalHospital as DoctorIcon,
   Verified as VerifiedIcon,
   Schedule as PendingIcon,
   Person as PersonIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  Check as CheckIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import DataTable from '../../components/common/DataTable';
 import { doctorsService } from '../../services';
@@ -43,6 +52,7 @@ const COLORS = {
 };
 
 const DoctorsList = () => {
+  // eslint-disable-next-line no-unused-vars
   const theme = useTheme();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +61,12 @@ const DoctorsList = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   const [activeTab, setActiveTab] = useState(0);
   const navigate = useNavigate();
+
+  // États pour la vérification/rejet des médecins
+  const [openRejectDialog, setOpenRejectDialog] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [processingAction, setProcessingAction] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -87,7 +103,8 @@ const DoctorsList = () => {
   };
 
   // StatCard component consistent with Dashboard
-  const StatCard = ({ title, value, icon: Icon, color, secondaryText, onClick }) => {
+  // eslint-disable-next-line no-unused-vars
+  const StatCard = ({ title, value, icon: Icon, secondaryText, onClick, color }) => {
     return (
       <Card 
         onClick={onClick}
@@ -269,29 +286,47 @@ const DoctorsList = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 100,
+      width: 220,
       align: 'center',
       renderCell: (value, row) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
           {!(row.verified || row.status === 'verified') ? (
-            <Button
-              size="small"
-              variant="contained"
-              onClick={e => {
-                e.stopPropagation();
-                navigate(`/doctors/${row._id || row.id}/review`);
-              }}
-              sx={{
-                borderRadius: 2,
-                bgcolor: COLORS.tabActive,
-                color: '#fff',
-                '&:hover': {
-                  bgcolor: alpha(COLORS.tabActive, 0.9)
-                }
-              }}
-            >
-              Review
-            </Button>
+            <>
+              <Button
+                size="small"
+                variant="contained"
+                color="success"
+                startIcon={<CheckIcon />}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleVerifyDoctor(row);
+                }}
+                disabled={processingAction}
+                sx={{
+                  borderRadius: 2,
+                  color: '#fff',
+                }}
+              >
+                Vérifier
+              </Button>
+              <Button
+                size="small"
+                variant="contained"
+                color="error"
+                startIcon={<CloseIcon />}
+                onClick={e => {
+                  e.stopPropagation();
+                  handleOpenRejectDialog(row);
+                }}
+                disabled={processingAction}
+                sx={{
+                  borderRadius: 2,
+                  color: '#fff',
+                }}
+              >
+                Rejeter
+              </Button>
+            </>
           ) : (
             <Button
               size="small"
@@ -310,7 +345,7 @@ const DoctorsList = () => {
                 }
               }}
             >
-              View
+              Voir
             </Button>
           )}
         </Box>
@@ -352,40 +387,130 @@ const DoctorsList = () => {
     setActiveTab(newValue);
   };
 
-  const handleVerifyDoctor = async () => {
-    if (!selectedDoctor) return;
+  // Fonctions pour la vérification/rejet des médecins
+  const handleOpenRejectDialog = (doctor) => {
+    setSelectedDoctor(doctor);
+    setRejectionReason('');
+    setOpenRejectDialog(true);
+  };
+
+  const handleCloseRejectDialog = () => {
+    setOpenRejectDialog(false);
+  };
+
+  const handleVerifyDoctor = async (doctor) => {
     try {
-      const updated = { ...selectedDoctor, verified: true, status: 'verified' };
-      await doctorsService.updateDoctor(
-        selectedDoctor._id || selectedDoctor.id,
-        updated
+      setProcessingAction(true);
+      const doctorId = doctor._id || doctor.id;
+      console.log(`Vérification du médecin ${doctorId}...`);
+      
+      await doctorsService.verifyDoctor(doctorId);
+      
+      // Mettre à jour la liste des médecins
+      setDoctors(prevDoctors => 
+        prevDoctors.map(d => 
+          (d._id || d.id) === doctorId 
+            ? { ...d, verified: true, status: 'verified' } 
+            : d
+        )
       );
-      setDoctors(doctors.map(doc =>
-        (doc._id || doc.id) === (selectedDoctor._id || selectedDoctor.id)
-          ? updated
-          : doc
-      ));
-      handleMenuClose();
+      
+      setSnackbar({
+        open: true,
+        message: `Dr. ${doctor.fullName || 'Le médecin'} a été vérifié avec succès.`,
+        severity: 'success'
+      });
     } catch (err) {
-      console.error('Error verifying doctor:', err);
-      setError(err.message || 'An error occurred');
+      console.error('Erreur lors de la vérification du médecin:', err);
+      setSnackbar({
+        open: true,
+        message: err.message || 'Une erreur est survenue lors de la vérification du médecin.',
+        severity: 'error'
+      });
+    } finally {
+      setProcessingAction(false);
     }
   };
 
-  const handleDeleteDoctor = async () => {
-    if (!selectedDoctor) return;
-    try {
-      await doctorsService.deleteDoctor(
-        selectedDoctor._id || selectedDoctor.id
-      );
-      setDoctors(doctors.filter(
-        doc => (doc._id || doc.id) !== (selectedDoctor._id || selectedDoctor.id)
-      ));
-      handleMenuClose();
-    } catch (err) {
-      console.error('Error deleting doctor:', err);
-      setError(err.message || 'An error occurred');
+  const handleRejectDoctor = async () => {
+    if (!rejectionReason.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Veuillez fournir une raison pour le rejet.',
+        severity: 'warning'
+      });
+      return;
     }
+    
+    try {
+      setProcessingAction(true);
+      const doctorId = selectedDoctor._id || selectedDoctor.id;
+      console.log(`Rejet du médecin ${doctorId} avec raison: ${rejectionReason}`);
+      
+      await doctorsService.rejectDoctor(doctorId, rejectionReason);
+      
+      // Mettre à jour la liste des médecins
+      setDoctors(prevDoctors => 
+        prevDoctors.map(d => 
+          (d._id || d.id) === doctorId 
+            ? { ...d, verified: false, status: 'rejected', rejectionReason } 
+            : d
+        )
+      );
+      
+      setSnackbar({
+        open: true,
+        message: `Dr. ${selectedDoctor.fullName || 'Le médecin'} a été rejeté avec succès.`,
+        severity: 'success'
+      });
+      
+      handleCloseRejectDialog();
+    } catch (err) {
+      console.error('Erreur lors du rejet du médecin:', err);
+      setSnackbar({
+        open: true,
+        message: err.message || 'Une erreur est survenue lors du rejet du médecin.',
+        severity: 'error'
+      });
+    } finally {
+      setProcessingAction(false);
+    }
+  };
+
+  const handleDeleteDoctor = async (doctor) => {
+    if (!doctor) return;
+    
+    try {
+      setProcessingAction(true);
+      const doctorId = doctor._id || doctor.id;
+      console.log(`Suppression du médecin ${doctorId}...`);
+      
+      await doctorsService.deleteDoctor(doctorId);
+      
+      // Supprimer le médecin de la liste
+      setDoctors(prevDoctors => 
+        prevDoctors.filter(d => (d._id || d.id) !== doctorId)
+      );
+      
+      setSnackbar({
+        open: true,
+        message: `Dr. ${doctor.fullName || 'Le médecin'} a été supprimé avec succès.`,
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Erreur lors de la suppression du médecin:', err);
+      setSnackbar({
+        open: true,
+        message: err.message || 'Une erreur est survenue lors de la suppression du médecin.',
+        severity: 'error'
+      });
+    } finally {
+      setProcessingAction(false);
+    }
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar(prev => ({ ...prev, open: false }));
   };
 
   if (loading) {
@@ -514,11 +639,64 @@ const DoctorsList = () => {
         data={doctorsWithValidId}
         columns={columns}
         searchable
-          searchPlaceholder="Search..."
+        searchPlaceholder="Rechercher..."
         onRowClick={handleRowClick}
         loading={false}
-          exportable={false}
+        exportable={false}
       />
+
+      {/* Snackbar pour les notifications */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackbarClose}
+        message={snackbar.message}
+        severity={snackbar.severity}
+      />
+
+      {/* Boîte de dialogue pour le rejet d'un médecin */}
+      <Dialog
+        open={openRejectDialog}
+        onClose={handleCloseRejectDialog}
+        aria-labelledby="reject-dialog-title"
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle id="reject-dialog-title">
+          Rejeter Dr. {selectedDoctor?.fullName || selectedDoctor?.name || 'ce médecin'}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Veuillez fournir une raison pour le rejet. Cette raison sera incluse dans l'email envoyé au médecin.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="rejection-reason"
+            label="Raison du rejet"
+            type="text"
+            fullWidth
+            multiline
+            rows={4}
+            variant="outlined"
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseRejectDialog} disabled={processingAction}>
+            Annuler
+          </Button>
+          <Button 
+            onClick={handleRejectDoctor} 
+            color="error" 
+            variant="contained"
+            disabled={processingAction || !rejectionReason.trim()}
+          >
+            {processingAction ? 'Traitement en cours...' : 'Rejeter'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Actions Menu */}
       <Menu
@@ -545,7 +723,10 @@ const DoctorsList = () => {
           Edit Details
         </MenuItem>
         {selectedDoctor && !(selectedDoctor.verified || selectedDoctor.status === 'verified') && (
-          <MenuItem onClick={handleVerifyDoctor}>
+          <MenuItem onClick={() => {
+            handleVerifyDoctor(selectedDoctor);
+            handleMenuClose();
+          }}>
             Verify
           </MenuItem>
         )}
@@ -559,7 +740,10 @@ const DoctorsList = () => {
             Review
           </MenuItem>
         )}
-        <MenuItem onClick={handleDeleteDoctor}>
+        <MenuItem onClick={() => {
+          handleDeleteDoctor(selectedDoctor);
+          handleMenuClose();
+        }}>
           Delete
         </MenuItem>
       </Menu>

@@ -9,5 +9,24 @@ export default defineConfig({
     alias: {
       '@': resolve('./src')
     }
+  },
+  server: {
+    // Configuration du proxy pour contourner les problèmes CORS
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        // Réécrire les en-têtes pour s'assurer que PATCH est autorisé
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            console.error('Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req) => {
+            console.log('Proxying:', req.method, req.url);
+          });
+        }
+      }
+    }
   }
 })

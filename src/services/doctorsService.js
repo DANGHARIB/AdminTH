@@ -233,6 +233,7 @@ const doctorsService = {
   async verifyDoctor(id) {
     try {
       console.log(`✅ Verifying doctor ${id}...`);
+      // L'endpoint n'accepte que la méthode PATCH
       const response = await api.patch(`/doctors/${id}/verify`);
       console.log('✅ Doctor verified:', response.data);
       
@@ -249,6 +250,7 @@ const doctorsService = {
   async rejectDoctor(id, reason = '') {
     try {
       console.log(`❌ Rejecting doctor ${id}...`);
+      // L'endpoint n'accepte que la méthode PATCH
       const response = await api.patch(`/doctors/${id}/reject`, { reason });
       console.log('✅ Doctor rejected:', response.data);
       
@@ -256,6 +258,22 @@ const doctorsService = {
     } catch (error) {
       console.error(`❌ Error rejecting doctor ${id}:`, error);
       throw error.response?.data || { message: 'Error rejecting doctor' };
+    }
+  },
+
+  /**
+   * Get doctor verification status
+   */
+  async getDoctorVerificationStatus(id) {
+    try {
+      console.log(`🔍 Fetching verification status for doctor ${id}...`);
+      const response = await api.get(`/doctors/${id}/verification-status`);
+      console.log('✅ Verification status received:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error fetching verification status for doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching verification status' };
     }
   },
 
