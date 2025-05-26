@@ -6,7 +6,6 @@ import {
   Button,
   Chip,
   Avatar,
-  IconButton,
   Menu,
   MenuItem,
   Alert,
@@ -21,14 +20,13 @@ import {
   Container
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  MoreVert as MoreVertIcon,
   People as PeopleIcon,
   PersonAdd as PersonAddIcon,
   LocalHospital as DoctorIcon,
   AccountBalance as FinanceIcon,
   TrendingUp as TrendingUpIcon,
-  ArrowForward as ArrowForwardIcon
+  ArrowForward as ArrowForwardIcon,
+  Email as EmailIcon
 } from '@mui/icons-material';
 import { patientsService } from '../../services';
 import DataTable from '../../components/common/DataTable';
@@ -230,20 +228,6 @@ const PatientsList = () => {
     }).format(amount || 0);
   };
 
-  const calculateDaysSinceLastConsultation = (lastConsultation) => {
-    if (!lastConsultation) return 'None';
-    const today = new Date();
-    const last = new Date(lastConsultation);
-    const diffTime = Math.abs(today - last);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 30) return `${diffDays} days ago`;
-    if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-    return `${Math.floor(diffDays / 365)} years ago`;
-  };
-
   const columns = [
     {
       field: 'name',
@@ -267,14 +251,12 @@ const PatientsList = () => {
     },
     {
       field: 'email',
-      headerName: 'Contact',
+      headerName: 'Email',
       width: 200,
-      renderCell: (value, row) => (
-        <Box>
+      renderCell: (value) => (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <EmailIcon sx={{ mr: 1, color: COLORS.secondary, fontSize: '1rem' }} />
           <Typography variant="body2">{value || 'Email not available'}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            {row.phone || 'Phone not available'}
-          </Typography>
         </Box>
       )
     },
@@ -344,11 +326,6 @@ const PatientsList = () => {
     }
   ];
 
-  const handleMenuOpen = (event, patient) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPatient(patient);
-  };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
     setSelectedPatient(null);
@@ -361,10 +338,6 @@ const PatientsList = () => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-  };
-
-  const handleAddPatient = () => {
-    navigate('/patients/new');
   };
 
   const handleDeletePatient = async () => {
@@ -504,17 +477,17 @@ const PatientsList = () => {
           </Tabs>
         </Box>
 
-        
-
-        <DataTable
-          data={filteredPatients}
-          columns={columns}
-          searchable={true}
-          searchPlaceholder="Search..."
-          onRowClick={handleRowClick}
-          loading={false}
-          exportable={false}
-        />
+        <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
+          <DataTable
+            data={filteredPatients}
+            columns={columns}
+            searchable={true}
+            searchPlaceholder="Search patients..."
+            onRowClick={handleRowClick}
+            loading={false}
+            exportable={false}
+          />
+        </Card>
 
         {/* Actions Menu */}
         <Menu
@@ -525,35 +498,20 @@ const PatientsList = () => {
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
           <MenuItem onClick={() => { 
-            console.log('Menu navigation to patient:', selectedPatient?.id);
             navigate(`/patients/${selectedPatient?.id}`);
             handleMenuClose(); 
           }}>
             View Full Profile
           </MenuItem>
           <MenuItem onClick={() => { 
-            console.log('Edit patient'); 
             handleMenuClose(); 
           }}>
             Edit Information
           </MenuItem>
           <MenuItem onClick={() => { 
-            console.log('View medical history'); 
-            handleMenuClose(); 
-          }}>
-            View Medical History
-          </MenuItem>
-          <MenuItem onClick={() => { 
-            console.log('View finances'); 
             handleMenuClose(); 
           }}>
             View Finances
-          </MenuItem>
-          <MenuItem onClick={() => { 
-            console.log('Send message'); 
-            handleMenuClose(); 
-          }}>
-            Send Message
           </MenuItem>
           <MenuItem onClick={() => {
             handleDeletePatient();

@@ -16,32 +16,44 @@ import {
   Avatar,
   Card,
   CardContent,
-  CardHeader,
+  Container,
   Tabs,
   Tab,
-  LinearProgress
+  LinearProgress,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Person as PersonIcon,
-  LocalHospital as MedicalIcon,
   AccountBalance as AccountBalanceIcon,
   Receipt as ReceiptIcon,
   TrendingUp as TrendingUpIcon,
   CalendarToday as CalendarIcon,
-  Phone as PhoneIcon,
   Email as EmailIcon,
-  LocationOn as LocationIcon,
-  Bloodtype as BloodIcon,
-  Warning as AllergyIcon,
-  ContactEmergency as EmergencyIcon
+  ArrowBack as ArrowBackIcon,
+  Cake as CakeIcon,
+  Wc as GenderIcon
 } from '@mui/icons-material';
 import { patientsService } from '../../services';
 import DataTable from '../../components/common/DataTable';
 import './PatientDetails.css';
 
+// Color palette consistent with dashboard
+const COLORS = {
+  primary: '#325A80',
+  secondary: '#4A6F94', 
+  tertiary: '#2A4A6B',
+  lightBlue: '#5D8CAF',
+  accent: '#4773A8',
+  tabActive: '#4169E1',
+  success: '#2E7D32',
+  warning: '#ED6C02'
+};
+
 const PatientDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -197,18 +209,35 @@ const PatientDetails = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <CircularProgress size={50} color="primary" />
+        <Typography variant="body1" color="text.secondary">
+          Loading patient details...
+        </Typography>
       </Box>
     );
   }
 
   if (error) {
     return (
-      <Box sx={{ padding: 3 }}>
+      <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
-        <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Back to list
+        <Button 
+          variant="contained" 
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+          sx={{ mt: 2, borderRadius: 2 }}
+        >
+          Back to Patients
         </Button>
       </Box>
     );
@@ -216,10 +245,15 @@ const PatientDetails = () => {
 
   if (!patient) {
     return (
-      <Box sx={{ padding: 3 }}>
+      <Box sx={{ p: 3 }}>
         <Alert severity="warning">Patient not found</Alert>
-        <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Back to list
+        <Button 
+          variant="contained" 
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+          sx={{ mt: 2, borderRadius: 2 }}
+        >
+          Back to Patients
         </Button>
       </Box>
     );
@@ -228,437 +262,445 @@ const PatientDetails = () => {
   const renderStatus = (status) => {
     const color = status === 'active' ? 'success' : status === 'inactive' ? 'error' : 'warning';
     const label = status === 'active' ? 'Active' : status === 'inactive' ? 'Inactive' : 'Pending';
-    return <Chip label={label} color={color} size="small" />;
+    return <Chip label={label} color={color} size="small" sx={{ ml: 1, fontWeight: 500, py: 0.5 }} />;
   };
 
-  const TabPanel = ({ children, value, index, ...other }) => (
-    <Box
-      role="tabpanel"
-      hidden={value !== index}
-      id={`patient-tabpanel-${index}`}
-      aria-labelledby={`patient-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </Box>
-  );
-
   return (
-    <Box className="patient-details-page">
-      {/* Header */}
-      <Box className="details-header">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar 
-            sx={{ 
-              width: 64, 
-              height: 64, 
-              bgcolor: '#10b981',
-              fontSize: '24px',
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            }}
-          >
-            {patient.gender === 'Male' || patient.gender === 'Masculin' ? '👨' : patient.gender === 'Female' || patient.gender === 'Féminin' ? '👩' : '👤'}
-          </Avatar>
-          <Box>
-            <Typography variant="h4" className="patient-name">
-              {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Name not available'} {renderStatus(patient.status)}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-              {patient.age || 0} years old • {patient.gender || 'Gender not specified'} • Blood type {patient.bloodType || 'Not specified'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Patient since {patient.joinDate ? new Date(patient.joinDate).toLocaleDateString('en-US') : 'Unknown date'}
-            </Typography>
-          </Box>
-        </Box>
-        
-        <Button variant="outlined" onClick={handleBack}>
-          Back to list
-        </Button>
-      </Box>
-
-      {/* Debug info in development mode */}
-      {import.meta.env.DEV && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Debug: Patient ID: {patient.id}, Available data: {Object.keys(patient).join(', ')}
-        </Alert>
-      )}
-
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} className="patient-tabs">
-          <Tab icon={<PersonIcon />} label="Personal Information" />
-          <Tab icon={<MedicalIcon />} label="Medical Record" />
-          <Tab icon={<AccountBalanceIcon />} label="Finances" />
-        </Tabs>
-      </Box>
-
-      {/* Personal Information Tab */}
-      <TabPanel value={tabValue} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card className="info-card">
-              <CardHeader 
-                title="Contact Information"
-                avatar={<PersonIcon />}
-              />
-              <CardContent>
-                <List disablePadding>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <EmailIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Email" 
-                      secondary={patient.email || 'Email not available'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <PhoneIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Phone" 
-                      secondary={patient.phone || 'Phone not available'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <LocationIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Address" 
-                      secondary={patient.address || 'Address not available'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <EmergencyIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Emergency Contact" 
-                      secondary={patient.emergencyContact || 'Emergency contact not available'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card className="info-card">
-              <CardHeader 
-                title="Medical Information"
-                avatar={<MedicalIcon />}
-              />
-              <CardContent>
-                <List disablePadding>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <BloodIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Blood Type" 
-                      secondary={patient.bloodType || 'Not specified'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <MedicalIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Primary Doctor" 
-                      secondary={patient.assignedDoctor || 'No doctor assigned'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <CalendarIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Last Consultation" 
-                      secondary={patient.lastConsultation ? new Date(patient.lastConsultation).toLocaleDateString('en-US') : 'No consultation'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <AllergyIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Allergies" 
-                      secondary={
-                        patient.allergies && patient.allergies.length > 0 
-                          ? patient.allergies.map(a => <Chip key={a} label={a} size="small" color="warning" sx={{ mr: 0.5, mb: 0.5 }} />)
-                          : "No known allergies"
-                      } 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <AccountBalanceIcon sx={{ mr: 2, color: '#6b7280' }} />
-                    <ListItemText 
-                      primary="Insurance" 
-                      secondary={patient.insurance || 'Not specified'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </TabPanel>
-
-      {/* Medical Record Tab */}
-      <TabPanel value={tabValue} index={1}>
-        <Card className="medical-card">
-          <CardHeader 
-            title="Medical History"
-            avatar={<MedicalIcon />}
-          />
-          <CardContent>
-            {patient.medicalHistory && patient.medicalHistory.length > 0 ? (
-              <List>
-                {patient.medicalHistory.map((item, index) => (
-                  <ListItem 
-                    key={index} 
-                    divider={index < patient.medicalHistory.length - 1}
-                    sx={{ alignItems: 'flex-start', py: 2 }}
-                  >
-                    <ListItemText 
-                      primary={
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                          <Typography variant="subtitle2" fontWeight={600}>
-                            {item.description || 'Description not available'}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {item.date || 'Unknown date'}
-                          </Typography>
-                        </Box>
-                      }
-                      secondary={
-                        <Box>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Doctor:</strong> {item.doctor || 'Doctor not specified'}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Diagnosis:</strong> {item.diagnosis || 'Diagnosis not available'}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Treatment:</strong> {item.treatment || 'Treatment not specified'}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            <strong>Notes:</strong> {item.notes || 'No notes'}
-                          </Typography>
-                        </Box>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                No medical history available
-              </Typography>
-            )}
-          </CardContent>
-        </Card>
-      </TabPanel>
-
-      {/* Finances Tab */}
-      <TabPanel value={tabValue} index={2}>
-        {/* Financial statistics cards */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
-              <CardContent>
-                <Box className="finance-content">
-                  <Box>
-                    <Typography variant="h5" className="finance-number">
-                      {formatCurrency(patient.finances?.totalSpent)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Spent
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon className="finance-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
-              <CardContent>
-                <Box className="finance-content">
-                  <Box>
-                    <Typography variant="h5" className="finance-number">
-                      {patient.finances?.consultationsCount || 0}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Consultations
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Avg: {formatCurrency(patient.finances?.averageConsultationCost)}
-                    </Typography>
-                  </Box>
-                  <CalendarIcon className="finance-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
-              <CardContent>
-                <Box className="finance-content">
-                  <Box>
-                    <Typography variant="h5" className="finance-number">
-                      {formatCurrency(patient.finances?.pendingPayments)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Pending
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Last: {patient.finances?.lastPayment || 'None'}
-                    </Typography>
-                  </Box>
-                  <ReceiptIcon className="finance-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Card className="finance-card">
-              <CardContent>
-                <Box className="finance-content">
-                  <Box>
-                    <Typography variant="h5" className="finance-number">
-                      {formatCurrency(patient.finances?.totalRefunds)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Refunds
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Method: {patient.finances?.preferredPaymentMethod || 'Not specified'}
-                    </Typography>
-                  </Box>
-                  <AccountBalanceIcon className="finance-icon" />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Monthly evolution */}
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Spending Evolution (Last 5 months)
-                </Typography>
-                {patient.monthlyStats && patient.monthlyStats.length > 0 ? (
-                  patient.monthlyStats.map((stat) => (
-                    <Box key={stat.month} sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">{stat.month}</Typography>
-                        <Typography variant="body2" fontWeight={600}>
-                          {formatCurrency(stat.spent)}
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={((stat.spent || 0) / 150) * 100} 
-                        sx={{ height: 6, borderRadius: 3 }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {stat.consultations || 0} consultation{(stat.consultations || 0) > 1 ? 's' : ''}
-                      </Typography>
-                    </Box>
-                  ))
-                ) : (
-                  <Typography variant="body2" color="text.secondary">
-                    No monthly data available
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
-          
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Financial Summary
-                </Typography>
-                <List disablePadding>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <ListItemText 
-                      primary="Total spent" 
-                      secondary={formatCurrency(patient.finances?.totalSpent)} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <ListItemText 
-                      primary="Average cost per consultation" 
-                      secondary={formatCurrency(patient.finances?.averageConsultationCost)} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <ListItemText 
-                      primary="Pending payments" 
-                      secondary={formatCurrency(patient.finances?.pendingPayments)} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <ListItemText 
-                      primary="Preferred payment method" 
-                      secondary={patient.finances?.preferredPaymentMethod || 'Not specified'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <ListItemText 
-                      primary="Last payment" 
-                      secondary={patient.finances?.lastPayment || 'No payment'} 
-                      primaryTypographyProps={{ variant: 'subtitle2' }}
-                    />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Recent transactions */}
-        <Card>
-          <CardContent sx={{ p: 0 }}>
-            <Box sx={{ p: 3, pb: 0 }}>
-              <Typography variant="h6">
-                Transaction History
+    <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Box className="patient-details-page">
+        {/* Header */}
+        <Box className="details-header" sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+            <Avatar 
+              sx={{ 
+                width: 80, 
+                height: 80, 
+                bgcolor: COLORS.primary,
+                fontSize: '28px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}
+            >
+              {patient.gender === 'Male' || patient.gender === 'Masculin' ? '👨' : patient.gender === 'Female' || patient.gender === 'Féminin' ? '👩' : '👤'}
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary, mb: 1 }}>
+                {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Name not available'} {renderStatus(patient.status)}
               </Typography>
             </Box>
-            
-            <DataTable
-              data={patient.transactions || []}
-              columns={transactionColumns}
-              searchable={false}
-              pagination={true}
-              initialRowsPerPage={10}
-            />
-          </CardContent>
-        </Card>
-      </TabPanel>
-      
-      {/* Action Buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-        <Button variant="contained" color="primary">
-          Edit
-        </Button>
-        <Button variant="outlined" color="warning">
-          Send Message
-        </Button>
-        <Button variant="outlined" color="error">
-          Archive
-        </Button>
+          </Box>
+          
+          <Button 
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{
+              borderRadius: 2,
+              borderColor: COLORS.primary,
+              color: COLORS.primary,
+              '&:hover': {
+                borderColor: COLORS.primary,
+                bgcolor: alpha(COLORS.primary, 0.1)
+              }
+            }}
+          >
+            Back to Patients
+          </Button>
+        </Box>
+
+        {/* Tabs */}
+        <Box sx={{ mb: 3 }}>
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            TabIndicatorProps={{ style: { display: 'none' } }}
+            sx={{ 
+              '& .MuiTab-root': {
+                color: '#555',
+                borderRadius: 1.5,
+                mx: 0.5,
+                textTransform: 'none',
+                fontWeight: 500,
+                minHeight: '36px',
+                padding: '8px 16px',
+                '&.Mui-selected': {
+                  color: '#fff',
+                  backgroundColor: COLORS.tabActive,
+                }
+              }
+            }}
+          >
+            <Tab label="Personal Info" icon={<PersonIcon sx={{ mr: 1 }} />} iconPosition="start" />
+            <Tab label="Finances" icon={<AccountBalanceIcon sx={{ mr: 1 }} />} iconPosition="start" />
+          </Tabs>
+        </Box>
+
+        {/* Personal Information Tab */}
+        {tabValue === 0 && (
+          <Grid container spacing={3} justifyContent="center">
+            <Grid item xs={12} md={8} lg={6}>
+              <Paper sx={{ p: 4, borderRadius: 3, height: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 3, color: COLORS.primary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon sx={{ mr: 1.5 }} /> Personal Information
+                </Typography>
+                <Divider sx={{ mb: 3 }} />
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: alpha(COLORS.primary, 0.04),
+                      mb: 2
+                    }}>
+                      <Typography variant="subtitle2" color={COLORS.secondary} gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <CakeIcon sx={{ mr: 1, fontSize: 20 }} /> Age
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {`${patient.age || 0} years old`}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: alpha(COLORS.primary, 0.04),
+                      mb: 2
+                    }}>
+                      <Typography variant="subtitle2" color={COLORS.secondary} gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <GenderIcon sx={{ mr: 1, fontSize: 20 }} /> Gender
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {patient.gender || 'Not specified'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: alpha(COLORS.primary, 0.04),
+                      mb: 2
+                    }}>
+                      <Typography variant="subtitle2" color={COLORS.secondary} gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <EmailIcon sx={{ mr: 1, fontSize: 20 }} /> Email
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {patient.email || 'Email not available'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: alpha(COLORS.primary, 0.04)
+                    }}>
+                      <Typography variant="subtitle2" color={COLORS.secondary} gutterBottom sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <CalendarIcon sx={{ mr: 1, fontSize: 20 }} /> Patient Since
+                      </Typography>
+                      <Typography variant="body1" fontWeight={500}>
+                        {patient.joinDate ? new Date(patient.joinDate).toLocaleDateString('en-US') : 'Unknown date'}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Grid>
+          </Grid>
+        )}
+
+        {/* Finances Tab */}
+        {tabValue === 1 && (
+          <>
+            {/* Financial statistics cards */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${alpha(COLORS.primary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(patient.finances?.totalSpent)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Total Spent
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <TrendingUpIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${alpha(COLORS.secondary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {patient.finances?.consultationsCount || 0}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Consultations
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                          Avg: {formatCurrency(patient.finances?.averageConsultationCost)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <CalendarIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${alpha(COLORS.accent, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(patient.finances?.pendingPayments)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Pending
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                          Last: {patient.finances?.lastPayment || 'None'}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <ReceiptIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.tertiary} 0%, ${alpha(COLORS.tertiary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(patient.finances?.totalRefunds)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Refunds
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                          Method: {patient.finances?.preferredPaymentMethod || 'Not specified'}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <AccountBalanceIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Monthly evolution */}
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: COLORS.primary }}>
+                      Spending Evolution (Last 5 months)
+                    </Typography>
+                    {patient.monthlyStats && patient.monthlyStats.length > 0 ? (
+                      patient.monthlyStats.map((stat) => (
+                        <Box key={stat.month} sx={{ mb: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2">{stat.month}</Typography>
+                            <Typography variant="body2" fontWeight={600}>
+                              {formatCurrency(stat.spent)}
+                            </Typography>
+                          </Box>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={((stat.spent || 0) / 150) * 100} 
+                            sx={{ 
+                              height: 8, 
+                              borderRadius: 4,
+                              bgcolor: alpha(COLORS.primary, 0.1),
+                              '.MuiLinearProgress-bar': {
+                                bgcolor: COLORS.primary
+                              }
+                            }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            {stat.consultations || 0} consultation{(stat.consultations || 0) > 1 ? 's' : ''}
+                          </Typography>
+                        </Box>
+                      ))
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No monthly data available
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: COLORS.primary }}>
+                      Financial Summary
+                    </Typography>
+                    <List disablePadding>
+                      <ListItem disablePadding sx={{ py: 1 }}>
+                        <ListItemText 
+                          primary="Total spent" 
+                          secondary={formatCurrency(patient.finances?.totalSpent)} 
+                          primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                          secondaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ py: 1 }}>
+                        <ListItemText 
+                          primary="Average cost per consultation" 
+                          secondary={formatCurrency(patient.finances?.averageConsultationCost)} 
+                          primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                          secondaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ py: 1 }}>
+                        <ListItemText 
+                          primary="Pending payments" 
+                          secondary={formatCurrency(patient.finances?.pendingPayments)} 
+                          primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                          secondaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ py: 1 }}>
+                        <ListItemText 
+                          primary="Preferred payment method" 
+                          secondary={patient.finances?.preferredPaymentMethod || 'Not specified'} 
+                          primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                          secondaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                      <ListItem disablePadding sx={{ py: 1 }}>
+                        <ListItemText 
+                          primary="Last payment" 
+                          secondary={patient.finances?.lastPayment || 'No payment'} 
+                          primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                          secondaryTypographyProps={{ fontWeight: 500 }}
+                        />
+                      </ListItem>
+                    </List>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Recent transactions */}
+            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+              <CardContent sx={{ p: 0 }}>
+                <Box sx={{ p: 3, pb: 0 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.primary }}>
+                    Transaction History
+                  </Typography>
+                </Box>
+                
+                <DataTable
+                  data={patient.transactions || []}
+                  columns={transactionColumns}
+                  searchable={false}
+                  pagination={true}
+                  initialRowsPerPage={10}
+                />
+              </CardContent>
+            </Card>
+          </>
+        )}
+        
+        {/* Action Buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
+          <Button 
+            variant="contained" 
+            sx={{ 
+              borderRadius: 2,
+              bgcolor: COLORS.primary,
+              '&:hover': {
+                bgcolor: alpha(COLORS.primary, 0.9)
+              }
+            }}
+          >
+            Edit
+          </Button>
+          <Button 
+            variant="outlined" 
+            color="error"
+            sx={{ borderRadius: 2 }}
+          >
+            Archive
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 };
 

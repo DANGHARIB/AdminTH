@@ -31,8 +31,6 @@ import {
   Receipt as ReceiptIcon,
   CalendarToday as CalendarIcon,
   Email as EmailIcon,
-  Phone as PhoneIcon,
-  LocationOn as LocationIcon,
   School as SchoolIcon,
   ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
@@ -428,24 +426,6 @@ const DoctorDetails = () => {
                     />
                   </ListItem>
                   <ListItem disablePadding sx={{ py: 1 }}>
-                    <PhoneIcon sx={{ mr: 2, color: COLORS.secondary }} />
-                    <ListItemText
-                      primary="Phone"
-                      secondary={doctor.phone || 'Not provided'}
-                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{ fontWeight: 500 }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
-                    <LocationIcon sx={{ mr: 2, color: COLORS.secondary }} />
-                    <ListItemText
-                      primary="Address"
-                      secondary={doctor.address || 'Not provided'}
-                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
-                      secondaryTypographyProps={{ fontWeight: 500 }}
-                    />
-                  </ListItem>
-                  <ListItem disablePadding sx={{ py: 1 }}>
                     <PersonIcon sx={{ mr: 2, color: COLORS.secondary }} />
                     <ListItemText
                       primary="Date of Birth"
@@ -518,10 +498,6 @@ const DoctorDetails = () => {
                       <Grid item xs={6}>
                         <Typography variant="subtitle2" color="text.secondary">Active Patients</Typography>
                         <Typography variant="h6" fontWeight={600}>{doctor.patients || 0}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="text.secondary">Average Rating</Typography>
-                        <Typography variant="h6" fontWeight={600}>{doctor.rating ? `⭐ ${doctor.rating}/5` : 'N/A'}</Typography>
                       </Grid>
                       <Grid item xs={6}>
                         <Typography variant="subtitle2" color="text.secondary">Member Since</Typography>
