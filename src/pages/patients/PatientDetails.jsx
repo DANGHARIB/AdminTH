@@ -92,6 +92,33 @@ const PatientDetails = () => {
     setTabValue(newValue);
   };
 
+  const handleDeletePatient = async () => {
+    if (!patient || !id) return;
+    
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete this patient? This action cannot be undone and will remove the patient from both the patient and user tables."
+    );
+    
+    if (confirmed) {
+      try {
+        setLoading(true);
+        // Delete the patient from the database
+        await patientsService.deletePatient(id);
+        
+        // Show success message
+        alert("Patient has been permanently deleted from the database");
+        
+        // Navigate back to patients list
+        navigate('/patients');
+      } catch (err) {
+        console.error('Error deleting patient:', err);
+        setError('Failed to delete patient: ' + (err.message || 'Unknown error'));
+        setLoading(false);
+      }
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -695,8 +722,9 @@ const PatientDetails = () => {
             variant="outlined" 
             color="error"
             sx={{ borderRadius: 2 }}
+            onClick={handleDeletePatient}
           >
-            Archive
+            Delete
           </Button>
         </Box>
       </Box>

@@ -12,8 +12,6 @@ import {
   Card,
   CardContent,
   Grid,
-  Tabs,
-  Tab,
   CircularProgress,
   useTheme,
   alpha,
@@ -52,7 +50,6 @@ const PatientsList = () => {
   const [error, setError] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedPatient, setSelectedPatient] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,15 +71,6 @@ const PatientsList = () => {
 
     fetchPatients();
   }, []);
-
-  // Filter patients according to active tab
-  const filteredPatients = activeTab === 0 
-    ? patients 
-    : activeTab === 1 
-      ? patients.filter(p => p.status === 'active')
-      : activeTab === 2
-        ? patients.filter(p => p.status === 'inactive')
-        : patients.filter(p => p.status === 'pending');
 
   // Calculated stats with data verification
   const stats = {
@@ -261,18 +249,6 @@ const PatientsList = () => {
       )
     },
     {
-      field: 'status',
-      headerName: 'Status',
-      width: 120,
-      renderCell: (value) => (
-        <Chip 
-          label={getStatusLabel(value)} 
-          color={getStatusColor(value)}
-          size="small"
-        />
-      )
-    },
-    {
       field: 'consultationsCount',
       headerName: 'Consultations',
       width: 100,
@@ -334,10 +310,6 @@ const PatientsList = () => {
   const handleRowClick = (patient) => {
     console.log('Row click on patient:', patient.id);
     navigate(`/patients/${patient.id}`);
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
   };
 
   const handleDeletePatient = async () => {
@@ -445,41 +417,9 @@ const PatientsList = () => {
           </Grid>
         </Grid>
 
-        {/* Tabs */}
-        <Box sx={{ mb: 3 }}>
-          <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange} 
-            className="filter-tabs"
-            TabIndicatorProps={{
-              style: { display: 'none' }
-            }}
-            sx={{ 
-              '& .MuiTab-root': {
-                color: '#555',
-                borderRadius: 1.5,
-                mx: 0.5,
-                textTransform: 'none',
-                fontWeight: 500,
-                minHeight: '36px',
-                padding: '8px 16px',
-                '&.Mui-selected': {
-                  color: '#fff',
-                  backgroundColor: COLORS.tabActive,
-                }
-              }
-            }}
-          >
-            <Tab label={`All (${stats.total})`} />
-            <Tab label={`Active (${stats.active})`} />
-            <Tab label={`Inactive (${stats.inactive})`} />
-            <Tab label={`Pending (${stats.pending})`} />
-          </Tabs>
-        </Box>
-
         <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)', overflow: 'hidden' }}>
           <DataTable
-            data={filteredPatients}
+            data={patients}
             columns={columns}
             searchable={true}
             searchPlaceholder="Search patients..."
