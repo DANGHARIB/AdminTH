@@ -361,12 +361,12 @@ const Dashboard = () => {
       <Box className="dashboard-page" sx={{ py: 2 }}>
         <Box className="page-header" sx={{ mb: 6 }}>
           <Typography variant="h4" className="page-title" sx={{ fontWeight: 700, mb: 1.5, color: COLORS.primary }}>
-            Dashboard
-          </Typography>
+          Dashboard
+        </Typography>
           <Typography variant="body1" color="text.secondary">
             Medical platform overview • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </Typography>
-        </Box>
+        </Typography>
+      </Box>
 
         {/* Statistics Cards - Sorted in ascending order */}
         <Grid container spacing={5} sx={{ mb: 5 }}>
@@ -381,10 +381,10 @@ const Dashboard = () => {
                 pendingCount={stat.pendingCount}
                 onClick={() => navigate(stat.path)}
               />
-            </Grid>
-          ))}
         </Grid>
-      </Box>
+          ))}
+      </Grid>
+    </Box>
     </Container>
   );
 };

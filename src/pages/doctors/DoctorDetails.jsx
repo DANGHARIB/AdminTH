@@ -18,7 +18,10 @@ import {
   CardContent,
   Chip,
   Avatar,
-  LinearProgress
+  LinearProgress,
+  Container,
+  useTheme,
+  alpha
 } from '@mui/material';
 import {
   Person as PersonIcon,
@@ -30,15 +33,29 @@ import {
   Email as EmailIcon,
   Phone as PhoneIcon,
   LocationOn as LocationIcon,
-  School as SchoolIcon
+  School as SchoolIcon,
+  ArrowBack as ArrowBackIcon
 } from '@mui/icons-material';
 import DataTable from '../../components/common/DataTable';
 import { doctorsService, paymentsService } from '../../services';
 import './DoctorDetails.css';
 
+// Color palette consistent with dashboard
+const COLORS = {
+  primary: '#325A80',
+  secondary: '#4A6F94', 
+  tertiary: '#2A4A6B',
+  lightBlue: '#5D8CAF',
+  accent: '#4773A8',
+  tabActive: '#4169E1',
+  success: '#2E7D32',
+  warning: '#ED6C02'
+};
+
 const DoctorDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const theme = useTheme();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -247,8 +264,20 @@ const DoctorDetails = () => {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <CircularProgress size={50} color="primary" />
+        <Typography variant="body1" color="text.secondary">
+          Loading doctor details...
+        </Typography>
       </Box>
     );
   }
@@ -257,8 +286,13 @@ const DoctorDetails = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="error">{error}</Alert>
-        <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Back to List
+        <Button 
+          variant="contained" 
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+          sx={{ mt: 2, borderRadius: 2 }}
+        >
+          Back to Doctors
         </Button>
       </Box>
     );
@@ -268,8 +302,13 @@ const DoctorDetails = () => {
     return (
       <Box sx={{ p: 3 }}>
         <Alert severity="warning">Doctor not found</Alert>
-        <Button sx={{ mt: 2 }} onClick={handleBack}>
-          Back to List
+        <Button 
+          variant="contained" 
+          startIcon={<ArrowBackIcon />}
+          onClick={handleBack}
+          sx={{ mt: 2, borderRadius: 2 }}
+        >
+          Back to Doctors
         </Button>
       </Box>
     );
@@ -278,458 +317,549 @@ const DoctorDetails = () => {
   const finances = calculateFinancialStats(doctor, transactions);
   const monthlyStats = generateMonthlyStats(finances);
 
-  const TabPanel = ({ children, value, index, ...other }) => (
-    <Box
-      role="tabpanel"
-      hidden={value !== index}
-      id={`doctor-tabpanel-${index}`}
-      aria-labelledby={`doctor-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ py: 3 }}>{children}</Box>}
-    </Box>
-  );
-
   return (
-    <Box className="doctor-details-page">
-      <Box className="details-header">
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ width: 64, height: 64, bgcolor: '#2563eb', fontSize: '24px' }}>
-            {doctor.initials ||
-              (doctor.fullName
-                ? doctor.fullName.split(' ').map(n => n[0]).join('')
-                : 'DR')}
-          </Avatar>
-          <Box>
-            <Typography variant="h4" className="doctor-name">
-              {doctor.displayName || `Dr. ${doctor.fullName || doctor.name}`}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>
-              {doctor.specialty || doctor.specialization} •{' '}
-              {doctor.experience
-                ? `${doctor.experience} years`
-                : 'Experience not provided'}
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Chip
-                label={
-                  doctor.verified || doctor.status === 'verified'
-                    ? 'Verified'
-                    : 'Pending'
-                }
-                color={
-                  doctor.verified || doctor.status === 'verified'
-                    ? 'success'
-                    : 'warning'
-                }
-              />
-              <Typography
-                variant="body2"
-                sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-              >
-                ⭐ {doctor.rating || '0'} • {doctor.patients || 0} patients
+    <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Box className="doctor-details-page">
+        {/* Back button and header */}
+        <Box className="details-header" sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+            <Avatar sx={{ 
+              width: 80, 
+              height: 80, 
+              bgcolor: COLORS.primary, 
+              fontSize: '28px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              {doctor.initials ||
+                (doctor.fullName
+                  ? doctor.fullName.split(' ').map(n => n[0]).join('')
+                  : 'DR')}
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary, mb: 1 }}>
+                {doctor.displayName || `Dr. ${doctor.fullName || doctor.name}`}
               </Typography>
+              <Typography variant="body1" color="text.secondary" sx={{ mb: 1.5 }}>
+                {doctor.specialty || doctor.specialization} •{' '}
+                {doctor.experience
+                  ? `${doctor.experience} years experience`
+                  : 'Experience not provided'}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Chip
+                  label={doctor.verified || doctor.status === 'verified' ? 'Verified' : 'Pending'}
+                  color={doctor.verified || doctor.status === 'verified' ? 'success' : 'warning'}
+                  sx={{ 
+                    fontWeight: 500,
+                    py: 0.5
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
+                >
+                  ⭐ {doctor.rating || '0'} • {doctor.patients || 0} patients
+                </Typography>
+              </Box>
             </Box>
           </Box>
-        </Box>
-        <Button variant="outlined" onClick={handleBack}>
-          Back to List
-        </Button>
-      </Box>
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          className="doctor-tabs"
-        >
-          <Tab icon={<PersonIcon />} label="Information" />
-          <Tab icon={<WorkIcon />} label="Professional" />
-          <Tab icon={<FinanceIcon />} label="Financials" />
-        </Tabs>
-      </Box>
-
-      <TabPanel value={activeTab} index={0}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Personal Information
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <List disablePadding>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <EmailIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Email"
-                    secondary={doctor.email || 'Not provided'}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <PhoneIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Phone"
-                    secondary={doctor.phone || 'Not provided'}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <LocationIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Address"
-                    secondary={doctor.address || 'Not provided'}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <PersonIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Date of Birth"
-                    secondary={
-                      doctor.dob
-                        ? new Date(doctor.dob).toLocaleDateString()
-                        : 'Not provided'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Statistics
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <List disablePadding>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="Active Patients"
-                    secondary={doctor.patients || 0}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="Average Rating"
-                    secondary={
-                      doctor.rating ? `⭐ ${doctor.rating}/5` : 'No ratings yet'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="Member Since"
-                    secondary={
-                      doctor.createdAt
-                        ? new Date(doctor.createdAt).toLocaleDateString()
-                        : 'Not available'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="Account Status"
-                    secondary={
-                      doctor.verified || doctor.status === 'verified'
-                        ? 'Verified'
-                        : 'Pending verification'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="Consultation Fee"
-                    secondary={
-                      doctor.price ? `${doctor.price}€` : 'Not set'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
-        </Grid>
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={1}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Professional Background
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <List disablePadding>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <SchoolIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Education"
-                    secondary={doctor.education || 'Not provided'}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <WorkIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Experience"
-                    secondary={
-                      doctor.experience
-                        ? `${doctor.experience} years`
-                        : 'Not provided'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <PersonIcon sx={{ mr: 2, color: '#6b7280' }} />
-                  <ListItemText
-                    primary="Specialization"
-                    secondary={
-                      doctor.specialty || doctor.specialization || 'Not defined'
-                    }
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-                <ListItem disablePadding sx={{ py: 1 }}>
-                  <ListItemText
-                    primary="About"
-                    secondary={doctor.about || 'Not provided'}
-                    primaryTypographyProps={{ variant: 'subtitle2' }}
-                  />
-                </ListItem>
-              </List>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Certifications
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              {doctor.certifications && doctor.certifications.length ? (
-                <List disablePadding>
-                  {doctor.certifications.map((cert, idx) => (
-                    <ListItem key={idx} disablePadding sx={{ py: 1 }}>
-                      <ListItemText
-                        primary={cert.name || cert}
-                        secondary={cert.issuer || 'Issuer not specified'}
-                        primaryTypographyProps={{ variant: 'subtitle2' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary">
-                  No certifications listed
-                </Typography>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
-      </TabPanel>
-
-      <TabPanel value={activeTab} index={2}>
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h5">
-                      {formatCurrency(finances.totalRevenue)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Total Revenue
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h5">
-                      {formatCurrency(finances.monthlyRevenue)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      This Month
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                      <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                      <Typography variant="caption" color="success.main">
-                        +{finances.growth}%
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <CalendarIcon />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h5">
-                      {finances.completedConsultations}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Consultations
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Avg: {formatCurrency(finances.avgConsultationPrice)}
-                    </Typography>
-                  </Box>
-                  <ReceiptIcon />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="h5">
-                      {formatCurrency(finances.pendingPayments)}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Pending
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Fee: {finances.commissionRate}%
-                    </Typography>
-                  </Box>
-                  <ReceiptIcon />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        <Grid container spacing={3} sx={{ mb: 3 }}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Revenue Over Last 5 Months
-                </Typography>
-                {monthlyStats.map(stat => (
-                  <Box key={stat.month} sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">{stat.month}</Typography>
-                      <Typography variant="body2" fontWeight={600}>
-                        {formatCurrency(stat.revenue)}
-                      </Typography>
-                    </Box>
-                    <LinearProgress
-                      variant="determinate"
-                      value={
-                        (stat.revenue /
-                          Math.max(...monthlyStats.map(s => s.revenue))) *
-                        100
-                      }
-                      sx={{ height: 6, borderRadius: 3 }}
-                    />
-                    <Typography variant="caption" color="text.secondary">
-                      {stat.consultations} consultations
-                    </Typography>
-                  </Box>
-                ))}
-              </CardContent>
-            </Card>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Revenue Breakdown
-                </Typography>
-                <Box sx={{ mb: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2">Gross Revenue</Typography>
-                    <Typography variant="body2" fontWeight={600}>
-                      {formatCurrency(finances.totalRevenue)}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" color="error.main">
-                      Platform Fee ({finances.commissionRate}%)
-                    </Typography>
-                    <Typography variant="body2" color="error.main">
-                      -{formatCurrency(
-                        finances.totalRevenue * (finances.commissionRate / 100)
-                      )}
-                    </Typography>
-                  </Box>
-                  <Divider sx={{ my: 1 }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Typography variant="body2" fontWeight={600}>
-                      Net Revenue
-                    </Typography>
-                    <Typography variant="body2" fontWeight={600} color="success.main">
-                      {formatCurrency(
-                        finances.totalRevenue *
-                          (1 - finances.commissionRate / 100)
-                      )}
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        <Card>
-          <CardContent sx={{ p: 0 }}>
-            <Box sx={{ p: 3, pb: 0 }}>
-              <Typography variant="h6">
-                Recent Transactions
-                {loadingTransactions && (
-                  <CircularProgress size={20} sx={{ ml: 2 }} />
-                )}
-              </Typography>
-            </Box>
-            <DataTable
-              data={transactions}
-              columns={transactionColumns}
-              searchable={false}
-              pagination
-              initialRowsPerPage={10}
-            />
-          </CardContent>
-        </Card>
-      </TabPanel>
-
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-        <Button variant="contained">Edit</Button>
-        {!(doctor.verified || doctor.status === 'verified') && (
-          <Button
+          <Button 
             variant="outlined"
-            color="warning"
-            onClick={() => navigate(`/doctors/${doctor._id || doctor.id}/review`)}
+            startIcon={<ArrowBackIcon />}
+            onClick={handleBack}
+            sx={{
+              borderRadius: 2,
+              borderColor: COLORS.primary,
+              color: COLORS.primary,
+              '&:hover': {
+                borderColor: COLORS.primary,
+                bgcolor: alpha(COLORS.primary, 0.1)
+              }
+            }}
           >
-            Review
+            Back to Doctors
           </Button>
+        </Box>
+
+        <Box sx={{ mb: 3 }}>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            TabIndicatorProps={{ style: { display: 'none' } }}
+            sx={{ 
+              '& .MuiTab-root': {
+                color: '#555',
+                borderRadius: 1.5,
+                mx: 0.5,
+                textTransform: 'none',
+                fontWeight: 500,
+                minHeight: '36px',
+                padding: '8px 16px',
+                '&.Mui-selected': {
+                  color: '#fff',
+                  backgroundColor: COLORS.tabActive,
+                }
+              }
+            }}
+          >
+            <Tab label="Profile" icon={<PersonIcon sx={{ mr: 1 }} />} iconPosition="start" />
+            <Tab label="Financials" icon={<FinanceIcon sx={{ mr: 1 }} />} iconPosition="start" />
+          </Tabs>
+        </Box>
+
+        {/* Profile Tab Content */}
+        {activeTab === 0 && (
+          <Grid container spacing={3}>
+            {/* Personal Information */}
+            <Grid item xs={12} md={6} lg={4}>
+              <Paper sx={{ p: 3, borderRadius: 3, height: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 2, color: COLORS.primary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                  <PersonIcon sx={{ mr: 1 }} /> Personal Information
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <List disablePadding>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <EmailIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Email"
+                      secondary={doctor.email || 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <PhoneIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Phone"
+                      secondary={doctor.phone || 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <LocationIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Address"
+                      secondary={doctor.address || 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <PersonIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Date of Birth"
+                      secondary={doctor.dob ? new Date(doctor.dob).toLocaleDateString() : 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                </List>
+              </Paper>
+            </Grid>
+
+            {/* Professional Background */}
+            <Grid item xs={12} md={6} lg={4}>
+              <Paper sx={{ p: 3, borderRadius: 3, height: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 2, color: COLORS.primary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                  <WorkIcon sx={{ mr: 1 }} /> Professional Background
+                </Typography>
+                <Divider sx={{ mb: 2 }} />
+                <List disablePadding>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <SchoolIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Education"
+                      secondary={doctor.education || 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <WorkIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Experience"
+                      secondary={doctor.experience ? `${doctor.experience} years` : 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <PersonIcon sx={{ mr: 2, color: COLORS.secondary }} />
+                    <ListItemText
+                      primary="Specialization"
+                      secondary={doctor.specialty || doctor.specialization || 'Not defined'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                  <ListItem disablePadding sx={{ py: 1 }}>
+                    <ListItemText
+                      primary="About"
+                      secondary={doctor.about || 'Not provided'}
+                      primaryTypographyProps={{ variant: 'subtitle2', color: 'text.secondary' }}
+                      secondaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                </List>
+              </Paper>
+            </Grid>
+
+            {/* Stats & Certifications */}
+            <Grid item xs={12} md={12} lg={4}>
+              <Grid container spacing={3} direction="column" height="100%">
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                    <Typography variant="h6" gutterBottom sx={{ mb: 2, color: COLORS.primary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                      <TrendingUpIcon sx={{ mr: 1 }} /> Statistics
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    <Grid container spacing={1}>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">Active Patients</Typography>
+                        <Typography variant="h6" fontWeight={600}>{doctor.patients || 0}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">Average Rating</Typography>
+                        <Typography variant="h6" fontWeight={600}>{doctor.rating ? `⭐ ${doctor.rating}/5` : 'N/A'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">Member Since</Typography>
+                        <Typography variant="h6" fontWeight={600}>
+                          {doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString() : 'N/A'}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="subtitle2" color="text.secondary">Consultation Fee</Typography>
+                        <Typography variant="h6" fontWeight={600}>{doctor.price ? `${doctor.price}€` : 'Not set'}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={12} sx={{ flexGrow: 1 }}>
+                  <Paper sx={{ p: 3, borderRadius: 3, height: '100%', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                    <Typography variant="h6" gutterBottom sx={{ mb: 2, color: COLORS.primary, fontWeight: 600, display: 'flex', alignItems: 'center' }}>
+                      <SchoolIcon sx={{ mr: 1 }} /> Certifications
+                    </Typography>
+                    <Divider sx={{ mb: 2 }} />
+                    {doctor.certifications && doctor.certifications.length ? (
+                      <List disablePadding dense>
+                        {doctor.certifications.map((cert, idx) => (
+                          <ListItem key={idx} disablePadding sx={{ py: 0.75 }}>
+                            <ListItemText
+                              primary={cert.name || cert}
+                              secondary={cert.issuer || 'Issuer not specified'}
+                              primaryTypographyProps={{ fontWeight: 500 }}
+                            />
+                          </ListItem>
+                        ))}
+                      </List>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No certifications listed
+                      </Typography>
+                    )}
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
         )}
-        <Button variant="outlined" color="error">
-          Suspend
-        </Button>
+
+        {/* Financial Tab Content */}
+        {activeTab === 1 && (
+          <>
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              {/* Financial stats cards */}
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${alpha(COLORS.primary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(finances.totalRevenue)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Total Revenue
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <TrendingUpIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${alpha(COLORS.secondary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(finances.monthlyRevenue)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          This Month
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
+                          <TrendingUpIcon sx={{ fontSize: 16, color: '#ffffff' }} />
+                          <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                            +{finances.growth}%
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <CalendarIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.accent} 0%, ${alpha(COLORS.accent, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {finances.completedConsultations}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Consultations
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                          Avg: {formatCurrency(finances.avgConsultationPrice)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <ReceiptIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+              
+              <Grid item xs={12} sm={6} md={3}>
+                <Card sx={{ 
+                  borderRadius: 3, 
+                  background: `linear-gradient(135deg, ${COLORS.tertiary} 0%, ${alpha(COLORS.tertiary, 0.8)} 100%)`,
+                  boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+                  height: '100%',
+                  color: '#fff'
+                }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {formatCurrency(finances.pendingPayments)}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Pending
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#ffffff !important', fontWeight: 600 }}>
+                          Fee: {finances.commissionRate}%
+                        </Typography>
+                      </Box>
+                      <Box sx={{ 
+                        p: 1.5, 
+                        borderRadius: '50%', 
+                        bgcolor: alpha('#fff', 0.15),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center' 
+                      }}>
+                        <ReceiptIcon sx={{ fontSize: 24, color: '#fff' }} />
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              {/* Revenue charts */}
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: COLORS.primary }}>
+                      Revenue Over Last 5 Months
+                    </Typography>
+                    {monthlyStats.map(stat => (
+                      <Box key={stat.month} sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2">{stat.month}</Typography>
+                          <Typography variant="body2" fontWeight={600}>
+                            {formatCurrency(stat.revenue)}
+                          </Typography>
+                        </Box>
+                        <LinearProgress
+                          variant="determinate"
+                          value={
+                            (stat.revenue /
+                              Math.max(...monthlyStats.map(s => s.revenue))) *
+                            100
+                          }
+                          sx={{ 
+                            height: 8, 
+                            borderRadius: 4,
+                            bgcolor: alpha(COLORS.primary, 0.1),
+                            '.MuiLinearProgress-bar': {
+                              bgcolor: COLORS.primary
+                            }
+                          }}
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {stat.consultations} consultations
+                        </Typography>
+                      </Box>
+                    ))}
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+                  <CardContent>
+                    <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, color: COLORS.primary }}>
+                      Revenue Breakdown
+                    </Typography>
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2">Gross Revenue</Typography>
+                        <Typography variant="body2" fontWeight={600}>
+                          {formatCurrency(finances.totalRevenue)}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" color="error.main">
+                          Platform Fee ({finances.commissionRate}%)
+                        </Typography>
+                        <Typography variant="body2" color="error.main">
+                          -{formatCurrency(
+                            finances.totalRevenue * (finances.commissionRate / 100)
+                          )}
+                        </Typography>
+                      </Box>
+                      <Divider sx={{ my: 1 }} />
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" fontWeight={600}>
+                          Net Revenue
+                        </Typography>
+                        <Typography variant="body2" fontWeight={600} color="success.main">
+                          {formatCurrency(
+                            finances.totalRevenue *
+                              (1 - finances.commissionRate / 100)
+                          )}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+
+            {/* Transactions table */}
+            <Card sx={{ borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+              <CardContent sx={{ p: 0 }}>
+                <Box sx={{ p: 3, pb: 0 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, color: COLORS.primary }}>
+                    Recent Transactions
+                    {loadingTransactions && (
+                      <CircularProgress size={20} sx={{ ml: 2 }} />
+                    )}
+                  </Typography>
+                </Box>
+                <DataTable
+                  data={transactions}
+                  columns={transactionColumns}
+                  searchable={false}
+                  pagination
+                  initialRowsPerPage={10}
+                />
+              </CardContent>
+            </Card>
+          </>
+        )}
+
+        {/* Action buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
+          <Button 
+            variant="contained" 
+            sx={{ 
+              borderRadius: 2,
+              bgcolor: COLORS.primary,
+              '&:hover': {
+                bgcolor: alpha(COLORS.primary, 0.9)
+              }
+            }}
+          >
+            Edit
+          </Button>
+          {!(doctor.verified || doctor.status === 'verified') && (
+            <Button
+              variant="contained"
+              onClick={() => navigate(`/doctors/${doctor._id || doctor.id}/review`)}
+              sx={{ 
+                borderRadius: 2,
+                bgcolor: COLORS.tabActive,
+                '&:hover': {
+                  bgcolor: alpha(COLORS.tabActive, 0.9)
+                }
+              }}
+            >
+              Review
+            </Button>
+          )}
+          <Button 
+            variant="outlined" 
+            color="error"
+            sx={{ borderRadius: 2 }}
+          >
+            Suspend
+          </Button>
+        </Box>
       </Box>
-    </Box>
+    </Container>
   );
 };
 

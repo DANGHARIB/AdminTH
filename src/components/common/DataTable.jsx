@@ -40,6 +40,7 @@ const DataTable = ({
   initialRowsPerPage = 10,
   filters = [],
   exportable = false,
+  searchPlaceholder = "Search...",
 //   loading = false
 }) => {
   const [page, setPage] = useState(0);
@@ -126,7 +127,7 @@ const DataTable = ({
     }
 
     if (column.type === 'date') {
-      return new Date(value).toLocaleDateString('fr-FR');
+      return new Date(value).toLocaleDateString('en-US');
     }
 
     if (column.type === 'avatar') {
@@ -159,7 +160,7 @@ const DataTable = ({
           )}
           {selected.length > 0 && (
             <Typography variant="body2" color="primary">
-              {selected.length} élément(s) sélectionné(s)
+              {selected.length} item(s) selected
             </Typography>
           )}
         </Box>
@@ -167,7 +168,7 @@ const DataTable = ({
         <Box className="table-actions">
           {searchable && (
             <TextField
-              placeholder="Rechercher..."
+              placeholder={searchPlaceholder}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               size="small"
@@ -271,7 +272,7 @@ const DataTable = ({
                   className="empty-row"
                 >
                   <Typography variant="body2" color="text.secondary">
-                    Aucune donnée à afficher
+                    No data to display
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -290,9 +291,9 @@ const DataTable = ({
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[5, 10, 25, 50]}
-          labelRowsPerPage="Lignes par page:"
+          labelRowsPerPage="Rows per page:"
           labelDisplayedRows={({ from, to, count }) => 
-            `${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+            `${from}-${to} of ${count !== -1 ? count : `more than ${to}`}`
           }
           className="table-pagination"
         />

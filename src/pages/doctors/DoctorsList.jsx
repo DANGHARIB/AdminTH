@@ -6,7 +6,6 @@ import {
   Button,
   Chip,
   Avatar,
-  IconButton,
   Menu,
   MenuItem,
   Alert,
@@ -15,21 +14,36 @@ import {
   Grid,
   Tabs,
   Tab,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  alpha,
+  Container
 } from '@mui/material';
 import {
-  Add as AddIcon,
-  MoreVert as MoreVertIcon,
   LocalHospital as DoctorIcon,
   Verified as VerifiedIcon,
   Schedule as PendingIcon,
-  Person as PersonIcon
+  Person as PersonIcon,
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import DataTable from '../../components/common/DataTable';
 import { doctorsService } from '../../services';
 import './DoctorsList.css';
 
+// Color palette consistent with dashboard
+const COLORS = {
+  primary: '#325A80',
+  secondary: '#4A6F94', 
+  tertiary: '#2A4A6B',
+  lightBlue: '#5D8CAF',
+  accent: '#4773A8',
+  tabActive: '#4169E1',
+  success: '#2E7D32',
+  warning: '#ED6C02'
+};
+
 const DoctorsList = () => {
+  const theme = useTheme();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,6 +86,87 @@ const DoctorsList = () => {
     totalPatients: doctors.reduce((sum, d) => sum + (d.patientCount || 0), 0)
   };
 
+  // StatCard component consistent with Dashboard
+  const StatCard = ({ title, value, icon: Icon, color, secondaryText, onClick }) => {
+    return (
+      <Card 
+        onClick={onClick}
+        sx={{
+          height: '100%',
+          borderRadius: 3,
+          boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          overflow: 'hidden',
+          '&:hover': {
+            transform: 'translateY(-5px)',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
+            '& .arrow-icon': {
+              transform: 'translateX(5px)',
+              opacity: 1,
+            }
+          },
+          background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
+          color: '#fff',
+        }}
+      >
+        <Box 
+          sx={{
+            position: 'absolute',
+            top: -15,
+            right: -15,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: alpha('#fff', 0.1),
+          }}
+        />
+        <CardContent sx={{ position: 'relative', zIndex: 1, py: 3, px: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box>
+              <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 0.5, fontSize: '2.2rem' }}>
+                {value.toLocaleString()}
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500, mb: 1, fontSize: '1rem' }}>
+                {title}
+              </Typography>
+              {secondaryText && (
+                <Typography variant="caption" sx={{ opacity: 0.8, fontSize: '0.85rem' }}>
+                  {secondaryText}
+                </Typography>
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <Box 
+                sx={{ 
+                  p: 1.5, 
+                  borderRadius: '50%', 
+                  bgcolor: alpha('#fff', 0.15),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center' 
+                }}
+              >
+                <Icon sx={{ fontSize: 24, color: '#fff' }} />
+              </Box>
+              <ArrowForwardIcon 
+                className="arrow-icon" 
+                sx={{ 
+                  color: '#fff', 
+                  mt: 'auto', 
+                  mb: 0.5, 
+                  opacity: 0.5,
+                  transition: 'all 0.3s ease',
+                  fontSize: '1.2rem'
+                }} 
+              />
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  };
+
   const getStatusColor = doctor => {
     const isVerified = doctor.verified || doctor.status === 'verified';
     return isVerified ? 'success' : 'warning';
@@ -89,7 +184,7 @@ const DoctorsList = () => {
       width: 250,
       renderCell: (value, row) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar sx={{ width: 40, height: 40, bgcolor: '#2563eb' }}>
+          <Avatar sx={{ width: 40, height: 40, bgcolor: COLORS.primary }}>
             {row.initials ||
               (row.fullName
                 ? row.fullName
@@ -174,7 +269,7 @@ const DoctorsList = () => {
     {
       field: 'actions',
       headerName: 'Actions',
-      width: 120,
+      width: 100,
       align: 'center',
       renderCell: (value, row) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
@@ -182,10 +277,17 @@ const DoctorsList = () => {
             <Button
               size="small"
               variant="contained"
-              color="warning"
               onClick={e => {
                 e.stopPropagation();
                 navigate(`/doctors/${row._id || row.id}/review`);
+              }}
+              sx={{
+                borderRadius: 2,
+                bgcolor: COLORS.tabActive,
+                color: '#fff',
+                '&:hover': {
+                  bgcolor: alpha(COLORS.tabActive, 0.9)
+                }
               }}
             >
               Review
@@ -198,20 +300,19 @@ const DoctorsList = () => {
                 e.stopPropagation();
                 navigate(`/doctors/${row._id || row.id}`);
               }}
+              sx={{
+                borderRadius: 2,
+                borderColor: COLORS.primary,
+                color: COLORS.primary,
+                '&:hover': {
+                  borderColor: COLORS.primary,
+                  bgcolor: alpha(COLORS.primary, 0.1)
+                }
+              }}
             >
               View
             </Button>
           )}
-          <IconButton
-            size="small"
-            onClick={e => {
-              e.stopPropagation();
-              setSelectedDoctor(row);
-              setAnchorEl(e.currentTarget);
-            }}
-          >
-            <MoreVertIcon />
-          </IconButton>
         </Box>
       )
     }
@@ -249,10 +350,6 @@ const DoctorsList = () => {
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
-  };
-
-  const handleAddDoctor = () => {
-    navigate('/doctors/new');
   };
 
   const handleVerifyDoctor = async () => {
@@ -298,10 +395,15 @@ const DoctorsList = () => {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: '100vh'
+          height: '100vh',
+          flexDirection: 'column',
+          gap: 2
         }}
       >
-        <CircularProgress />
+        <CircularProgress size={50} color="primary" />
+        <Typography variant="body1" color="text.secondary">
+          Loading doctors data...
+        </Typography>
       </Box>
     );
   }
@@ -312,7 +414,11 @@ const DoctorsList = () => {
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
-        <Button variant="contained" onClick={() => window.location.reload()}>
+        <Button 
+          variant="contained" 
+          onClick={() => window.location.reload()}
+          sx={{ borderRadius: 2 }}
+        >
           Retry
         </Button>
       </Box>
@@ -320,101 +426,78 @@ const DoctorsList = () => {
   }
 
   return (
-    <Box className="doctors-page">
-      <Box className="page-header">
-        <Box>
-          <Typography variant="h4" className="page-title">
+    <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Box className="doctors-page" sx={{ py: 2 }}>
+        <Box className="page-header" sx={{ mb: 6 }}>
+          <Typography variant="h4" className="page-title" sx={{ fontWeight: 700, mb: 1.5, color: COLORS.primary }}>
             Doctors
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body1" color="text.secondary">
             Manage the platform's doctors
           </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          className="add-button"
-          onClick={handleAddDoctor}
-        >
-          Add Doctor
-        </Button>
       </Box>
 
       {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid container spacing={4} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
-          <Card className="stat-card">
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {stats.total}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Doctors
-                  </Typography>
-                </Box>
-                <DoctorIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
+            <StatCard 
+              title="Total Doctors"
+              value={stats.total}
+              icon={DoctorIcon}
+              color={COLORS.primary}
+            />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card className="stat-card verified">
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {stats.verified}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Verified
-                  </Typography>
-                </Box>
-                <VerifiedIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
+            <StatCard 
+              title="Verified"
+              value={stats.verified}
+              icon={VerifiedIcon}
+              color={COLORS.secondary}
+            />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card className="stat-card pending">
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {stats.pending}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Pending
-                  </Typography>
-                </Box>
-                <PendingIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
+            <StatCard 
+              title="Pending"
+              value={stats.pending}
+              icon={PendingIcon}
+              color={COLORS.accent}
+            />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
-          <Card className="stat-card patients">
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {stats.totalPatients}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Patients
-                  </Typography>
-                </Box>
-                <PersonIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
+            <StatCard 
+              title="Total Patients"
+              value={stats.totalPatients}
+              icon={PersonIcon}
+              color={COLORS.tertiary}
+            />
         </Grid>
       </Grid>
 
       {/* Tabs */}
       <Box sx={{ mb: 3 }}>
-        <Tabs value={activeTab} onChange={handleTabChange} className="filter-tabs">
+          <Tabs 
+            value={activeTab} 
+            onChange={handleTabChange} 
+            className="filter-tabs"
+            TabIndicatorProps={{
+              style: { display: 'none' }
+            }}
+            sx={{ 
+              '& .MuiTab-root': {
+                color: '#555',
+                borderRadius: 1.5,
+                mx: 0.5,
+                textTransform: 'none',
+                fontWeight: 500,
+                minHeight: '36px',
+                padding: '8px 16px',
+                '&.Mui-selected': {
+                  color: '#fff',
+                  backgroundColor: COLORS.tabActive,
+                }
+              }
+            }}
+          >
           <Tab label={`All (${stats.total})`} />
           <Tab label={`Verified (${stats.verified})`} />
           <Tab label={`Pending (${stats.pending})`} />
@@ -431,9 +514,10 @@ const DoctorsList = () => {
         data={doctorsWithValidId}
         columns={columns}
         searchable
+          searchPlaceholder="Search..."
         onRowClick={handleRowClick}
         loading={false}
-        exportable
+          exportable={false}
       />
 
       {/* Actions Menu */}
@@ -480,6 +564,7 @@ const DoctorsList = () => {
         </MenuItem>
       </Menu>
     </Box>
+    </Container>
   );
 };
 
