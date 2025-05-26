@@ -496,10 +496,6 @@ const DoctorDetails = () => {
                     <Divider sx={{ mb: 2 }} />
                     <Grid container spacing={1}>
                       <Grid item xs={6}>
-                        <Typography variant="subtitle2" color="text.secondary">Active Patients</Typography>
-                        <Typography variant="h6" fontWeight={600}>{doctor.patients || 0}</Typography>
-                      </Grid>
-                      <Grid item xs={6}>
                         <Typography variant="subtitle2" color="text.secondary">Member Since</Typography>
                         <Typography variant="h6" fontWeight={600}>
                           {doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString() : 'N/A'}

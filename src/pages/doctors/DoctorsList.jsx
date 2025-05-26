@@ -307,7 +307,7 @@ const DoctorsList = () => {
                   color: '#fff',
                 }}
               >
-                Vérifier
+                Verify
               </Button>
               <Button
                 size="small"
@@ -324,7 +324,7 @@ const DoctorsList = () => {
                   color: '#fff',
                 }}
               >
-                Rejeter
+                Reject
               </Button>
             </>
           ) : (
@@ -345,7 +345,7 @@ const DoctorsList = () => {
                 }
               }}
             >
-              Voir
+              View
             </Button>
           )}
         </Box>
@@ -639,7 +639,7 @@ const DoctorsList = () => {
         data={doctorsWithValidId}
         columns={columns}
         searchable
-        searchPlaceholder="Rechercher..."
+        searchPlaceholder="Search..."
         onRowClick={handleRowClick}
         loading={false}
         exportable={false}
