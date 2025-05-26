@@ -56,8 +56,8 @@ const AppRoutes = () => {
       </Route>
       
       {/* Redirection par défaut */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
       
       {/* Route de fallback pour les erreurs */}
       <Route path="/error" element={
