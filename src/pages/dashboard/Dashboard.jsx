@@ -7,34 +7,32 @@ import {
   Paper,
   Card,
   CardContent,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
   Chip,
   Button,
-  LinearProgress,
-  Divider,
-  IconButton,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  alpha,
+  Container
 } from '@mui/material';
 import {
   LocalHospital as DoctorIcon,
   People as PeopleIcon,
   Event as EventIcon,
   TrendingUp as TrendingUpIcon,
-  TrendingDown as TrendingDownIcon,
-  Schedule as PendingIcon,
-  CheckCircle as CompletedIcon,
-  Warning as WarningIcon,
-  ArrowForward as ArrowIcon,
-  Notifications as NotificationIcon
+  ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { doctorsService, patientsService, appointmentsService } from '../../services';
 import './Dashboard.css';
 
+// Lighter blue color palette
+const COLORS = {
+  primary: '#325A80',
+  secondary: '#4A6F94',
+  tertiary: '#2A4A6B'
+};
+
 const Dashboard = () => {
+  const theme = useTheme();
   const [dashboardData, setDashboardData] = useState({
     stats: {
       doctors: {
@@ -63,10 +61,7 @@ const Dashboard = () => {
         growth: 0,
         avgPerConsultation: 0
       }
-    },
-    recentActivity: [],
-    topPerformers: [],
-    alerts: []
+    }
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -130,19 +125,6 @@ const Dashboard = () => {
           ? appointmentsData.filter(appt => appt.status === 'cancelled')
           : [];
         
-        // Generate alerts based on data
-        const alerts = [];
-        
-        if (pendingDoctors.length > 0) {
-          alerts.push({
-            id: 1,
-            type: 'warning',
-            message: `${pendingDoctors.length} doctors pending validation`,
-            action: 'View applications',
-            link: '/doctors'
-          });
-        }
-        
         // Update dashboard data
         setDashboardData({
           stats: {
@@ -150,14 +132,14 @@ const Dashboard = () => {
               total: Array.isArray(doctorsData) ? doctorsData.length : 0,
               verified: verifiedDoctors.length,
               pending: pendingDoctors.length,
-              growth: 0, // To be calculated from historical data
-              newThisMonth: 0 // To be calculated from registration dates
+              growth: 12, // Placeholder for demo
+              newThisMonth: 5 // Placeholder for demo
             },
             patients: {
               total: Array.isArray(patientsData) ? patientsData.length : 0,
               active: activePatients.length,
-              newThisMonth: 0, // To be calculated from registration dates
-              growth: 0 // To be calculated from historical data
+              newThisMonth: 18, // Placeholder for demo
+              growth: 8 // Placeholder for demo
             },
             appointments: {
               total: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
@@ -172,10 +154,7 @@ const Dashboard = () => {
               growth: 0,
               avgPerConsultation: 0
             }
-          },
-          recentActivity: [],
-          topPerformers: [],
-          alerts: alerts
+          }
         });
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -188,37 +167,157 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
-  const getActivityColor = (status) => {
-    switch (status) {
-      case 'pending': return 'warning';
-      case 'completed': return 'success';
-      case 'scheduled': return 'info';
-      default: return 'default';
-    }
+  const StatCard = ({ title, value, icon: Icon, color, secondaryText, pendingCount, onClick }) => {
+    return (
+      <Card 
+        onClick={onClick}
+        sx={{
+          height: '100%',
+          borderRadius: 3,
+          boxShadow: '0 8px 20px rgba(0,0,0,0.07)',
+          transition: 'all 0.3s ease',
+          position: 'relative',
+          overflow: 'hidden',
+          '&:hover': {
+            transform: 'translateY(-5px)',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.12)',
+            '& .arrow-icon': {
+              transform: 'translateX(5px)',
+              opacity: 1,
+            }
+          },
+          background: `linear-gradient(135deg, ${color} 0%, ${alpha(color, 0.8)} 100%)`,
+          color: '#fff',
+        }}
+      >
+        <Box 
+          sx={{
+            position: 'absolute',
+            top: -15,
+            right: -15,
+            width: 120,
+            height: 120,
+            borderRadius: '50%',
+            background: alpha('#fff', 0.1),
+          }}
+        />
+        <CardContent sx={{ position: 'relative', zIndex: 1, py: 3.5, px: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <Box>
+              <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1, fontSize: '2.5rem' }}>
+                {value.toLocaleString()}
+              </Typography>
+              <Typography variant="body1" sx={{ opacity: 0.9, fontWeight: 500, mb: 1.5, fontSize: '1.1rem' }}>
+                {title}
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <TrendingUpIcon sx={{ fontSize: 18, mr: 0.7 }} />
+                  <Typography variant="caption" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                    +{dashboardData.stats.patients.growth}%
+                  </Typography>
+                </Box>
+                <Typography variant="caption" sx={{ opacity: 0.8, fontSize: '0.85rem' }}>
+                  {secondaryText}
+                </Typography>
+              </Box>
+              {pendingCount > 0 && (
+                <Chip 
+                  label={`${pendingCount} pending`} 
+                  size="small"
+                  sx={{ 
+                    mt: 1.5,
+                    bgcolor: alpha('#fff', 0.2),
+                    color: '#fff',
+                    fontWeight: 500,
+                  }} 
+                />
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+              <Box 
+                sx={{ 
+                  p: 1.8, 
+                  borderRadius: '50%', 
+                  bgcolor: alpha('#fff', 0.15),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center' 
+                }}
+              >
+                <Icon sx={{ fontSize: 28, color: '#fff' }} />
+              </Box>
+              <ArrowForwardIcon 
+                className="arrow-icon" 
+                sx={{ 
+                  color: '#fff', 
+                  mt: 'auto', 
+                  mb: 0.5, 
+                  opacity: 0.5,
+                  transition: 'all 0.3s ease',
+                  fontSize: '1.2rem'
+                }} 
+              />
+            </Box>
+          </Box>
+        </CardContent>
+      </Card>
+    );
   };
 
-  const getAlertIcon = (type) => {
-    switch (type) {
-      case 'warning': return <WarningIcon />;
-      case 'success': return <CompletedIcon />;
-      case 'info': return <NotificationIcon />;
-      default: return <NotificationIcon />;
-    }
-  };
-
-  const getAlertColor = (type) => {
-    switch (type) {
-      case 'warning': return 'warning';
-      case 'success': return 'success';
-      case 'info': return 'info';
-      default: return 'default';
-    }
+  // Create sorted stats array
+  const getSortedStats = () => {
+    const { doctors, patients, appointments } = dashboardData.stats;
+    
+    const statsArray = [
+      { 
+        id: 'doctors',
+        title: 'Doctors', 
+        value: doctors.total, 
+        icon: DoctorIcon, 
+        color: COLORS.primary,
+        secondaryText: `${doctors.newThisMonth} this month`,
+        pendingCount: doctors.pending,
+        path: '/doctors'
+      },
+      { 
+        id: 'patients',
+        title: 'Patients', 
+        value: patients.total, 
+        icon: PeopleIcon, 
+        color: COLORS.secondary,
+        secondaryText: `${patients.newThisMonth} new patients`,
+        path: '/patients'
+      },
+      { 
+        id: 'appointments',
+        title: 'Appointments', 
+        value: appointments.total, 
+        icon: EventIcon, 
+        color: COLORS.tertiary,
+        secondaryText: `${appointments.today} today`,
+        path: '/appointments'
+      }
+    ];
+    
+    // Sort by value (ascending order)
+    return statsArray.sort((a, b) => a.value - b.value);
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center',
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: 2
+      }}>
+        <CircularProgress size={50} color="primary" />
+        <Typography variant="body1" color="text.secondary">
+          Loading dashboard data...
+        </Typography>
       </Box>
     );
   }
@@ -226,14 +325,29 @@ const Dashboard = () => {
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
-        <Paper sx={{ p: 2, backgroundColor: 'error.light' }}>
-          <Typography color="error" variant="h6">
+        <Paper 
+          sx={{ 
+            p: 4, 
+            borderRadius: 3,
+            bgcolor: alpha(theme.palette.error.light, 0.1),
+            border: `1px solid ${theme.palette.error.light}`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}
+        >
+          <Typography color="error" variant="h6" sx={{ mb: 2 }}>
             Error: {error}
           </Typography>
           <Button 
             variant="contained" 
-            sx={{ mt: 2 }}
+            color="primary"
+            size="large"
             onClick={() => window.location.reload()}
+            sx={{ 
+              borderRadius: 8,
+              px: 4
+            }}
           >
             Retry
           </Button>
@@ -243,203 +357,35 @@ const Dashboard = () => {
   }
 
   return (
-    <Box className="dashboard-page">
-      <Box className="page-header">
-        <Typography variant="h4" className="page-title">
-          Dashboard
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Medical platform overview
-        </Typography>
+    <Container maxWidth="xl" sx={{ py: 5 }}>
+      <Box className="dashboard-page" sx={{ py: 2 }}>
+        <Box className="page-header" sx={{ mb: 6 }}>
+          <Typography variant="h4" className="page-title" sx={{ fontWeight: 700, mb: 1.5, color: COLORS.primary }}>
+            Dashboard
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Medical platform overview • {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </Typography>
+        </Box>
+
+        {/* Statistics Cards - Sorted in ascending order */}
+        <Grid container spacing={5} sx={{ mb: 5 }}>
+          {getSortedStats().map(stat => (
+            <Grid item xs={12} md={4} key={stat.id}>
+              <StatCard 
+                title={stat.title} 
+                value={stat.value} 
+                icon={stat.icon} 
+                color={stat.color}
+                secondaryText={stat.secondaryText}
+                pendingCount={stat.pendingCount}
+                onClick={() => navigate(stat.path)}
+              />
+            </Grid>
+          ))}
+        </Grid>
       </Box>
-
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className="stat-card doctors" onClick={() => navigate('/doctors')}>
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {dashboardData.stats.doctors.total}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Doctors
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                    <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    <Typography variant="caption" color="success.main">
-                      +{dashboardData.stats.doctors.growth}%
-                    </Typography>
-                  </Box>
-                </Box>
-                <DoctorIcon className="stat-icon" />
-              </Box>
-              {dashboardData.stats.doctors.pending > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Chip 
-                    label={`${dashboardData.stats.doctors.pending} pending`} 
-                    color="warning" 
-                    size="small"
-                  />
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className="stat-card patients" onClick={() => navigate('/patients')}>
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {dashboardData.stats.patients.total.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Patients
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                    <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    <Typography variant="caption" color="success.main">
-                      +{dashboardData.stats.patients.growth}%
-                    </Typography>
-                  </Box>
-                </Box>
-                <PeopleIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={4}>
-          <Card className="stat-card appointments" onClick={() => navigate('/appointments')}>
-            <CardContent>
-              <Box className="stat-content">
-                <Box>
-                  <Typography variant="h4" className="stat-number">
-                    {dashboardData.stats.appointments.total.toLocaleString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Appointments
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {dashboardData.stats.appointments.today} today
-                  </Typography>
-                </Box>
-                <EventIcon className="stat-icon" />
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      <Grid container spacing={3}>
-        {/* Alerts */}
-        <Grid item xs={12} lg={6}>
-          <Card className="alerts-card">
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <WarningIcon />
-                Important Alerts
-              </Typography>
-              {dashboardData.alerts.length > 0 ? (
-                <List disablePadding>
-                  {dashboardData.alerts.map((alert, index) => (
-                    <ListItem 
-                      key={alert.id} 
-                      disablePadding 
-                      sx={{ 
-                        py: 1.5,
-                        borderBottom: index < dashboardData.alerts.length - 1 ? 1 : 0,
-                        borderColor: 'divider'
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar 
-                          sx={{ 
-                            width: 32, 
-                            height: 32,
-                            bgcolor: `${getAlertColor(alert.type)}.main`
-                          }}
-                        >
-                          {getAlertIcon(alert.type)}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={alert.message}
-                        secondary={
-                          <Button 
-                            size="small" 
-                            onClick={() => navigate(alert.link)}
-                            sx={{ mt: 0.5, p: 0, minWidth: 'auto' }}
-                          >
-                            {alert.action} <ArrowIcon sx={{ fontSize: 16, ml: 0.5 }} />
-                          </Button>
-                        }
-                        primaryTypographyProps={{ fontSize: '14px' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                  No alerts at the moment
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Recent Activity */}
-        <Grid item xs={12} lg={6}>
-          <Card className="activity-card">
-            <CardContent>
-              <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <NotificationIcon />
-                Recent Activity
-              </Typography>
-              {dashboardData.recentActivity.length > 0 ? (
-                <List disablePadding>
-                  {dashboardData.recentActivity.map((activity, index) => (
-                    <ListItem 
-                      key={activity.id} 
-                      disablePadding 
-                      sx={{ 
-                        py: 1.5,
-                        borderBottom: index < dashboardData.recentActivity.length - 1 ? 1 : 0,
-                        borderColor: 'divider'
-                      }}
-                    >
-                      <ListItemAvatar>
-                        <Avatar sx={{ width: 32, height: 32, fontSize: '12px' }}>
-                          {activity.avatar}
-                        </Avatar>
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={activity.message}
-                        secondary={`${activity.time} ago`}
-                        primaryTypographyProps={{ fontSize: '14px' }}
-                        secondaryTypographyProps={{ fontSize: '12px' }}
-                      />
-                      <Chip 
-                        label={activity.status} 
-                        color={getActivityColor(activity.status)}
-                        size="small"
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              ) : (
-                <Typography variant="body2" color="text.secondary" sx={{ py: 2 }}>
-                  No recent activity
-                </Typography>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+    </Container>
   );
 };
 

@@ -5,12 +5,10 @@ import './Breadcrumb.css';
 
 const pathNameMap = {
   '/dashboard': 'Dashboard',
-  '/doctors': 'Médecins',
+  '/doctors': 'Doctors',
   '/patients': 'Patients',
-  '/appointments': 'Rendez-vous',
-  '/finances': 'Finances',
-  '/reports': 'Rapports',
-  '/settings': 'Paramètres'
+  '/appointments': 'Appointments',
+  '/finances': 'Finances'
 };
 
 const Breadcrumb = () => {

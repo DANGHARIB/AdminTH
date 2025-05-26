@@ -18,10 +18,11 @@ import {
   AccountBalance as FinanceIcon
 } from '@mui/icons-material';
 import './Sidebar.css';
+import logoImg from '../../assets/images/logo.png';
 
 const NAV_ITEMS = [
   { id: 'dashboard',    label: 'Dashboard',     path: '/dashboard',    icon: DashboardIcon },
-  { id: 'doctors',      label: 'Doctors',       path: '/doctors',      icon: DoctorIcon,    badge: '3' },
+  { id: 'doctors',      label: 'Doctors',       path: '/doctors',      icon: DoctorIcon },
   { id: 'patients',     label: 'Patients',      path: '/patients',     icon: PeopleIcon },
   { id: 'appointments', label: 'Appointments',  path: '/appointments', icon: EventIcon },
   { id: 'finances',     label: 'Finances',      path: '/finances',     icon: FinanceIcon }
@@ -53,7 +54,16 @@ const Sidebar = ({ onItemClick }) => {
     >
       {/* Logo */}
       <Box sx={{ p: 3, textAlign: 'center' }}>
-        <DoctorIcon sx={{ fontSize: 40, color: '#7AA7CC' }} />
+        <Box 
+          component="img"
+          src={logoImg}
+          alt="Tabeebou Logo"
+          sx={{ 
+            width: 50, 
+            height: 50, 
+            filter: 'invert(65%) sepia(15%) saturate(1060%) hue-rotate(167deg) brightness(92%) contrast(90%)',
+          }}
+        />
         <Typography variant="h6" sx={{ mt: 1, color: '#7AA7CC', fontWeight: 700 }}>
           Tabeebou.com
         </Typography>
@@ -95,32 +105,13 @@ const Sidebar = ({ onItemClick }) => {
                     letterSpacing: '-0.02em'
                   }}
                 />
-                {item.badge && (
-                  <Chip
-                    label={item.badge}
-                    size="small"
-                    sx={{
-                      ml: 1,
-                      bgcolor: active ? '#090F47' : '#FFE8A1',
-                      color: active ? '#fff' : '#875A00',
-                      height: 20,
-                      fontSize: '11px',
-                      fontWeight: 600
-                    }}
-                  />
-                )}
               </ListItemButton>
             </ListItem>
           );
         })}
       </List>
 
-      {/* Footer */}
-      <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography variant="caption" color="text.secondary">
-          Version 1.0.0
-        </Typography>
-      </Box>
+      
     </Box>
   );
 };
