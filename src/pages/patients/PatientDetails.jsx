@@ -296,8 +296,8 @@ const PatientDetails = () => {
     <Container maxWidth="xl" sx={{ py: 5 }}>
       <Box className="patient-details-page">
         {/* Header */}
-        <Box className="details-header" sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 3 }}>
+        <Box className="details-header" sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 4 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
             <Avatar 
               sx={{ 
                 width: 80, 
@@ -307,12 +307,17 @@ const PatientDetails = () => {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
               }}
             >
-              {patient.gender === 'Male' || patient.gender === 'Masculin' ? '👨' : patient.gender === 'Female' || patient.gender === 'Féminin' ? '👩' : '👤'}
+              {(patient.name && patient.name.charAt(0)) || 
+                (patient.firstName && patient.firstName.charAt(0)) || 
+                (patient.lastName && patient.lastName.charAt(0)) || 
+                'P'}
             </Avatar>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary, mb: 1 }}>
-                {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Name not available'} {renderStatus(patient.status)}
-              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 700, color: COLORS.primary }}>
+                  {patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || 'Name not available'}
+                </Typography>
+              </Box>
             </Box>
           </Box>
           
@@ -706,18 +711,6 @@ const PatientDetails = () => {
         
         {/* Action Buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-          <Button 
-            variant="contained" 
-            sx={{ 
-              borderRadius: 2,
-              bgcolor: COLORS.primary,
-              '&:hover': {
-                bgcolor: alpha(COLORS.primary, 0.9)
-              }
-            }}
-          >
-            Edit
-          </Button>
           <Button 
             variant="outlined" 
             color="error"

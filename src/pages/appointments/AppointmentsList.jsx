@@ -83,16 +83,13 @@ const AppointmentsList = () => {
     : activeTab === 1
       ? appointments.filter(a => a.status === 'confirmed')
       : activeTab === 2
-        ? appointments.filter(a => a.status === 'pending')
-        : activeTab === 3
-          ? appointments.filter(a => a.status === 'completed')
-          : appointments.filter(a => a.status === 'cancelled');
+        ? appointments.filter(a => a.status === 'completed')
+        : appointments.filter(a => a.status === 'cancelled');
 
   // Calculated stats with data verification
   const stats = {
     total: appointments.length,
     confirmed: appointments.filter(a => a.status === 'confirmed').length,
-    pending: appointments.filter(a => a.status === 'pending').length,
     completed: appointments.filter(a => a.status === 'completed').length,
     cancelled: appointments.filter(a => a.status === 'cancelled').length
   };
@@ -187,7 +184,6 @@ const AppointmentsList = () => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'confirmed': return 'success';
-      case 'pending': return 'warning';
       case 'completed': return 'info';
       case 'cancelled': return 'error';
       default: return 'default';
@@ -198,8 +194,6 @@ const AppointmentsList = () => {
     switch (status) {
       case 'confirmed': 
       case 'Confirmé': return 'Confirmed';
-      case 'pending': 
-      case 'En attente': return 'Pending';
       case 'completed': 
       case 'Terminé': return 'Completed';
       case 'cancelled': 
@@ -299,19 +293,6 @@ const AppointmentsList = () => {
             {value?.specialty || ''}
           </Typography>
         </Box>
-      )
-    },
-    {
-      field: 'type',
-      headerName: 'Type',
-      width: 120,
-      renderCell: (value) => (
-        <Chip 
-          label={getTypeLabel(value)} 
-          color={getTypeColor(value)}
-          size="small"
-          sx={{ textTransform: 'capitalize' }}
-        />
       )
     },
     {
@@ -479,15 +460,6 @@ const AppointmentsList = () => {
           
           <Grid item xs={12} sm={6} md={3}>
             <StatCard 
-              title="Pending"
-              value={stats.pending}
-              icon={HourglassIcon}
-              color={COLORS.accent}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard 
               title="Completed"
               value={stats.completed}
               icon={DoctorIcon}
@@ -523,7 +495,6 @@ const AppointmentsList = () => {
           >
             <Tab label={`All (${stats.total})`} />
             <Tab label={`Confirmed (${stats.confirmed})`} />
-            <Tab label={`Pending (${stats.pending})`} />
             <Tab label={`Completed (${stats.completed})`} />
             <Tab label={`Cancelled (${stats.cancelled})`} />
           </Tabs>
@@ -569,19 +540,13 @@ const AppointmentsList = () => {
           </MenuItem>
           
           {/* Status change submenu */}
-          {selectedAppointment?.status === 'pending' && (
-            <MenuItem onClick={() => handleChangeStatus('confirmed')}>
-              Confirm
-            </MenuItem>
-          )}
-          
           {selectedAppointment?.status === 'confirmed' && (
             <MenuItem onClick={() => handleChangeStatus('completed')}>
               Mark as Completed
             </MenuItem>
           )}
           
-          {(selectedAppointment?.status === 'pending' || selectedAppointment?.status === 'confirmed') && (
+          {selectedAppointment?.status === 'confirmed' && (
             <MenuItem onClick={() => handleChangeStatus('cancelled')}>
               Cancel
             </MenuItem>

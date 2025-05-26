@@ -356,7 +356,7 @@ const DoctorDetails = () => {
                   variant="body2"
                   sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
                 >
-                  ⭐ {doctor.rating || '0'} • {doctor.patients || 0} patients
+                  {doctor.patients || 0} patients
                 </Typography>
               </Box>
             </Box>
@@ -799,18 +799,6 @@ const DoctorDetails = () => {
 
         {/* Action buttons */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3, gap: 2 }}>
-          <Button 
-            variant="contained" 
-            sx={{ 
-              borderRadius: 2,
-              bgcolor: COLORS.primary,
-              '&:hover': {
-                bgcolor: alpha(COLORS.primary, 0.9)
-              }
-            }}
-          >
-            Edit
-          </Button>
           {!(doctor.verified || doctor.status === 'verified') && (
             <Button
               variant="contained"
@@ -826,13 +814,6 @@ const DoctorDetails = () => {
               Review
             </Button>
           )}
-          <Button 
-            variant="outlined" 
-            color="error"
-            sx={{ borderRadius: 2 }}
-          >
-            Suspend
-          </Button>
         </Box>
       </Box>
     </Container>
