@@ -1,197 +1,423 @@
-/* DoctorsList.css */
+/* DoctorsList.css - Modern Minimalist Design */
 .doctors-page {
-    padding: 32px;
-    background: #f8fafc;
-    min-height: 100vh;
+  padding: 40px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  min-height: 100vh;
+  position: relative;
+}
+
+.doctors-page::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 40px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  position: relative;
+}
+
+.page-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+.page-title {
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8px;
+  letter-spacing: -0.03em;
+  font-size: 2.5rem;
+  background: linear-gradient(135deg, #0f172a 0%, #374151 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.add-button {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  border-radius: 16px;
+  padding: 16px 32px;
+  font-weight: 600;
+  text-transform: none;
+  font-size: 15px;
+  box-shadow: 
+    0 8px 32px rgba(59, 130, 246, 0.25),
+    0 1px 0px rgba(255, 255, 255, 0.2) inset;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.add-button:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #5b21b6 100%);
+  box-shadow: 
+    0 12px 40px rgba(59, 130, 246, 0.35),
+    0 1px 0px rgba(255, 255, 255, 0.3) inset;
+  transform: translateY(-2px);
+}
+
+.add-button:active {
+  transform: translateY(0px);
+  box-shadow: 
+    0 4px 16px rgba(59, 130, 246, 0.3),
+    0 1px 0px rgba(255, 255, 255, 0.2) inset;
+}
+
+/* Statistics Cards */
+.stat-card {
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 1px 0px rgba(255, 255, 255, 0.8) inset;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6b7280, #9ca3af);
+  opacity: 0.6;
+}
+
+.stat-card.verified::before {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.stat-card.pending::before {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+}
+
+.stat-card.patients::before {
+  background: linear-gradient(90deg, #8b5cf6, #a78bfa);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 
+    0 20px 64px rgba(0, 0, 0, 0.12),
+    0 1px 0px rgba(255, 255, 255, 0.9) inset;
+  border-color: rgba(59, 130, 246, 0.2);
+}
+
+.stat-card:hover::before {
+  opacity: 1;
+  height: 6px;
+}
+
+.stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 32px;
+  position: relative;
+}
+
+.stat-number {
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 8px;
+  font-size: 2.5rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #0f172a 0%, #374151 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stat-icon {
+  font-size: 48px !important;
+  color: #94a3b8;
+  opacity: 0.4;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  opacity: 0.6;
+  transform: scale(1.1);
+}
+
+.stat-card.verified .stat-icon {
+  color: #10b981;
+}
+
+.stat-card.pending .stat-icon {
+  color: #f59e0b;
+}
+
+.stat-card.patients .stat-icon {
+  color: #8b5cf6;
+}
+
+/* Filter Tabs */
+.filter-tabs {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.06),
+    0 1px 0px rgba(255, 255, 255, 0.8) inset;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin-bottom: 32px;
+}
+
+.filter-tabs .MuiTab-root {
+  text-transform: none;
+  font-weight: 600;
+  border-radius: 14px;
+  min-height: 52px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #6b7280;
+  font-size: 14px;
+  margin: 4px;
+}
+
+.filter-tabs .MuiTab-root.Mui-selected {
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  color: white;
+  box-shadow: 
+    0 4px 16px rgba(59, 130, 246, 0.3),
+    0 1px 0px rgba(255, 255, 255, 0.2) inset;
+}
+
+.filter-tabs .MuiTab-root:hover:not(.Mui-selected) {
+  background: rgba(59, 130, 246, 0.06);
+  color: #3b82f6;
+}
+
+.filter-tabs .MuiTabs-indicator {
+  display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .doctors-page {
+    padding: 24px;
   }
   
   .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 32px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid #e2e8f0;
+    flex-direction: column;
+    gap: 24px;
+    align-items: stretch;
   }
   
   .page-title {
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 4px;
-    letter-spacing: -0.025em;
+    font-size: 2rem;
   }
   
   .add-button {
-    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-weight: 600;
-    text-transform: none;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-    transition: all 0.2s ease;
-  }
-  
-  .add-button:hover {
-    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
-    transform: translateY(-1px);
-  }
-  
-  /* Statistics Cards */
-  .stat-card {
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    transition: all 0.2s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, #6b7280, #9ca3af);
-  }
-  
-  .stat-card.verified::before {
-    background: linear-gradient(90deg, #10b981, #34d399);
-  }
-  
-  .stat-card.pending::before {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
-  }
-  
-  .stat-card.patients::before {
-    background: linear-gradient(90deg, #8b5cf6, #a78bfa);
-  }
-  
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    align-self: flex-start;
+    padding: 14px 28px;
   }
   
   .stat-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
+    padding: 20px 24px;
   }
   
   .stat-number {
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 4px;
     font-size: 2rem;
   }
   
   .stat-icon {
-    font-size: 32px !important;
-    color: #64748b;
-    opacity: 0.6;
-  }
-  
-  /* Filter Tabs */
-  .filter-tabs {
-    background: white;
-    border-radius: 12px;
-    padding: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    font-size: 36px !important;
   }
   
   .filter-tabs .MuiTab-root {
-    text-transform: none;
-    font-weight: 500;
-    border-radius: 8px;
-    min-height: 48px;
-    transition: all 0.2s ease;
+    font-size: 13px;
+    min-width: auto;
+    padding: 12px 16px;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+    padding: 24px 20px;
   }
   
-  .filter-tabs .MuiTab-root.Mui-selected {
-    background-color: #2563eb;
-    color: white;
+  .stat-icon {
+    font-size: 32px !important;
   }
   
-  .filter-tabs .MuiTabs-indicator {
-    display: none;
+  .page-title {
+    font-size: 1.75rem;
   }
-  
-  /* Responsive design */
-  @media (max-width: 768px) {
-    .doctors-page {
-      padding: 16px;
-    }
-    
-    .page-header {
-      flex-direction: column;
-      gap: 16px;
-      align-items: stretch;
-    }
-    
-    .add-button {
-      align-self: flex-start;
-    }
-    
-    .stat-number {
-      font-size: 1.5rem;
-    }
-    
-    .filter-tabs .MuiTab-root {
-      font-size: 12px;
-      min-width: auto;
-      padding: 8px 12px;
-    }
+}
+
+/* Custom table styling for doctors */
+.doctors-page .data-table-container {
+  margin-top: 0;
+}
+
+.doctors-page .table-row:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 197, 253, 0.04) 100%);
+  cursor: pointer;
+}
+
+/* Status chip customization */
+.doctors-page .MuiChip-root {
+  font-weight: 600;
+  border-radius: 12px;
+  font-size: 12px;
+  padding: 4px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.doctors-page .MuiChip-colorSuccess {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(52, 211, 153, 0.15) 100%);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.doctors-page .MuiChip-colorWarning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.15) 100%);
+  color: #92400e;
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+/* Avatar styling */
+.doctors-page .MuiAvatar-root {
+  font-weight: 700;
+  font-size: 14px;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Action button styling */
+.doctors-page .MuiButton-root {
+  border-radius: 12px;
+  text-transform: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.doctors-page .MuiButton-contained {
+  background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.doctors-page .MuiButton-contained:hover {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
+  transform: translateY(-1px);
+}
+
+.doctors-page .MuiButton-outlined {
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.doctors-page .MuiButton-outlined:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.doctors-page .MuiIconButton-root {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+}
+
+.doctors-page .MuiIconButton-root:hover {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  transform: scale(1.1);
+}
+
+/* Enhanced typography */
+.doctors-page .MuiTypography-body2 {
+  font-weight: 500;
+}
+
+.doctors-page .MuiTypography-caption {
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* Subtle animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  @media (max-width: 480px) {
-    .stat-content {
-      flex-direction: column;
-      text-align: center;
-      gap: 8px;
-    }
-    
-    .stat-icon {
-      font-size: 24px !important;
-    }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  /* Custom table styling for doctors */
-  .doctors-page .data-table-container {
-    margin-top: 0;
-  }
-  
-  .doctors-page .table-row:hover {
-    background-color: #f8fafc;
-    cursor: pointer;
-  }
-  
-  /* Status chip customization */
-  .doctors-page .MuiChip-root {
-    font-weight: 500;
-    border-radius: 6px;
-    font-size: 12px;
-  }
-  
-  /* Avatar styling */
-  .doctors-page .MuiAvatar-root {
-    font-weight: 600;
-    font-size: 14px;
-  }
-  
-  /* Action button styling */
-  .doctors-page .MuiButton-root {
-    border-radius: 6px;
-    text-transform: none;
-    font-weight: 500;
-  }
-  
-  .doctors-page .MuiIconButton-root {
-    transition: all 0.2s ease;
-  }
-  
-  .doctors-page .MuiIconButton-root:hover {
-    background-color: #f1f5f9;
-    transform: scale(1.1);
-  }
+}
+
+.stat-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.stat-card:nth-child(1) { animation-delay: 0.1s; }
+.stat-card:nth-child(2) { animation-delay: 0.2s; }
+.stat-card:nth-child(3) { animation-delay: 0.3s; }
+.stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+.data-table-container {
+  animation: fadeInUp 0.8s ease-out;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
+}
+
+/* Doctor name styling enhancement */
+.doctors-page .doctor-name {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.doctors-page .doctor-specialty {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 12px;
+}
+
+/* Price styling */
+.doctors-page .doctor-price {
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
