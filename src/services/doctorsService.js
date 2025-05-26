@@ -13,8 +13,15 @@ const doctorsService = {
       name: backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`.trim(),
       fullName: backendDoctor.full_name || `${backendDoctor.first_name || ''} ${backendDoctor.last_name || ''}`.trim(),
       email: backendDoctor.email || backendDoctor.user?.email || 'Not available',
-      specialty: backendDoctor.specialization || backendDoctor.specialty || '',
-      specialization: backendDoctor.specialization || '', // Keep original field as well
+      // Gérer à la fois specialization (objet unique) et le champ texte legacy
+      specialty: backendDoctor.specialization?.name || backendDoctor.specialization || backendDoctor.specialty || '',
+      // Conserve le champ original
+      specialization: backendDoctor.specialization || '', 
+      // Pour accéder aux spécialisations multiples si disponibles
+      specializations: (backendDoctor.specializations || []).map(spec => ({
+        id: spec._id || spec,
+        name: spec.name || ''
+      })),
       status: backendDoctor.verified ? 'verified' : 'pending',
       verified: backendDoctor.verified || false,
       isVerified: backendDoctor.verified || false,
@@ -30,7 +37,6 @@ const doctorsService = {
       about: backendDoctor.about || '',
       education: backendDoctor.education || '',
       certifications: backendDoctor.certifications || [],
-      specializations: backendDoctor.specializations || [],
       doctor_image: backendDoctor.doctor_image || null,
       dob: backendDoctor.dob || null,
       user: backendDoctor.user || null,
@@ -74,6 +80,69 @@ const doctorsService = {
   },
 
   /**
+   * Récupère le nombre de patients associés à un médecin
+   * @param {string} doctorId - ID du médecin
+   * @returns {Promise<number>} - Nombre de patients
+   */
+  async getDoctorPatientCount(doctorId) {
+    try {
+      console.log(`🔢 Récupération du nombre de patients pour le médecin ${doctorId}...`);
+      const response = await api.get(`/doctors/${doctorId}/patients/count`);
+      console.log('✅ Nombre de patients récupéré:', response.data);
+      
+      return response.data.patientCount;
+    } catch (error) {
+      console.error(`❌ Erreur lors de la récupération du nombre de patients: ${error}`);
+      return 0; // Valeur par défaut en cas d'erreur
+    }
+  },
+
+  /**
+   * Version enrichie de mapDoctorData pour inclure le nombre de patients
+   * @param {Object} backendDoctor - Données du médecin depuis l'API
+   * @param {number} patientCount - Nombre de patients (optionnel)
+   * @returns {Object} - Données du médecin formatées pour le frontend
+   */
+  async mapDoctorDataWithPatients(backendDoctor) {
+    // Récupérer le nombre de patients si disponible
+    let patientCount = 0;
+    try {
+      patientCount = await this.getDoctorPatientCount(backendDoctor._id);
+    } catch (error) {
+      console.warn(`Impossible de récupérer le nombre de patients: ${error.message}`);
+    }
+
+    // Utiliser mapDoctorData existant et ajouter patientCount
+    const doctorData = this.mapDoctorData(backendDoctor);
+    return {
+      ...doctorData,
+      patientCount
+    };
+  },
+
+  /**
+   * Version enrichie de getAllDoctors pour inclure le nombre de patients
+   */
+  async getAllDoctorsWithPatientCount(params = {}) {
+    try {
+      console.log('🔍 Fetching doctors with patient counts...');
+      const response = await api.get('/doctors', { params });
+      
+      // Transformer chaque médecin et ajouter le nombre de patients
+      const doctorsWithPatients = await Promise.all(
+        response.data.map(async doctor => {
+          return await this.mapDoctorDataWithPatients(doctor);
+        })
+      );
+      
+      return doctorsWithPatients;
+    } catch (error) {
+      console.error('❌ Error fetching doctors with patient counts:', error);
+      throw error.response?.data || { message: 'Error fetching doctors' };
+    }
+  },
+
+  /**
    * Get doctor by ID
    */
   async getDoctorById(id) {
@@ -88,6 +157,24 @@ const doctorsService = {
       return mappedDoctor;
     } catch (error) {
       console.error(`❌ Error fetching doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching doctor' };
+    }
+  },
+
+  /**
+   * Get doctor by ID with patient count
+   */
+  async getDoctorByIdWithPatientCount(id) {
+    try {
+      console.log(`🔍 Fetching doctor ${id} with patient count...`);
+      const response = await api.get(`/doctors/${id}`);
+      
+      const doctorWithPatients = await this.mapDoctorDataWithPatients(response.data);
+      console.log('✅ Mapped doctor data with patient count:', doctorWithPatients);
+      
+      return doctorWithPatients;
+    } catch (error) {
+      console.error(`❌ Error fetching doctor with patient count:`, error);
       throw error.response?.data || { message: 'Error fetching doctor' };
     }
   },
@@ -209,6 +296,22 @@ const doctorsService = {
     } catch (error) {
       console.error('❌ Error fetching statistics:', error);
       throw error.response?.data || { message: 'Error fetching statistics' };
+    }
+  },
+
+  /**
+   * Get doctor finances
+   */
+  async getDoctorFinances(id) {
+    try {
+      console.log(`💰 Fetching finances for doctor ${id}...`);
+      const response = await api.get(`/doctors/${id}/finances`);
+      console.log('✅ Finances data received:', response.data);
+      
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error fetching finances for doctor ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching doctor finances' };
     }
   }
 };

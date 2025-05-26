@@ -138,6 +138,12 @@ const DataTable = ({
       );
     }
 
+    // Gérer les valeurs qui sont des objets pour éviter l'erreur "Objects are not valid as React child"
+    if (typeof value === 'object' && value !== null) {
+      // Convertir l'objet en chaîne JSON
+      return JSON.stringify(value);
+    }
+
     return value;
   };
 
@@ -226,7 +232,7 @@ const DataTable = ({
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedData.map((row, ) => {
+            {paginatedData.map((row) => {
               const isItemSelected = isSelected(row.id);
               
               return (

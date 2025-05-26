@@ -1,5 +1,32 @@
 import api from './api';
 
+/**
+ * Transform payment data from API to frontend format
+ */
+const transformPaymentData = (apiPayment) => {
+  return {
+    id: apiPayment._id || apiPayment.id,
+    amount: apiPayment.amount || 0,
+    date: apiPayment.date || apiPayment.createdAt,
+    status: apiPayment.status || 'pending',
+    method: apiPayment.method || 'card',
+    description: apiPayment.description || '',
+    
+    // References
+    doctorId: apiPayment.doctorId || apiPayment.doctor,
+    patientId: apiPayment.patientId || apiPayment.patient,
+    appointmentId: apiPayment.appointmentId || apiPayment.appointment,
+    
+    // Additional info
+    transactionId: apiPayment.transactionId || `txn_${apiPayment._id || apiPayment.id}`,
+    createdAt: apiPayment.createdAt,
+    updatedAt: apiPayment.updatedAt,
+    
+    // Original data
+    _originalData: apiPayment
+  };
+};
+
 const paymentsService = {
   /**
    * Get all payments with fallback
@@ -10,7 +37,7 @@ const paymentsService = {
       const response = await api.get('/payments', { params });
       console.log('✅ Payments fetched:', response.data);
       
-      return response.data;
+      return response.data.map(payment => transformPaymentData(payment));
     } catch (error) {
       console.warn('❌ Payments route not available:', error.response?.status);
       
@@ -34,7 +61,7 @@ const paymentsService = {
       const response = await api.get(`/payments/${id}`);
       console.log('✅ Payment fetched:', response.data);
       
-      return response.data;
+      return transformPaymentData(response.data);
     } catch (error) {
       if (error.response?.status === 404) {
         // Generate mock payment
@@ -52,10 +79,22 @@ const paymentsService = {
   async createPayment(paymentData) {
     try {
       console.log('🆕 Creating payment:', paymentData);
-      const response = await api.post('/payments', paymentData);
+      
+      // Ensure all required fields are in the correct format
+      const apiData = {
+        amount: paymentData.amount,
+        doctorId: paymentData.doctorId || paymentData.doctor,
+        patientId: paymentData.patientId || paymentData.patient,
+        appointmentId: paymentData.appointmentId || paymentData.appointment,
+        method: paymentData.method || 'card',
+        description: paymentData.description || 'Payment for consultation',
+        status: paymentData.status || 'completed'
+      };
+      
+      const response = await api.post('/payments', apiData);
       console.log('✅ Payment created:', response.data);
       
-      return response.data;
+      return transformPaymentData(response.data);
     } catch (error) {
       console.error('❌ Error creating payment:', error);
       throw error.response?.data || { message: 'Error creating payment' };
@@ -68,10 +107,19 @@ const paymentsService = {
   async updatePayment(id, paymentData) {
     try {
       console.log(`🔄 Updating payment ${id}:`, paymentData);
-      const response = await api.put(`/payments/${id}`, paymentData);
+      
+      // Only include fields that are being updated
+      const apiData = {};
+      
+      if (paymentData.amount !== undefined) apiData.amount = paymentData.amount;
+      if (paymentData.status !== undefined) apiData.status = paymentData.status;
+      if (paymentData.method !== undefined) apiData.method = paymentData.method;
+      if (paymentData.description !== undefined) apiData.description = paymentData.description;
+      
+      const response = await api.put(`/payments/${id}`, apiData);
       console.log('✅ Payment updated:', response.data);
       
-      return response.data;
+      return transformPaymentData(response.data);
     } catch (error) {
       console.error(`❌ Error updating payment ${id}:`, error);
       throw error.response?.data || { message: 'Error updating payment' };
@@ -97,13 +145,18 @@ const paymentsService = {
   /**
    * Get payments by doctor
    */
-  async getPaymentsByDoctor(doctorId) {
+  async getPaymentsByDoctor(doctorId, params = {}) {
     try {
       console.log(`🔍 Fetching payments for doctor ${doctorId}...`);
-      const response = await api.get(`/payments?doctorId=${doctorId}`);
+      const response = await api.get(`/payments`, { 
+        params: { 
+          doctorId,
+          ...params
+        } 
+      });
       console.log('✅ Doctor payments fetched:', response.data);
       
-      return response.data;
+      return response.data.map(payment => transformPaymentData(payment));
     } catch (error) {
       if (error.response?.status === 404) {
         return this.generateMockPaymentsForDoctor(doctorId);
@@ -117,13 +170,18 @@ const paymentsService = {
   /**
    * Get payments by patient
    */
-  async getPaymentsByPatient(patientId) {
+  async getPaymentsByPatient(patientId, params = {}) {
     try {
       console.log(`🔍 Fetching payments for patient ${patientId}...`);
-      const response = await api.get(`/payments?patientId=${patientId}`);
+      const response = await api.get(`/payments`, { 
+        params: { 
+          patientId,
+          ...params
+        } 
+      });
       console.log('✅ Patient payments fetched:', response.data);
       
-      return response.data;
+      return response.data.map(payment => transformPaymentData(payment));
     } catch (error) {
       if (error.response?.status === 404) {
         return this.generateMockPaymentsForPatient(patientId);
@@ -151,6 +209,46 @@ const paymentsService = {
       
       console.error('❌ Error fetching statistics:', error);
       throw error.response?.data || { message: 'Error fetching statistics' };
+    }
+  },
+
+  /**
+   * Get payment methods
+   */
+  async getPaymentMethods(userId = null) {
+    try {
+      console.log('💳 Fetching payment methods...');
+      
+      const params = userId ? { userId } : {};
+      const response = await api.get('/payment-methods', { params });
+      
+      console.log('✅ Payment methods fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('❌ Error fetching payment methods:', error);
+      
+      // Return empty array if endpoint is not available
+      if (error.response?.status === 404) {
+        return [];
+      }
+      
+      throw error.response?.data || { message: 'Error fetching payment methods' };
+    }
+  },
+
+  /**
+   * Get payment method details
+   */
+  async getPaymentMethodById(id) {
+    try {
+      console.log(`💳 Fetching payment method ${id}...`);
+      const response = await api.get(`/payment-methods/${id}`);
+      
+      console.log('✅ Payment method fetched:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error(`❌ Error fetching payment method ${id}:`, error);
+      throw error.response?.data || { message: 'Error fetching payment method' };
     }
   },
 

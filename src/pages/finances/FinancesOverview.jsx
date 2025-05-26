@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -15,7 +15,8 @@ import {
   Tabs,
   Tab,
   LinearProgress,
-  Divider
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import {
   AccountBalance as AccountBalanceIcon,
@@ -34,96 +35,165 @@ import {
 } from '@mui/icons-material';
 import DataTable from '../../components/common/DataTable';
 import './FinancesOverview.css';
-
-
-// Mock data for finances
-const MOCK_FINANCIAL_DATA = {
-  overview: {
-    totalRevenue: 125420.50,
-    monthlyRevenue: 18750.25,
-    pendingPayments: 3240.00,
-    completedTransactions: 1247,
-    revenueGrowth: 12.5,
-    avgTransactionValue: 100.50
-  },
-  
-  recentTransactions: [
-    {
-      id: 1,
-      date: '2025-05-22',
-      type: 'payment',
-      amount: 85.00,
-      patient: { id: 1, name: 'John Smith' },
-      doctor: { id: 1, name: 'Dr. Martin Johnson' },
-      status: 'completed',
-      method: 'card',
-      description: 'Cardiology consultation'
-    },
-    {
-      id: 2,
-      date: '2025-05-22',
-      type: 'refund',
-      amount: -45.00,
-      patient: { id: 2, name: 'Mary Wilson' },
-      doctor: { id: 2, name: 'Dr. Sophie Anderson' },
-      status: 'processed',
-      method: 'card',
-      description: 'Refund for cancelled consultation'
-    },
-    {
-      id: 3,
-      date: '2025-05-21',
-      type: 'payment',
-      amount: 120.00,
-      patient: { id: 3, name: 'Peter Brown' },
-      doctor: { id: 1, name: 'Dr. Martin Johnson' },
-      status: 'completed',
-      method: 'bank_transfer',
-      description: 'Consultation + examinations'
-    },
-    {
-      id: 4,
-      date: '2025-05-21',
-      type: 'commission',
-      amount: 25.50,
-      patient: null,
-      doctor: { id: 3, name: 'Dr. Thomas Davis' },
-      status: 'pending',
-      method: 'platform',
-      description: 'Platform commission - Consultation'
-    },
-    {
-      id: 5,
-      date: '2025-05-20',
-      type: 'payment',
-      amount: 95.00,
-      patient: { id: 4, name: 'Sophie Miller' },
-      doctor: { id: 2, name: 'Dr. Sophie Anderson' },
-      status: 'completed',
-      method: 'card',
-      description: 'Pediatric consultation'
-    }
-  ],
-  
-  topDoctorsByRevenue: [
-    { id: 1, name: 'Dr. Martin Johnson', specialty: 'Cardiologist', revenue: 8420.50, patients: 42, growth: 15.2 },
-    { id: 2, name: 'Dr. Sophie Anderson', specialty: 'Pediatrician', revenue: 6850.25, patients: 56, growth: 8.7 },
-    { id: 5, name: 'Dr. Paul Mitchell', specialty: 'Ophthalmologist', revenue: 5240.00, patients: 38, growth: 22.1 }
-  ],
-  
-  paymentMethods: [
-    { method: 'card', label: 'Credit Card', count: 892, percentage: 71.5, amount: 89750.30 },
-    { method: 'bank_transfer', label: 'Bank Transfer', count: 245, percentage: 19.6, amount: 24580.50 },
-    { method: 'digital_wallet', label: 'Digital Wallet', count: 110, percentage: 8.9, amount: 11089.70 }
-  ]
-};
+import paymentsService from '../../services/paymentsService';
+import doctorsService from '../../services/doctorsService';
 
 const FinancesOverview = () => {
-  const [financialData] = useState(MOCK_FINANCIAL_DATA);
+  // États pour stocker les données récupérées
+  const [isLoading, setIsLoading] = useState(true);
+  const [financialOverview, setFinancialOverview] = useState({
+    totalRevenue: 0,
+    monthlyRevenue: 0,
+    pendingPayments: 0,
+    completedTransactions: 0,
+    revenueGrowth: 0,
+    avgTransactionValue: 0
+  });
+  const [transactions, setTransactions] = useState([]);
+  const [topDoctors, setTopDoctors] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [tabValue, setTabValue] = useState(0);
 
+  // Chargement des données
+  useEffect(() => {
+    const fetchFinancialData = async () => {
+      setIsLoading(true);
+      
+      try {
+        // Récupération des données financières générales
+        const stats = await paymentsService.getPaymentsStats('month');
+        
+        // Récupération des transactions
+        const allPayments = await paymentsService.getAllPayments();
+
+        // Traitement des données de statistiques
+        const overview = {
+          totalRevenue: stats.totalRevenue || 0,
+          monthlyRevenue: stats.totalRevenue || 0,
+          pendingPayments: allPayments.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.amount, 0),
+          completedTransactions: stats.completedPayments || allPayments.filter(p => p.status === 'completed').length,
+          revenueGrowth: stats.trend?.revenue || 0,
+          avgTransactionValue: stats.averageTransaction || 0
+        };
+        setFinancialOverview(overview);
+
+        // Conversion des transactions pour correspondre au format attendu
+        const processedTransactions = await processTransactions(allPayments);
+        setTransactions(processedTransactions);
+
+        // Récupération et formatage des données des médecins
+        const doctors = await doctorsService.getAllDoctors();
+        const topDoctorsByRevenue = await calculateTopDoctors(doctors, allPayments);
+        setTopDoctors(topDoctorsByRevenue);
+
+        // Calcul des méthodes de paiement
+        const methods = calculatePaymentMethods(allPayments);
+        setPaymentMethods(methods);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données financières:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFinancialData();
+  }, []);
+
+  // Traitement des transactions pour ajouter les informations liées aux docteurs et patients
+  const processTransactions = async (payments) => {
+    try {
+      // Récupération des médecins
+      const doctors = await doctorsService.getAllDoctors();
+      const doctorsMap = new Map(doctors.map(d => [d.id, d]));
+
+      return payments.slice(0, 5).map(payment => ({
+        id: payment.id,
+        date: payment.date,
+        type: payment.amount > 0 ? 'payment' : 'refund',
+        amount: payment.amount,
+        patient: payment.patientId ? { id: payment.patientId, name: payment.patientId } : null,
+        doctor: doctorsMap.get(payment.doctorId) ? 
+          { id: payment.doctorId, name: doctorsMap.get(payment.doctorId).displayName } : 
+          { id: payment.doctorId, name: 'Dr. Unknown' },
+        status: payment.status,
+        method: payment.method,
+        description: payment.description
+      }));
+    } catch (error) {
+      console.error('Erreur lors du traitement des transactions:', error);
+      return [];
+    }
+  };
+
+  // Calcul des médecins les plus performants en termes de revenus
+  const calculateTopDoctors = async (doctors, payments) => {
+    try {
+      const doctorRevenues = {};
+      
+      // Calcul des revenus par médecin
+      payments.forEach(payment => {
+        if (!doctorRevenues[payment.doctorId]) {
+          doctorRevenues[payment.doctorId] = {
+            revenue: 0,
+            count: 0
+          };
+        }
+        doctorRevenues[payment.doctorId].revenue += payment.amount;
+        doctorRevenues[payment.doctorId].count += 1;
+      });
+      
+      // Association des revenus aux données des médecins
+      return doctors
+        .filter(doctor => doctorRevenues[doctor.id])
+        .map(doctor => ({
+          id: doctor.id,
+          name: doctor.displayName || doctor.fullName,
+          specialty: doctor.specialty,
+          revenue: doctorRevenues[doctor.id].revenue,
+          patients: doctor.patients || 0,
+          growth: Math.floor(Math.random() * 30) - 5 // Valeur simulée pour la croissance
+        }))
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 3);
+    } catch (error) {
+      console.error('Erreur lors du calcul des meilleurs médecins:', error);
+      return [];
+    }
+  };
+
+  // Calcul des méthodes de paiement
+  const calculatePaymentMethods = (payments) => {
+    const methods = {
+      card: { method: 'card', label: 'Carte de Crédit', count: 0, amount: 0 },
+      bank_transfer: { method: 'bank_transfer', label: 'Virement Bancaire', count: 0, amount: 0 },
+      digital_wallet: { method: 'digital_wallet', label: 'Portefeuille Digital', count: 0, amount: 0 }
+    };
+    
+    // Comptage des paiements par méthode
+    payments.forEach(payment => {
+      const methodKey = payment.method || 'card';
+      if (methods[methodKey]) {
+        methods[methodKey].count += 1;
+        methods[methodKey].amount += payment.amount;
+      } else {
+        methods.card.count += 1;
+        methods.card.amount += payment.amount;
+      }
+    });
+    
+    // Calcul des pourcentages
+    const totalCount = Object.values(methods).reduce((sum, m) => sum + m.count, 0) || 1;
+    Object.values(methods).forEach(m => {
+      m.percentage = Math.round((m.count / totalCount) * 100);
+    });
+    
+    return Object.values(methods);
+  };
+
+  // Utilitaires pour l'affichage
   const getTransactionColor = (type) => {
     switch (type) {
       case 'payment': return 'success';
@@ -162,9 +232,9 @@ const FinancesOverview = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'EUR'
     }).format(amount);
   };
 
@@ -177,10 +247,7 @@ const FinancesOverview = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DateIcon sx={{ fontSize: 16, color: '#6b7280' }} />
           <Typography variant="body2">
-            {new Date(value).toLocaleDateString('en-US', { 
-              day: '2-digit', 
-              month: '2-digit' 
-            })}
+            {new Date(value).toLocaleDateString('fr-FR')}
           </Typography>
         </Box>
       )
@@ -191,7 +258,7 @@ const FinancesOverview = () => {
       width: 130,
       renderCell: (value) => (
         <Chip 
-          label={value === 'payment' ? 'Payment' : value === 'refund' ? 'Refund' : 'Commission'} 
+          label={value === 'payment' ? 'Paiement' : value === 'refund' ? 'Remboursement' : 'Commission'} 
           color={getTransactionColor(value)}
           size="small"
           icon={getTransactionIcon(value)}
@@ -200,7 +267,7 @@ const FinancesOverview = () => {
     },
     {
       field: 'amount',
-      headerName: 'Amount',
+      headerName: 'Montant',
       width: 120,
       align: 'right',
       renderCell: (value) => (
@@ -232,7 +299,7 @@ const FinancesOverview = () => {
     },
     {
       field: 'doctor',
-      headerName: 'Doctor',
+      headerName: 'Médecin',
       width: 180,
       renderCell: (value) => (
         <Typography variant="body2">{value.name}</Typography>
@@ -240,11 +307,11 @@ const FinancesOverview = () => {
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: 'Statut',
       width: 120,
       renderCell: (value) => (
         <Chip 
-          label={value === 'completed' ? 'Completed' : value === 'processed' ? 'Processed' : value === 'pending' ? 'Pending' : 'Failed'} 
+          label={value === 'completed' ? 'Terminé' : value === 'processed' ? 'Traité' : value === 'pending' ? 'En attente' : 'Échoué'} 
           color={getStatusColor(value)}
           size="small"
         />
@@ -252,13 +319,13 @@ const FinancesOverview = () => {
     },
     {
       field: 'method',
-      headerName: 'Method',
+      headerName: 'Méthode',
       width: 140,
       renderCell: (value) => (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           {getMethodIcon(value)}
           <Typography variant="body2">
-            {value === 'card' ? 'Card' : value === 'bank_transfer' ? 'Transfer' : value === 'digital_wallet' ? 'Wallet' : 'Platform'}
+            {value === 'card' ? 'Carte' : value === 'bank_transfer' ? 'Virement' : value === 'digital_wallet' ? 'E-Wallet' : 'Plateforme'}
           </Typography>
         </Box>
       )
@@ -292,6 +359,14 @@ const FinancesOverview = () => {
     setTabValue(newValue);
   };
 
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box className="finances-page">
       <Box className="page-header">
@@ -300,7 +375,7 @@ const FinancesOverview = () => {
             Finances
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Platform financial overview
+            Vue d'ensemble des finances
           </Typography>
         </Box>
         
@@ -309,11 +384,11 @@ const FinancesOverview = () => {
           startIcon={<DownloadIcon />}
           className="export-button"
         >
-          Export Report
+          Exporter le rapport
         </Button>
       </Box>
 
-      {/* Statistics Cards */}
+      {/* Cartes de statistiques */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Card className="stat-card revenue">
@@ -321,10 +396,10 @@ const FinancesOverview = () => {
               <Box className="stat-content">
                 <Box>
                   <Typography variant="h4" className="stat-number">
-                    {formatCurrency(financialData.overview.totalRevenue)}
+                    {formatCurrency(financialOverview.totalRevenue)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Total Revenue
+                    Revenu Total
                   </Typography>
                 </Box>
                 <MoneyIcon className="stat-icon" />
@@ -339,16 +414,27 @@ const FinancesOverview = () => {
               <Box className="stat-content">
                 <Box>
                   <Typography variant="h4" className="stat-number">
-                    {formatCurrency(financialData.overview.monthlyRevenue)}
+                    {formatCurrency(financialOverview.monthlyRevenue)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Monthly Revenue
+                    Revenu Mensuel
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
-                    <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
-                    <Typography variant="caption" color="success.main">
-                      +{financialData.overview.revenueGrowth}%
-                    </Typography>
+                    {financialOverview.revenueGrowth >= 0 ? (
+                      <>
+                        <TrendingUpIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                        <Typography variant="caption" color="success.main">
+                          +{financialOverview.revenueGrowth}%
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDownIcon sx={{ fontSize: 16, color: 'error.main' }} />
+                        <Typography variant="caption" color="error.main">
+                          {financialOverview.revenueGrowth}%
+                        </Typography>
+                      </>
+                    )}
                   </Box>
                 </Box>
                 <TrendingUpIcon className="stat-icon" />
@@ -363,10 +449,10 @@ const FinancesOverview = () => {
               <Box className="stat-content">
                 <Box>
                   <Typography variant="h4" className="stat-number">
-                    {formatCurrency(financialData.overview.pendingPayments)}
+                    {formatCurrency(financialOverview.pendingPayments)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    Pending Payments
+                    Paiements en attente
                   </Typography>
                 </Box>
                 <ReceiptIcon className="stat-icon" />
@@ -381,13 +467,13 @@ const FinancesOverview = () => {
               <Box className="stat-content">
                 <Box>
                   <Typography variant="h4" className="stat-number">
-                    {financialData.overview.completedTransactions}
+                    {financialOverview.completedTransactions}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     Transactions
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Avg: {formatCurrency(financialData.overview.avgTransactionValue)}
+                    Moyenne: {formatCurrency(financialOverview.avgTransactionValue)}
                   </Typography>
                 </Box>
                 <CardIcon className="stat-icon" />
@@ -397,17 +483,17 @@ const FinancesOverview = () => {
         </Grid>
       </Grid>
 
-      {/* Top Doctors by Revenue */}
+      {/* Médecins par Revenu et Méthodes de paiement */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} md={6}>
           <Card className="info-card">
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <DoctorIcon />
-                Top Doctors by Revenue
+                Top Médecins par Revenu
               </Typography>
-              {financialData.topDoctorsByRevenue.map((doctor) => (
-                <Box key={doctor.id} sx={{ mb: 2, pb: 2, borderBottom: doctor.id < financialData.topDoctorsByRevenue.length ? 1 : 0, borderColor: 'divider' }}>
+              {topDoctors.map((doctor) => (
+                <Box key={doctor.id} sx={{ mb: 2, pb: 2, borderBottom: doctor.id !== topDoctors[topDoctors.length-1].id ? 1 : 0, borderColor: 'divider' }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <Avatar sx={{ width: 32, height: 32, bgcolor: '#2563eb', fontSize: '14px' }}>
@@ -433,6 +519,11 @@ const FinancesOverview = () => {
                   </Box>
                 </Box>
               ))}
+              {topDoctors.length === 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 3 }}>
+                  Aucune donnée disponible
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -442,9 +533,9 @@ const FinancesOverview = () => {
             <CardContent>
               <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <CardIcon />
-                Payment Methods
+                Méthodes de Paiement
               </Typography>
-              {financialData.paymentMethods.map((method) => (
+              {paymentMethods.map((method) => (
                 <Box key={method.method} sx={{ mb: 2 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -474,28 +565,28 @@ const FinancesOverview = () => {
         </Grid>
       </Grid>
 
-      {/* Transactions Table */}
+      {/* Tableau des transactions */}
       <Card className="transactions-card">
         <CardContent sx={{ p: 0 }}>
           <Box sx={{ p: 3, pb: 0 }}>
             <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <ReceiptIcon />
-              Recent Transactions
+              Transactions Récentes
             </Typography>
           </Box>
           
           <DataTable
-            data={financialData.recentTransactions}
+            data={transactions}
             columns={columns}
             searchable={true}
             loading={false}
             pagination={true}
-            initialRowsPerPage={25}
+            initialRowsPerPage={10}
           />
         </CardContent>
       </Card>
 
-      {/* Actions Menu */}
+      {/* Menu d'actions */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -503,15 +594,15 @@ const FinancesOverview = () => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={() => { console.log('View transaction details'); handleMenuClose(); }}>
-          View Details
+        <MenuItem onClick={() => { console.log('Voir les détails de la transaction'); handleMenuClose(); }}>
+          Voir les détails
         </MenuItem>
-        <MenuItem onClick={() => { console.log('Download receipt'); handleMenuClose(); }}>
-          Download Receipt
+        <MenuItem onClick={() => { console.log('Télécharger le reçu'); handleMenuClose(); }}>
+          Télécharger le reçu
         </MenuItem>
         {selectedTransaction?.status === 'pending' && (
-          <MenuItem onClick={() => { console.log('Process transaction'); handleMenuClose(); }}>
-            Process
+          <MenuItem onClick={() => { console.log('Traiter la transaction'); handleMenuClose(); }}>
+            Traiter
           </MenuItem>
         )}
       </Menu>

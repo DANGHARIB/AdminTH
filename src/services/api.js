@@ -4,6 +4,9 @@ import axios from 'axios';
 const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 console.log('Configured API URL:', baseURL);
 
+// API timeout configuration
+const timeout = parseInt(import.meta.env.VITE_API_TIMEOUT || '30000');
+
 // Local storage prefix
 const STORAGE_PREFIX = import.meta.env.VITE_STORAGE_PREFIX || 'admin_app_';
 const TOKEN_KEY = `${STORAGE_PREFIX}token`;
@@ -13,6 +16,7 @@ const TOKEN_KEY = `${STORAGE_PREFIX}token`;
  */
 const api = axios.create({
   baseURL,
+  timeout,
   headers: {
     'Content-Type': 'application/json'
   }

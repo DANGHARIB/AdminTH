@@ -49,6 +49,7 @@ const authService = {
       console.error('❌ Backend inaccessible:', error.message);
       if (error.code === 'ERR_NETWORK') {
         console.error('💡 Check that your backend is started and accessible');
+        console.error(`💡 Make sure the backend accepts CORS from ${window.location.origin}`);
       }
       return false;
     }
@@ -63,12 +64,12 @@ const authService = {
   async login(email, password) {
     try {
       console.log(`Login attempt with ${email}`);
-      // Never log password in plain text for security reasons
+      
       // Create data object with structure expected by API
       const loginData = { 
         email, 
         password,
-        role: 'Admin' // Ensure role is explicitly specified
+        role: 'Admin' // Ensure role is explicitly specified with capital letter
       };
       console.log('Data sent:', { ...loginData, password: '[PROTECTED]' });
       
@@ -76,7 +77,6 @@ const authService = {
       const response = await api.post('/auth/login', loginData);
       
       console.log('Login response:', response.status, response.statusText);
-      console.log('Response data:', response.data);
       
       // Extract data
       const { token, ...userData } = response.data;
@@ -84,7 +84,6 @@ const authService = {
       // For compatibility with different API response formats
       const user = userData.user || userData;
       
-      console.log('Extracted user:', user);
       console.log('User role:', user.role);
       
       // Check if user is an administrator
@@ -174,6 +173,43 @@ const authService = {
       return response.data;
     } catch (error) {
       throw error.response?.data || { message: 'Error fetching profile' };
+    }
+  },
+
+  /**
+   * Update user profile
+   * @param {Object} profileData - Profile data to update 
+   * @returns {Promise} - Promise with updated profile data
+   */
+  async updateProfile(profileData) {
+    try {
+      const response = await api.put('/auth/profile', profileData);
+      
+      // Update stored user data
+      const updatedUser = response.data;
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+      
+      return updatedUser;
+    } catch (error) {
+      throw error.response?.data || { message: 'Error updating profile' };
+    }
+  },
+
+  /**
+   * Change password
+   * @param {string} currentPassword - Current password
+   * @param {string} newPassword - New password
+   * @returns {Promise} - Promise with result
+   */
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const response = await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || { message: 'Error changing password' };
     }
   }
 };

@@ -1,77 +1,102 @@
 import api from './api';
 
 /**
- * Service pour la gestion des utilisateurs
+ * Transform user data from API to frontend format
+ */
+const transformUserData = (apiUser) => {
+  return {
+    id: apiUser._id,
+    firstName: apiUser.firstName,
+    lastName: apiUser.lastName,
+    email: apiUser.email,
+    role: apiUser.role,
+    isActive: apiUser.isActive,
+    fullName: `${apiUser.firstName || ''} ${apiUser.lastName || ''}`.trim(),
+    createdAt: apiUser.createdAt,
+    updatedAt: apiUser.updatedAt,
+    // Original data for reference
+    _originalData: apiUser
+  };
+};
+
+/**
+ * Service for user management
  */
 const usersService = {
   /**
-   * Récupérer la liste des utilisateurs
-   * @param {Object} params - Paramètres de filtre et pagination
-   * @returns {Promise} - Promesse avec la liste des utilisateurs
+   * Get list of users
+   * @param {Object} params - Filter and pagination parameters
+   * @returns {Promise} - Promise with transformed users list
    */
   async getAllUsers(params = {}) {
     try {
       const response = await api.get('/users', { params });
-      return response.data;
+      return response.data.map(user => transformUserData(user));
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la récupération des utilisateurs' };
+      throw error.response?.data || { message: 'Error fetching users' };
     }
   },
 
   /**
-   * Récupérer les détails d'un utilisateur
-   * @param {string|number} id - ID de l'utilisateur
-   * @returns {Promise} - Promesse avec les détails de l'utilisateur
+   * Get user details
+   * @param {string|number} id - User ID
+   * @returns {Promise} - Promise with transformed user details
    */
   async getUserById(id) {
     try {
       const response = await api.get(`/users/${id}`);
-      return response.data;
+      return transformUserData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la récupération de l\'utilisateur' };
+      throw error.response?.data || { message: 'Error fetching user' };
     }
   },
 
   /**
-   * Créer un nouvel utilisateur
-   * @param {Object} userData - Données de l'utilisateur
-   * @returns {Promise} - Promesse avec les données de l'utilisateur créé
+   * Create new user
+   * @param {Object} userData - User data
+   * @returns {Promise} - Promise with created user data
    */
   async createUser(userData) {
     try {
-      const response = await api.post('/users', userData);
-      return response.data;
+      // Ensure role is provided with correct format
+      const apiData = {
+        ...userData,
+        role: userData.role || 'User'
+      };
+
+      const response = await api.post('/users', apiData);
+      return transformUserData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la création de l\'utilisateur' };
+      throw error.response?.data || { message: 'Error creating user' };
     }
   },
 
   /**
-   * Mettre à jour un utilisateur existant
-   * @param {string|number} id - ID de l'utilisateur
-   * @param {Object} userData - Données de l'utilisateur à mettre à jour
-   * @returns {Promise} - Promesse avec les données de l'utilisateur mis à jour
+   * Update existing user
+   * @param {string|number} id - User ID
+   * @param {Object} userData - User data to update
+   * @returns {Promise} - Promise with updated user data
    */
   async updateUser(id, userData) {
     try {
       const response = await api.put(`/users/${id}`, userData);
-      return response.data;
+      return transformUserData(response.data);
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la mise à jour de l\'utilisateur' };
+      throw error.response?.data || { message: 'Error updating user' };
     }
   },
 
   /**
-   * Supprimer un utilisateur
-   * @param {string|number} id - ID de l'utilisateur
-   * @returns {Promise} - Promesse avec le résultat de la suppression
+   * Delete user
+   * @param {string|number} id - User ID
+   * @returns {Promise} - Promise with deletion result
    */
   async deleteUser(id) {
     try {
       const response = await api.delete(`/users/${id}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || { message: 'Erreur lors de la suppression de l\'utilisateur' };
+      throw error.response?.data || { message: 'Error deleting user' };
     }
   }
 };

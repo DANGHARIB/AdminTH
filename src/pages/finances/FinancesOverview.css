@@ -90,6 +90,7 @@
     margin-bottom: 4px;
     font-size: 1.5rem;
     line-height: 1.2;
+    font-variant-numeric: tabular-nums;
   }
   
   .stat-icon {
@@ -126,6 +127,7 @@
     border-radius: 12px;
     border: 1px solid #e2e8f0;
     overflow: hidden;
+    margin-bottom: 32px;
   }
   
   .transactions-card .MuiCardContent-root {
@@ -264,4 +266,42 @@
   
   .finances-page .MuiMenuItem-root:hover {
     background-color: #f3f4f6;
+  }
+  
+  /* Additional styles */
+  .finances-page .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+    width: 100%;
+  }
+  
+  .finances-page .MuiCircularProgress-root {
+    color: #2563eb;
+  }
+  
+  .finances-page .error-message {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border-left: 4px solid #b91c1c;
+  }
+  
+  .finances-page .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    text-align: center;
+    color: #6b7280;
+  }
+  
+  .finances-page .empty-state svg {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #9ca3af;
   }

@@ -43,7 +43,7 @@ const DoctorsList = () => {
       setLoading(true);
       try {
         console.log('Loading doctors...');
-        const doctorsData = await doctorsService.getAllDoctors();
+        const doctorsData = await doctorsService.getAllDoctorsWithPatientCount();
         console.log('Doctors loaded:', doctorsData);
         setDoctors(doctorsData);
       } catch (err) {
@@ -69,7 +69,7 @@ const DoctorsList = () => {
     total: doctors.length,
     verified: doctors.filter(d => d.verified || d.status === 'verified').length,
     pending: doctors.filter(d => !d.verified && d.status !== 'verified').length,
-    totalPatients: doctors.reduce((sum, d) => sum + (d.patients || 0), 0)
+    totalPatients: doctors.reduce((sum, d) => sum + (d.patientCount || 0), 0)
   };
 
   const getStatusColor = doctor => {
@@ -121,16 +121,6 @@ const DoctorsList = () => {
       )
     },
     {
-      field: 'gender',
-      headerName: 'Gender',
-      width: 100,
-      renderCell: (value, row) => (
-        <Typography variant="body2">
-          {row.gender || 'Unspecified'}
-        </Typography>
-      )
-    },
-    {
       field: 'experience',
       headerName: 'Experience',
       width: 120,
@@ -177,25 +167,9 @@ const DoctorsList = () => {
       align: 'center',
       renderCell: (value, row) => (
         <Typography variant="body2" fontWeight={500}>
-          {row.patients || 0}
+          {row.patientCount || 0}
         </Typography>
       )
-    },
-    {
-      field: 'rating',
-      headerName: 'Rating',
-      width: 80,
-      align: 'center',
-      renderCell: (value, row) =>
-        row.rating ? (
-          <Typography variant="body2" fontWeight={500}>
-            ⭐ {row.rating}
-          </Typography>
-        ) : (
-          <Typography variant="body2" color="text.secondary">
-            -
-          </Typography>
-        )
     },
     {
       field: 'actions',
@@ -242,6 +216,28 @@ const DoctorsList = () => {
       )
     }
   ];
+
+  // Assurez-vous que les données ont un identifiant valide pour React
+  const doctorsWithValidId = filteredDoctors.map(doctor => {
+    // Assurez-vous que l'objet doctor a un id valide
+    if (!doctor.id && doctor._id) {
+      return { 
+        ...doctor, 
+        id: doctor._id,
+        // S'assurer que toutes les propriétés qui pourraient être des objets sont convertis en chaînes
+        name: typeof doctor.name === 'object' ? (doctor.name._id ? doctor.name._id.toString() : JSON.stringify(doctor.name)) : doctor.name,
+        fullName: typeof doctor.fullName === 'object' ? (doctor.fullName._id ? doctor.fullName._id.toString() : JSON.stringify(doctor.fullName)) : doctor.fullName,
+        displayName: typeof doctor.displayName === 'object' ? (doctor.displayName._id ? doctor.displayName._id.toString() : JSON.stringify(doctor.displayName)) : doctor.displayName
+      };
+    }
+    // S'assurer que les propriétés des docteurs existants sont aussi des chaînes si nécessaire
+    return {
+      ...doctor,
+      name: typeof doctor.name === 'object' ? (doctor.name._id ? doctor.name._id.toString() : JSON.stringify(doctor.name)) : doctor.name,
+      fullName: typeof doctor.fullName === 'object' ? (doctor.fullName._id ? doctor.fullName._id.toString() : JSON.stringify(doctor.fullName)) : doctor.fullName,
+      displayName: typeof doctor.displayName === 'object' ? (doctor.displayName._id ? doctor.displayName._id.toString() : JSON.stringify(doctor.displayName)) : doctor.displayName
+    };
+  });
 
   const handleMenuClose = () => {
     setAnchorEl(null);
@@ -331,7 +327,7 @@ const DoctorsList = () => {
             Doctors
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Manage the platform’s doctors
+            Manage the platform's doctors
           </Typography>
         </Box>
         <Button
@@ -432,7 +428,7 @@ const DoctorsList = () => {
       )}
 
       <DataTable
-        data={filteredDoctors}
+        data={doctorsWithValidId}
         columns={columns}
         searchable
         onRowClick={handleRowClick}

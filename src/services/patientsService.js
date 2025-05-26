@@ -30,6 +30,21 @@ const transformPatientData = (apiPatient, userData = null) => {
            'Not specified';
   };
 
+  // Format saved doctors if available
+  const formatSavedDoctors = (savedDoctors) => {
+    if (!savedDoctors || !Array.isArray(savedDoctors)) return [];
+    
+    return savedDoctors.map(doctor => {
+      if (typeof doctor === 'string') {
+        return { id: doctor, name: 'Doctor' };
+      }
+      return {
+        id: doctor._id || doctor.id,
+        name: doctor.full_name || `${doctor.first_name || ''} ${doctor.last_name || ''}`.trim()
+      };
+    });
+  };
+
   return {
     id: apiPatient._id,
     firstName: apiPatient.first_name || '',
@@ -40,18 +55,21 @@ const transformPatientData = (apiPatient, userData = null) => {
     gender: transformGender(apiPatient.gender),
     
     // User data if available
-    email: userData?.email || `${apiPatient.first_name?.toLowerCase() || 'patient'}.${apiPatient.last_name?.toLowerCase() || 'unknown'}@example.com`,
-    phone: userData?.phone || 'Not provided',
-    address: userData?.address || 'Address not provided',
+    email: userData?.email || apiPatient.user?.email || `${apiPatient.first_name?.toLowerCase() || 'patient'}.${apiPatient.last_name?.toLowerCase() || 'unknown'}@example.com`,
+    phone: userData?.phone || apiPatient.user?.phone || 'Not provided',
+    address: userData?.address || apiPatient.user?.address || 'Address not provided',
     
     // Status based on has_taken_assessment and other criteria
     status: apiPatient.has_taken_assessment ? 'active' : 'pending',
     
+    // Saved doctors
+    savedDoctors: formatSavedDoctors(apiPatient.savedDoctors),
+    
     // Default medical data (adapt according to your model)
-    bloodType: 'Not specified',
+    bloodType: apiPatient.bloodType || 'Not specified',
     assignedDoctor: null,
-    insurance: 'Not specified',
-    emergencyContact: 'Not provided',
+    insurance: apiPatient.insurance || 'Not specified',
+    emergencyContact: apiPatient.emergencyContact || 'Not provided',
     
     // Calculated data
     joinDate: apiPatient.createdAt,
@@ -60,8 +78,8 @@ const transformPatientData = (apiPatient, userData = null) => {
     totalSpent: 0,          // To calculate from payments
     
     // Default allergies and medical history
-    allergies: [],
-    medicalHistory: [],
+    allergies: apiPatient.allergies || [],
+    medicalHistory: apiPatient.medicalHistory || [],
     
     // Default finances
     finances: {
@@ -151,16 +169,25 @@ const patientsService = {
       patient.lastConsultation = appointments.length > 0 ? 
         appointments.sort((a, b) => new Date(b.date) - new Date(a.date))[0].date : null;
 
-      // Get payments for finances
-      const payments = await this.getPatientPayments(patient.id);
-      patient.totalSpent = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
-      patient.finances.totalSpent = patient.totalSpent;
-      patient.finances.consultationsCount = patient.consultationsCount;
-      
-      if (patient.consultationsCount > 0) {
-        patient.finances.averageConsultationCost = patient.totalSpent / patient.consultationsCount;
+      // Get patient finances
+      try {
+        const finances = await this.getPatientFinances(patient.id);
+        if (finances) {
+          patient.finances = finances;
+          patient.totalSpent = finances.totalSpent || 0;
+        }
+      } catch (financeError) {
+        console.warn('Error fetching finances:', financeError);
+        // Fallback to calculating finances from payments
+        const payments = await this.getPatientPayments(patient.id);
+        patient.totalSpent = payments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+        patient.finances.totalSpent = patient.totalSpent;
+        patient.finances.consultationsCount = patient.consultationsCount;
+        
+        if (patient.consultationsCount > 0) {
+          patient.finances.averageConsultationCost = patient.totalSpent / patient.consultationsCount;
+        }
       }
-
     } catch (error) {
       console.warn('Error enriching data:', error);
       // Continue even if enrichment fails
@@ -219,7 +246,7 @@ const patientsService = {
       });
       return response.data || [];
     } catch (error) {
-      console.warn('Error fetching payments:', error);
+      console.warn('Error fetching payments:', error.message);
       return [];
     }
   },
